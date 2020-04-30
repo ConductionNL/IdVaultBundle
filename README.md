@@ -3,7 +3,7 @@ This bundle adds VNG Common Ground functionality to you Symfony API Platform app
 
 This bundle is maintained as a free of charge open-source project by [conduction](http://conduction.nl), a Dutch platform oriented startup. 
 
-**Requires**: PHP 5.3+ or PHP 7.0+
+**Requires**: PHP 7.1+
 
 **Lead Developer**: [@rubenlinde](http://twitter.com/rubenlinde)
 
