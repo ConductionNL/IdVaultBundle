@@ -3,7 +3,7 @@
 namespace Conduction\CommonGroundBundle\Subscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
-use App\Service\NLXLogService;
+use Conduction\CommonGroundBundle\Service\NLXLogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
