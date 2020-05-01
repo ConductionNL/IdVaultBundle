@@ -68,7 +68,7 @@ class ChangeLogSubscriber implements EventSubscriberInterface
         $itemId = $result->getid();
         $entityType = $this->em->getMetadataFactory()->getMetadataFor(get_class($result))->getName();
 
-        $results = $this->em->getRepository('App:ChangeLog')->findBy(['objectId'=> $itemId, 'objectClass'=> $entityType]);
+        $results = $this->em->getRepository('Conduction\CommonGroundBundle\Entity\ChangeLog')->findBy(['objectId'=> $itemId, 'objectClass'=> $entityType]);
 
         $response = $this->serializer->serialize(
             $results,

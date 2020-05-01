@@ -1,0 +1,37 @@
+# This file is the entry point to configure your own services.
+# Files in the packages/ subdirectory configure your dependencies.
+
+# Put parameters here that don't need to change on each machine where the app is deployed
+# https://symfony.com/doc/current/best_practices/configuration.html#application-related-configuration
+parameters:
+
+services:
+   #CommonGround Services
+    'Conduction\CommonGroundBundle\Service\CommonGroundService': ~
+    
+    #CommonGround Subscribers
+    audit.subscriber:
+        class: Conduction\CommonGroundBundle\Subscriber\AuditSubscriber
+        tags:
+            - { name: kernel.event_subscriber, connection: default }
+    audit.trail.subscriber:
+        class: Conduction\CommonGroundBundle\Subscriber\AuditTrailSubscriber
+        tags:
+            - { name: kernel.event_subscriber, connection: default }
+    change.log.subscriber:
+        class: Conduction\CommonGroundBundle\Subscriber\ChangeLogSubscriber
+        tags:
+            - { name: kernel.event_subscriber, connection: default }
+    fields.and.extend.subscriber:
+        class: Conduction\CommonGroundBundle\Subscriber\FieldsAndExtendSubscriber
+        tags:
+            - { name: kernel.event_subscriber, connection: default }
+    health.check.subscriber:
+        class: Conduction\CommonGroundBundle\Subscriber\HealthCheckSubscriber
+        tags:
+            - { name: kernel.event_subscriber, connection: default }
+    valid.on.subscriber:
+        class: Conduction\CommonGroundBundle\Subscriber\ValidOnSubscriber
+        tags:
+            - { name: kernel.event_subscriber, connection: default }
+
