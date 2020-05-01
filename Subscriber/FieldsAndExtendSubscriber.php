@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Subscriber;
+namespace Conduction\CommonGroundBundle\Subscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Doctrine\ORM\EntityManagerInterface;
