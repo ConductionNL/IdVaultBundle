@@ -11,7 +11,7 @@
  * file that was distributed with this source code.
  */
 
-namespace App\Service;
+namespace Conduction\CommonGroundBundle\Service;
 
 use Doctrine\ORM\EntityManagerInterface;
 
