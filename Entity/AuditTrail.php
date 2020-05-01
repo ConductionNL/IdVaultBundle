@@ -58,7 +58,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 		"session": "exact",
  * })
  * @ApiFilter(DateFilter::class, properties={"dateCreated","dateModified" })
- * @ORM\Entity(repositoryClass="App\Repository\AuditTrailRepository")
+ * @ORM\Entity(repositoryClass="Conduction\CommonGroundBundle\Repository\AuditTrailRepository")
  */
 class AuditTrail
 {

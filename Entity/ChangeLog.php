@@ -47,7 +47,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * 		"version": "exact",
  * })
  * @ApiFilter(DateFilter::class, properties={"dateCreated","dateModified" })
- * @ORM\Entity(repositoryClass="App\Repository\ChangeLogRepository")
+ * @ORM\Entity(repositoryClass="Conduction\CommonGroundBundle\Repository\ChangeLogRepository")
  */
 class ChangeLog extends AbstractLogEntry
 {
