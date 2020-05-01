@@ -138,7 +138,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         // Creating a response
         $response = new Response(
             $json,
-            Response::HTTP_CREATED,
+            Response::HTTP_OK,
             ['content-type' => $contentType]
         );
         $event->setResponse($response);
