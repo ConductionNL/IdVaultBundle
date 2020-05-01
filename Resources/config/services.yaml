@@ -6,7 +6,11 @@
 parameters:
 
 services:
-   #CommonGround Services
+    doctrine.repository_service:
+        class: Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository
+        tags:
+            - { name: doctrine.repository_service }
+    #CommonGround Services
     'Conduction\CommonGroundBundle\Service\CommonGroundService': ~
     
     #CommonGround Subscribers
