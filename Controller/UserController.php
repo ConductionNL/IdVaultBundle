@@ -1,6 +1,6 @@
 <?php
 // src/Controller/DefaultController.php
-namespace App\Controller;
+namespace Conduction\CommonGroundBundle\Controller;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;

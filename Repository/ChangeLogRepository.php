@@ -2,7 +2,7 @@
 
 namespace Conduction\CommonGroundBundle\Repository;
 
-use App\Entity\ChangeLog;
+use Conduction\CommonGroundBundle\Entity\ChangeLog;
 use Doctrine\Common\Persistence\ManagerRegistry;
 use Gedmo\Loggable\Entity\Repository\LogEntryRepository;
 

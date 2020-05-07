@@ -6,7 +6,7 @@ use ApiPlatform\Core\Api\Entrypoint;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Conduction\CommonGroundBundle\Entity\AuditTrail;
-use App\Service\NLXLogService;
+use Conduction\CommonGroundBundle\Service\NLXLogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
