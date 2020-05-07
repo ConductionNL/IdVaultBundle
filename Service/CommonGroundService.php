@@ -1,6 +1,6 @@
 <?php
 
-// src/Service/HuwelijkService.php
+// Conduction/CommonGroundBundle/Service/CommonGroundService.php
 
 namespace Conduction\CommonGroundBundle\Service;
 
@@ -12,6 +12,18 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\EventDispatcher\EventDispatcher;
+
+// Events
+use Conduction\CommonGroundBundle\Event\ResourceEvent
+use Conduction\CommonGroundBundle\Event\ResourceListEvent
+use Conduction\CommonGroundBundle\Event\ResourceSaveEvent
+use Conduction\CommonGroundBundle\Event\ResourceSavedEvent
+use Conduction\CommonGroundBundle\Event\ResourceUpdateEvent
+use Conduction\CommonGroundBundle\Event\ResourceUpdatedEvent
+use Conduction\CommonGroundBundle\Event\ResourceCreateEvent
+use Conduction\CommonGroundBundle\Event\ResourceCreatedEvent
+use Conduction\CommonGroundBundle\Event\ResourceDeleteEvent
 
 class CommonGroundService
 {
@@ -22,8 +34,9 @@ class CommonGroundService
     private $requestStack;
     private $flash;
     private $translator;
+    private $dispatcher;
 
-    public function __construct(ParameterBagInterface $params, SessionInterface $session, CacheInterface $cache, RequestStack $requestStack, FlashBagInterface $flash, TranslatorInterface $translator)
+    public function __construct(ParameterBagInterface $params, SessionInterface $session, CacheInterface $cache, RequestStack $requestStack, FlashBagInterface $flash, TranslatorInterface $translator,EventDispatcher $dispatcher)
     {
         $this->params = $params;
         $this->session = $session;
@@ -32,6 +45,7 @@ class CommonGroundService
         $this->requestStack = $requestStack;
         $this->flash = $flash;
         $this->translator = $translator;
+        $this->dispatcher = $dispatcher;
 
         // To work with NLX we need a couple of default headers
         $this->headers = [
@@ -161,6 +175,10 @@ class CommonGroundService
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
+        // creates the ResourceListEvent and dispatches it
+        $event = new ResourceListEvent($response);
+        $dispatcher->dispatch($event, ResourceListEvent::NAME);
+
         return $response;
     }
 
@@ -236,6 +254,10 @@ class CommonGroundService
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
+        // creates the ResourceEvent and dispatches it
+        $event = new ResourceEvent($response);
+        $dispatcher->dispatch($event, ResourceEvent::NAME);
+
         return $response;
     }
 
@@ -244,6 +266,10 @@ class CommonGroundService
      */
     public function updateResource($resource, $url = null, $async = false, $autowire = true)
     {
+        // creates the ResourceUpdateEvent and dispatches it
+        $event = new ResourceUpdateEvent($resource);
+        $dispatcher->dispatch($event, ResourceUpdateEvent::NAME);
+
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
         }
@@ -314,6 +340,10 @@ class CommonGroundService
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
+        // creates the ResourceUpdatedEvent and dispatches it
+        $event = new ResourceUpdatedEvent($response);
+        $dispatcher->dispatch($event, ResourceUpdatedEvent::NAME);
+
         return $response;
     }
 
@@ -322,6 +352,10 @@ class CommonGroundService
      */
     public function createResource($resource, $url = null, $async = false, $autowire = true)
     {
+        // creates the ResourceCreateEvent and dispatches it
+        $event = new ResourceCreateEvent($resource);
+        $dispatcher->dispatch($event, ResourceCreateEvent::NAME);
+
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
         }
@@ -385,6 +419,10 @@ class CommonGroundService
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
+        // creates the ResourceCreatedEvent and dispatches it
+        $event = new ResourceCreatedEvent($resources);
+        $dispatcher->dispatch($event, ResourceCreatedEvent::NAME);
+
         return $response;
     }
 
@@ -393,6 +431,10 @@ class CommonGroundService
      */
     public function deleteResource($resource, $url = null, $async = false, $autowire = true)
     {
+        // creates the ResourceDeleteEvent and dispatches it
+        $event = new ResourceDeleteEvent($resource);
+        $dispatcher->dispatch($event, ResourceDeleteEvent::NAME);
+
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
         }
@@ -451,6 +493,11 @@ class CommonGroundService
      */
     public function saveResource($resource, $endpoint = false, $autowire = true)
     {
+        // creates the ResourceSaveEventand and dispatches it
+        $event = new ResourceSaveEvent($resource);
+        $dispatcher->dispatch($event, ResourceSaveEvent::NAME);
+
+        // determine the endpoint
         $endpoint = $this->cleanUrl($endpoint, $resource, $autowire);
 
         // @tododit zijn echt te veel ifjes
@@ -497,6 +544,10 @@ class CommonGroundService
                 }
             }
         }
+
+        // creates the ResourceSavedEvent and dispatches it
+        $event = new ResourceSavedEvent($resource);
+        $dispatcher->dispatch($event, ResourceSavedEvent::NAME);
 
         return $resource;
     }
