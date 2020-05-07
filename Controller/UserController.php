@@ -10,13 +10,14 @@ use Doctrine\ORM\EntityManagerInterface;
 use GuzzleHttp\Client;
 use Knp\Bundle\MarkdownBundle\MarkdownParserInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Template;
-use App\Service\CommonGroundService;
+use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Authentication\Token\UsernamePasswordToken;
-use App\Security\User\CommongroundUser;
+use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Session\Session;
 
 /**
  * Class UserController
@@ -215,6 +216,21 @@ class UserController extends AbstractController
     public function settingsAction(Request $request)
     {
         return[];
+    }
+    /**
+     * @Route("/digidlogout")
+     * @Template
+     */
+    public function logoutAction(Session $session)
+    {
+        $session->set('requestType', null);
+        $session->set('request', null);
+        $session->set('user', null);
+        $session->set('employee', null);
+        $session->set('contact', null);
+
+        $this->addFlash('info', 'U bent uitgelogd');
+        return $this->redirect();
     }
 
 }
