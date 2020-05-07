@@ -19,16 +19,23 @@ class IrcService
 
     /*
      * Validates a resource with optional commonground and component specific logic
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
      */
-    public function scanResource($resource)
+    public function scanResource(array $resource)
     {
-        // Lets see if we need to create contacts for the submitters
-        if(key_exists('submitters', $resource)){
-            foreach ($resource['submitters']){
-
-            }
+        // Lets see if we need to create a contact for the contact
+        if(key_exists('contact', $resource) && !key_exists('@id', $resource['contact'])){
+            $contact = $this->commonGroundService->saveResource($resource['contact'],['component'=>'cc','type'=>'people']);
+            $resource['contact'] = $contact['@id'];
         }
 
+        // Lets see if we need to create a contact for the requester
+        if(key_exists('requester', $resource) && !key_exists('@id', $resource['requester'])){
+            $contact = $this->commonGroundService->saveResource($resource['requester'],['component'=>'cc','type'=>'people']);
+            $resource['contact'] = $contact['@id'];
+        }
 
         return $resource;
     }
