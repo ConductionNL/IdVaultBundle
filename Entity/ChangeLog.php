@@ -87,7 +87,7 @@ class ChangeLog extends AbstractLogEntry
     protected $action;
 
     /**
-     * @var \DateTime
+     * @var DateTime
      *
      * @ORM\Column(name="logged_at", type="datetime")
      */
@@ -134,7 +134,7 @@ class ChangeLog extends AbstractLogEntry
     protected $username;
 
     /**
-     * @var sting The moment this request was created
+     * @var string The moment this request was created
      *
      * @Assert\Length(
      *      max = 255
@@ -159,7 +159,7 @@ class ChangeLog extends AbstractLogEntry
      *
      * @Assert\DateTime
      * @Groups({"read"})
-     * @Gedmo\Timestampable(on="create")
+     * @Gedmo\Timestampable(on="update")
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $dateModified;

@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace Conduction\CommonGroundBundle\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -90,7 +90,7 @@ class AuditTrail
     private $note;
 
     /**
-     * @var sting The application that made the request
+     * @var string The application that made the request
      *
      * @Assert\Url
      * @Assert\Length(
@@ -102,7 +102,7 @@ class AuditTrail
     private $application;
 
     /**
-     * @var sting The id of the request within that application
+     * @var string The id of the request within that application
      *
      * @Assert\Url
      * @Assert\Length(
@@ -114,7 +114,7 @@ class AuditTrail
     private $request;
 
     /**
-     * @var sting The user on behalf of wich the request was made
+     * @var string The user on behalf of wich the request was made
      *
      * @Assert\Url
      * @Assert\Length(
@@ -126,7 +126,7 @@ class AuditTrail
     private $user;
 
     /**
-     * @var sting ???
+     * @var string ???
      *
      * @Assert\Length(
      *      max = 255
@@ -137,7 +137,7 @@ class AuditTrail
     private $subject;
 
     /**
-     * @var sting The procces on behalf of wich the request was made
+     * @var string The procces on behalf of wich the request was made
      *
      * @Assert\Length(
      *      max = 255
@@ -164,7 +164,7 @@ class AuditTrail
     private $dataSubjects = [];
 
     /**
-     * @var sting The resource that was requested
+     * @var string The resource that was requested
      *
      * @Assert\Length(
      *      max = 255
@@ -175,7 +175,7 @@ class AuditTrail
     private $resource;
 
     /**
-     * @var sting The type of the resource that was requested
+     * @var string The type of the resource that was requested
      *
      * @Assert\Length(
      *      max = 255
@@ -186,7 +186,7 @@ class AuditTrail
     private $resourceType;
 
     /**
-     * @var sting The moment this request was created
+     * @var string The moment this request was created
      *
      * @Assert\Length(
      *      max = 255
@@ -197,7 +197,7 @@ class AuditTrail
     private $route;
 
     /**
-     * @var sting The endpoint that the request was made to
+     * @var string The endpoint that the request was made to
      *
      * @Assert\Length(
      *      max = 255
@@ -208,7 +208,7 @@ class AuditTrail
     private $endpoint;
 
     /**
-     * @var sting The method that was used
+     * @var string The method that was used
      *
      * @Assert\Length(
      *      max = 255
@@ -219,7 +219,7 @@ class AuditTrail
     private $method;
 
     /**
-     * @var sting The contentType that was reqousted
+     * @var string The contentType that was reqousted
      *
      * @Assert\Length(
      *      max = 255
@@ -230,7 +230,7 @@ class AuditTrail
     private $accept;
 
     /**
-     * @var sting The contentType that was suplieds
+     * @var string The contentType that was suplieds
      *
      * @Assert\Length(
      *      max = 255
@@ -241,7 +241,7 @@ class AuditTrail
     private $contentType;
 
     /**
-     * @var sting The moment this request was created
+     * @var string The moment this request was created
      *
      * @Assert\Length(
      *      max = 2555
@@ -252,7 +252,7 @@ class AuditTrail
     private $content;
 
     /**
-     * @var sting The moment this request was created
+     * @var string The moment this request was created
      *
      * @Assert\Length(
      *      max = 255
@@ -336,7 +336,7 @@ class AuditTrail
      *
      * @Assert\DateTime
      * @Groups({"read"})
-     * @Gedmo\Timestampable(on="create")
+     * @Gedmo\Timestampable(on="update")
      * @ORM\Column(type="datetime", nullable=true)
      */
     private $dateModified;

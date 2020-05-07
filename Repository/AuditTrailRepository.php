@@ -1,8 +1,8 @@
 <?php
 
-namespace App\Repository;
+namespace Conduction\CommonGroundBundle\Repository;
 
-use App\Entity\AuditTrail;
+use Conduction\CommonGroundBundle\Entity\AuditTrail;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Common\Persistence\ManagerRegistry;
 

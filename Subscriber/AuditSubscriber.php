@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Subscriber;
+namespace Conduction\CommonGroundBundle\Subscriber;
 
 use ApiPlatform\Core\Api\Entrypoint;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use ApiPlatform\Core\EventListener\EventPriorities;
-use App\Entity\AuditTrail;
+use Conduction\CommonGroundBundle\Entity\AuditTrail;
 use App\Service\NLXLogService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
