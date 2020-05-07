@@ -64,9 +64,9 @@ class VrcService
         // If the request has Zaak properties we need to trigger those
         if(key_exists('camundaProces', $requestType) && !key_exists('processes', $resource)){
             /* @todo start a camunda procces */
-
+            $procces = $this->camundaService->proccesFromRequest($resource);
+            $resource['processes'] = [$procces];
         }
-
 
         return $resource;
     }
