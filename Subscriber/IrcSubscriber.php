@@ -3,15 +3,22 @@
 namespace Conduction\CommonGroundBundle\Subscriber;
 
 use Conduction\CommonGroundBundle\Event\ResourceSaveEvent;
-use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Conduction\CommonGroundBundle\Service\IrcService;
 
+use Conduction\CommonGroundBundle\Service\VrcService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\Event\ResponseEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class IrcSubscriber implements EventSubscriberInterface
 {
+    private $ircService;
+
+    public function __construct(IrcService $ircService)
+    {
+        $this->ircService = $ircService;
+    }
+
     public static function getSubscribedEvents()
     {
         return [
@@ -27,6 +34,11 @@ class IrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // ...
+        // Lets see if we need to do anything with the resource
+        $resource = $event->getResource();
+        $resource = $this->ircService->scanResource($resource);
+        $event->setResource($resource);
+
+        return $event;
     }
 }

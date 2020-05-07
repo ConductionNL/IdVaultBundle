@@ -15,15 +15,15 @@ use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 
 // Events
-use Conduction\CommonGroundBundle\Event\ResourceEvent
-use Conduction\CommonGroundBundle\Event\ResourceListEvent
-use Conduction\CommonGroundBundle\Event\ResourceSaveEvent
-use Conduction\CommonGroundBundle\Event\ResourceSavedEvent
-use Conduction\CommonGroundBundle\Event\ResourceUpdateEvent
-use Conduction\CommonGroundBundle\Event\ResourceUpdatedEvent
-use Conduction\CommonGroundBundle\Event\ResourceCreateEvent
-use Conduction\CommonGroundBundle\Event\ResourceCreatedEvent
-use Conduction\CommonGroundBundle\Event\ResourceDeleteEvent
+use Conduction\CommonGroundBundle\Event\ResourceEvent;
+use Conduction\CommonGroundBundle\Event\ResourceListEvent;
+use Conduction\CommonGroundBundle\Event\ResourceSaveEvent;
+use Conduction\CommonGroundBundle\Event\ResourceSavedEvent;
+use Conduction\CommonGroundBundle\Event\ResourceUpdateEvent;
+use Conduction\CommonGroundBundle\Event\ResourceUpdatedEvent;
+use Conduction\CommonGroundBundle\Event\ResourceCreateEvent;
+use Conduction\CommonGroundBundle\Event\ResourceCreatedEvent;
+use Conduction\CommonGroundBundle\Event\ResourceDeleteEvent;
 
 class CommonGroundService
 {
@@ -177,7 +177,8 @@ class CommonGroundService
 
         // creates the ResourceListEvent and dispatches it
         $event = new ResourceListEvent($response);
-        $dispatcher->dispatch($event, ResourceListEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceListEvent::NAME);
+        $response = $event->getResource();
 
         return $response;
     }
@@ -256,7 +257,8 @@ class CommonGroundService
 
         // creates the ResourceEvent and dispatches it
         $event = new ResourceEvent($response);
-        $dispatcher->dispatch($event, ResourceEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceEvent::NAME);
+        $response = $event->getResource();
 
         return $response;
     }
@@ -268,7 +270,8 @@ class CommonGroundService
     {
         // creates the ResourceUpdateEvent and dispatches it
         $event = new ResourceUpdateEvent($resource);
-        $dispatcher->dispatch($event, ResourceUpdateEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceUpdateEvent::NAME);
+        $response = $event->getResource();
 
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
@@ -342,7 +345,8 @@ class CommonGroundService
 
         // creates the ResourceUpdatedEvent and dispatches it
         $event = new ResourceUpdatedEvent($response);
-        $dispatcher->dispatch($event, ResourceUpdatedEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceUpdatedEvent::NAME);
+        $response = $event->getResource();
 
         return $response;
     }
@@ -354,7 +358,8 @@ class CommonGroundService
     {
         // creates the ResourceCreateEvent and dispatches it
         $event = new ResourceCreateEvent($resource);
-        $dispatcher->dispatch($event, ResourceCreateEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceCreateEvent::NAME);
+        $response = $event->getResource();
 
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
@@ -421,7 +426,8 @@ class CommonGroundService
 
         // creates the ResourceCreatedEvent and dispatches it
         $event = new ResourceCreatedEvent($resources);
-        $dispatcher->dispatch($event, ResourceCreatedEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceCreatedEvent::NAME);
+        $response = $event->getResource();
 
         return $response;
     }
@@ -433,7 +439,8 @@ class CommonGroundService
     {
         // creates the ResourceDeleteEvent and dispatches it
         $event = new ResourceDeleteEvent($resource);
-        $dispatcher->dispatch($event, ResourceDeleteEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceDeleteEvent::NAME);
+        $response = $event->getResource();
 
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
@@ -495,7 +502,8 @@ class CommonGroundService
     {
         // creates the ResourceSaveEventand and dispatches it
         $event = new ResourceSaveEvent($resource);
-        $dispatcher->dispatch($event, ResourceSaveEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceSaveEvent::NAME);
+        $response = $event->getResource();
 
         // determine the endpoint
         $endpoint = $this->cleanUrl($endpoint, $resource, $autowire);
@@ -547,7 +555,8 @@ class CommonGroundService
 
         // creates the ResourceSavedEvent and dispatches it
         $event = new ResourceSavedEvent($resource);
-        $dispatcher->dispatch($event, ResourceSavedEvent::NAME);
+        $this->dispatcher->dispatch($event, ResourceSavedEvent::NAME);
+        $response = $event->getResource();
 
         return $resource;
     }

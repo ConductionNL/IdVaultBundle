@@ -3,7 +3,6 @@
 namespace Conduction\CommonGroundBundle\Subscriber;
 
 use Conduction\CommonGroundBundle\Event\ResourceSaveEvent;
-use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Conduction\CommonGroundBundle\Service\VrcService;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -12,6 +11,14 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class VrcSubscriber implements EventSubscriberInterface
 {
+    private $vrcService;
+
+    public function __construct(VrcService $vrcService)
+    {
+        $this->vrcService = $vrcService;
+
+    }
+
     public static function getSubscribedEvents()
     {
         return [
@@ -27,6 +34,11 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        // ...
+        // Lets see if we need to do anything with the resource
+        $resource = $event->getResource();
+        $resource = $this->vrcService->scanResource($resource);
+        $event->setResource($resource);
+
+        return $event;
     }
 }
