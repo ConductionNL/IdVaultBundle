@@ -4,7 +4,7 @@
 
 namespace Conduction\CommonGroundBundle\Security;
 
-use App\Security\User\CommongroundApplication;
+use Conduction\CommonGroundBundle\Security\User\CommongroundApplication;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
