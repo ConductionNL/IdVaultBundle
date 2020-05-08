@@ -137,7 +137,7 @@ parameters:
     env(APP_COMMONGROUND_DRC_ID): '%env(APP_COMMONGROUND_ID)%'
     env(APP_COMMONGROUND_DRC_SECRET): '%env(APP_COMMONGROUND_SECRET)%'
     
-    # Besluitregistratiecomponent
+    # Besmettingregistratiecomponent
     env(APP_COMMONGROUND_BRC_LOCATION): 'https://brc.%env(APP_DOMAIN)%'
     env(APP_COMMONGROUND_BRC_ID): '%env(APP_COMMONGROUND_ID)%'
     env(APP_COMMONGROUND_BRC_SECRET): '%env(APP_COMMONGROUND_SECRET)%'
@@ -168,7 +168,7 @@ parameters:
     env(APP_COMMONGROUND_EVC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
     
     # AgendaRegistratieComponent
-    env(APP_COMMONGROUND_ARC_LOCATION): 'https://ac.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_ARC_LOCATION): 'https://arc.%env(APP_DOMAIN)%'
     env(APP_COMMONGROUND_ARC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
     
     # MedewerkersRegistratieComponent
@@ -214,7 +214,7 @@ parameters:
     env(APP_COMMONGROUND_BS_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
     # DashboardComponent
     env(APP_COMMONGROUND_DB_LOCATION): 'https://db.%env(APP_DOMAIN)%'
-    env(APP_COMMONGROUND_DB_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    env(APP_COMMONGROUND_DB_APIKEY): '%env(APP_COMMOcNGROUND_KEY)%'
     # ZaakAfhandelComponent
     env(APP_COMMONGROUND_ZAC_LOCATION): 'https://zac.%env(APP_DOMAIN)%'
     env(APP_COMMONGROUND_ZAC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
@@ -236,6 +236,39 @@ parameters:
     # nlx-out
     env(APP_COMMONGROUND_NLX_OUT_LOCATION): 'https://nlx-out.%env(APP_DOMAIN)%'
     env(APP_COMMONGROUND_NLX_OUT_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # ProcesTypeCatalogus
+    env(APP_COMMONGROUND_PTC_LOCATION): 'https://ptc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_PTC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # StufService
+    env(APP_COMMONGROUND_STUF_LOCATION): 'https://stuf.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_STUF_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # landelijketabellencatalogus
+    env(APP_COMMONGROUND_LTC_LOCATION): 'https://ltc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_LTC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # ReviewComponent
+    env(APP_COMMONGROUND_RC_LOCATION): 'https://rc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_RC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # ChallengeComponent
+    env(APP_COMMONGROUND_CHRC_LOCATION): 'https://chrc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_CHRC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # ProcessRegistratieComponent
+    env(APP_COMMONGROUND_PRC_LOCATION): 'https://prc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_PRC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # ContactRegistratieComponent
+    env(APP_COMMONGROUND_CRC_LOCATION): 'https://crc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_CRC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # DocParser
+    env(APP_COMMONGROUND_DPS_LOCATION): 'https://dps.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_DPS_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # CommongroundRegistratieComponent
+    env(APP_COMMONGROUND_CGRC_LOCATION): 'https://cgrc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_CGRC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # TakenComponent
+    env(APP_COMMONGROUND_TC_LOCATION): 'https://tc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_TC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
+    # PortfolioComponent
+    env(APP_COMMONGROUND_PFC_LOCATION): 'https://pfc.%env(APP_DOMAIN)%'
+    env(APP_COMMONGROUND_PFC_APIKEY): '%env(APP_COMMONGROUND_KEY)%'
     
     # Test for commonground component by array
     common_ground.components:
@@ -373,6 +406,40 @@ parameters:
         vtc:
             location: '%env(APP_COMMONGROUND_VTC_LOCATION)%'
             apikey: '%env(APP_COMMONGROUND_VTC_APIKEY)%'
+        ptc:
+            location: '%env(APP_COMMONGROUND_PTC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_PTC_APIKEY)%'
+        stuf:
+            location: '%env(APP_COMMONGROUND_STUF_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_STUF_APIKEY)%'
+        ltc:
+            location: '%env(APP_COMMONGROUND_LTC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_LTC_APIKEY)%'
+        rc:
+            location: '%env(APP_COMMONGROUND_RC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_RC_APIKEY)%'
+        chrc:
+            location: '%env(APP_COMMONGROUND_CHRC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_CHRC_APIKEY)%'
+        prc:
+            location: '%env(APP_COMMONGROUND_PRC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_PRC_APIKEY)%'
+        crc:
+            location: '%env(APP_COMMONGROUND_CRC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_CRC_APIKEY)%'
+        dps:
+            location: '%env(APP_COMMONGROUND_DPS_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_DPS_APIKEY)%'
+        cgrc:
+            location: '%env(APP_COMMONGROUND_CGRC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_CGRC_APIKEY)%'
+        tc:
+            location: '%env(APP_COMMONGROUND_TC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_TC_APIKEY)%'
+        pfc:
+            location: '%env(APP_COMMONGROUND_PFC_LOCATION)%'
+            apikey: '%env(APP_COMMONGROUND_PFC_APIKEY)%'
+
         
     common_ground.oas.type: service
     common_ground.oas.host: irc.zaakonline.nl
