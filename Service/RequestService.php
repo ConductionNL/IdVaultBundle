@@ -451,7 +451,7 @@ class RequestService
 //            }
         }
 
-        return $this->commongroundService->updateResource($request, $url);
+        return $this->commonGroundService->updateResource($request, $url);
     }
 
 //    public function caseFromRequest($request, string $caseType)
