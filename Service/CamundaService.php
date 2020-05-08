@@ -48,7 +48,7 @@ class CamundaService
             $headers[] = $session->get('process')['@id'];
         }
 
-        $client->request('GET', '/get', ['auth' => ['username', 'password']]);
+        $this->client->request('GET', '/get', ['auth' => ['username', 'password']]);
 
         $username = 'conduction';
         $password = 'pMs8GhKePCg8aARV';
