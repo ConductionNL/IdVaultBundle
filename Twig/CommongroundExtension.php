@@ -2,7 +2,7 @@
 
 // src/Twig/CommongroundExtension.php
 
-namespace App\Twig;
+namespace Conduction\CommonGroundBundle\Twig;
 
 use Twig\Extension\AbstractExtension;
 use Twig\TwigFunction;

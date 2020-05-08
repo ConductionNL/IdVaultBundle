@@ -2,7 +2,7 @@
 
 // src/Twig/Commonground.php
 
-namespace App\Twig;
+namespace Conduction\CommonGroundBundle\Twig;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Twig\Extension\RuntimeExtensionInterface;
