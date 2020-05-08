@@ -89,6 +89,7 @@ class CommonGroundService
     {
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+            $component['code'] = $url['component'];
         }
         else {
             $component = false;
@@ -129,7 +130,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -190,6 +191,7 @@ class CommonGroundService
     {
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+            $component['code'] = $url['component'];
         }
         else {
             $component = false;
@@ -215,7 +217,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -275,6 +277,7 @@ class CommonGroundService
 
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+            $component['code'] = $url['component'];
         }
         else {
             $component = false;
@@ -294,7 +297,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -363,6 +366,7 @@ class CommonGroundService
 
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+            $component['code'] = $url['component'];
         }
         else {
             $component = false;
@@ -381,7 +385,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -444,6 +448,7 @@ class CommonGroundService
 
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+            $component['code'] = $url['component'];
         }
         else {
             $component = false;
@@ -462,7 +467,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -963,17 +968,19 @@ class CommonGroundService
     /*
      * Get the current application from the wrc
      */
-    public function getJwtToken($clientId, $secret)
+    ///public function getJwtToken($clientId, $secret)
+    public function getJwtToken($component)
     {
+        $component = $this->getComponent($component);
 
         $userId = '';
         $userRepresentation = '';
 
         // Create token header as a JSON string
-        $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256', 'client_identifier' => $clientId]);
+        $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256', 'client_identifier' => v]);
 
         // Create token payload as a JSON string
-        $payload = json_encode(['iss' => $clientId, 'client_id' =>$clientId, 'user_id' => $userId, 'user_representation' => $userRepresentation, 'iat' => time()]);
+        $payload = json_encode(['iss' => $component['id'], 'client_id' =>$component['id'], 'user_id' => $userId, 'user_representation' => $userRepresentation, 'iat' => time()]);
 
         // Encode Header to Base64Url String
         $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
@@ -982,7 +989,7 @@ class CommonGroundService
         $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
 
         // Create Signature Hash
-        $signature = hash_hmac('sha256', $base64UrlHeader.'.'.$base64UrlPayload, $secret, true);
+        $signature = hash_hmac('sha256', $base64UrlHeader.'.'.$base64UrlPayload, $component['secret'], true);
 
         // Encode Signature to Base64Url String
         $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
