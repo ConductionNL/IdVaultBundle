@@ -19,17 +19,15 @@ class RequestService
     private $client;
     private $session;
     private $commonGroundService;
-    private $zgwService;
     private $camundaService;
     private $messageService;
 
-    public function __construct(ParameterBagInterface $params, CacheInterface $cache, SessionInterface $session, CommonGroundService $commonGroundService, ZgwService $zgwService, CamundaService $camundaService, MessageService $messageService)
+    public function __construct(ParameterBagInterface $params, CacheInterface $cache, SessionInterface $session, CommonGroundService $commonGroundService, CamundaService $camundaService, MessageService $messageService)
     {
         $this->params = $params;
         $this->cache = $cache;
         $this->session= $session;
         $this->commonGroundService = $commonGroundService;
-        $this->zgwService = $zgwService;
         $this->camundaService = $camundaService;
         $this->messageService = $messageService;
 
