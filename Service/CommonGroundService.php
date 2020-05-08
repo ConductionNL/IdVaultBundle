@@ -429,7 +429,7 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceCreatedEvent and dispatches it
-        $event = new ResourceCreatedEvent($resource);
+        $event = new ResourceCreatedEvent($response);
         $this->dispatcher->dispatch($event, ResourceCreatedEvent::NAME);
         $response = $event->getResource();
 
