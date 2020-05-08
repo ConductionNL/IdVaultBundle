@@ -28,7 +28,7 @@ class VrcService
      * @param array $resource The resource before enrichment
      * @param array The resource afther enrichment
      */
-    public function scanResource(?array $resource)
+    public function onSave(?array $resource)
     {
         // Lets get the request type
         if(key_exists('requestType', $resource)) {
@@ -54,20 +54,29 @@ class VrcService
             }
         }
 
+        return $resource;
+    }
 
-        // If the request has Camunda requests we need to trigger those
+
+    /*
+     * Aditional logic triggerd afther a Request has been newly created
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function onCreated(?array $resource)
+    {
+        // If the request has Zaak properties we need to trigger those
         if(key_exists('caseType', $requestType) && !key_exists('cases', $resource)){
             /* @todo create a case */
         }
 
-
-        // If the request has Zaak properties we need to trigger those
+        // If the request has Camunda requests we need to trigger those
         if(key_exists('camundaProces', $requestType) && !key_exists('processes', $resource)){
             /* @todo start a camunda procces */
             $procces = $this->camundaService->proccesFromRequest($resource);
             $resource['processes'] = [$procces];
         }
-
-        return $resource;
     }
+
 }
