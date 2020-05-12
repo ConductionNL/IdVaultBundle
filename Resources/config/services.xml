@@ -16,7 +16,18 @@
         <!--External Services-->
         <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
 
+        <!--CommonGround Repositories-->
+        <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
+            <tag name="doctrine.repository_service"/>
+        </service>
+        
         <!--CommonGround Subscribers-->
+        <service id="audit.subscriber" class="Conduction\CommonGroundBundle\Subscriber\AuditSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="audit.trail.subscriber" class="Conduction\CommonGroundBundle\Subscriber\AuditTrailSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
         <service id="change.log.subscriber" class="Conduction\CommonGroundBundle\Subscriber\ChangeLogSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
