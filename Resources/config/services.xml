@@ -13,8 +13,17 @@
         <service id="Conduction\CommonGroundBundle\Service\RequestService" />
         <service id="Conduction\CommonGroundBundle\Service\CamundaService" />
         <service id="Conduction\CommonGroundBundle\Service\MessageService" />
+
         <!--External Services-->
         <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
+
+        <!--CommonGround Security: User Providers-->
+        <service id="Conduction\CommonGroundBundle\Security\User\CommonGroundApplicationProvider" />
+        <service id="Conduction\CommonGroundBundle\Service\User\CommonGroundUserProvider" />
+
+        <!--CommonGround Security: Authenticators-->
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundApplicationAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundUserAuthenticator" />
 
         <!--CommonGround Repositories-->
         <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
@@ -39,6 +48,14 @@
         </service>
         <service id="valid.on.subscriber" class="Conduction\CommonGroundBundle\Subscriber\ValidOnSubscriber">
             <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <!--CommonGround Commands-->
+        <service id="Conduction\CommonGroundBundle\Command\ApiHelmCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="Conduction\CommonGroundBundle\Command\PubliccodeCommand">
+            <tag name="console.command"/>
         </service>
     </services>
 </container>
