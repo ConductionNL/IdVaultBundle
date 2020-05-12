@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<container xmlns="http://symfony.com/schema/dic/services"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://symfony.com/schema/dic/services
+        https://symfony.com/schema/dic/services/services-1.0.xsd">
+    <services>
+        <defaults autowire="true" autoconfigure="true" />
+
+        <!--CommonGround Services-->
+        <service id="Conduction\CommonGroundBundle\Service\CommonGroundService" />
+        <service id="Conduction\CommonGroundBundle\Service\NLXLogService" />
+        <service id="Conduction\CommonGroundBundle\Service\ApplicationService" />
+        <service id="Conduction\CommonGroundBundle\Service\RequestService" />
+        <service id="Conduction\CommonGroundBundle\Service\CamundaService" />
+        <service id="Conduction\CommonGroundBundle\Service\MessageService" />
+
+        <!--External Services-->
+        <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
+
+        <!--CommonGround Security: User Providers-->
+        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundApplicationProvider" />
+        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundUserProvider" />
+
+        <!--CommonGround Security: Authenticators-->
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundApplicationAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundUserAuthenticator" />
+
+        <!--CommonGround Repositories-->
+        <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
+            <tag name="doctrine.repository_service"/>
+        </service>
+
+        <!--CommonGround Subscribers-->
+        <service id="audit.subscriber" class="Conduction\CommonGroundBundle\Subscriber\AuditSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="audit.trail.subscriber" class="Conduction\CommonGroundBundle\Subscriber\AuditTrailSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="change.log.subscriber" class="Conduction\CommonGroundBundle\Subscriber\ChangeLogSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="fields.and.extend.subscriber" class="Conduction\CommonGroundBundle\Subscriber\FieldsAndExtendSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="health.check.subscriber" class="Conduction\CommonGroundBundle\Subscriber\HealthCheckSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="valid.on.subscriber" class="Conduction\CommonGroundBundle\Subscriber\ValidOnSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
+        <!--CommonGround Commands-->
+        <service id="Conduction\CommonGroundBundle\Command\ApiHelmCommand">
+            <tag name="console.command"/>
+        </service>
+        <service id="Conduction\CommonGroundBundle\Command\PubliccodeCommand">
+            <tag name="console.command"/>
+        </service>
+    </services>
+</container>

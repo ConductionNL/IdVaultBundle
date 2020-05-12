@@ -2,9 +2,8 @@
 
 // src/Service/HuwelijkService.php
 
-namespace App\Service;
+namespace Conduction\CommonGroundBundle\Service;
 
-use Conduction\CommonGroundBundle\Service\CommonGroundService;
 
 class CamundaService
 {
