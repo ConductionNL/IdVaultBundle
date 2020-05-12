@@ -6,14 +6,19 @@
     <services>
         <defaults autowire="true" autoconfigure="true" />
 
-        <!--CommonGround services-->
+        <!--CommonGround Services-->
         <service id="Conduction\CommonGroundBundle\Service\CommonGroundService" />
         <service id="Conduction\CommonGroundBundle\Service\NLXLogService" />
         <service id="Conduction\CommonGroundBundle\Service\ApplicationService" />
         <service id="Conduction\CommonGroundBundle\Service\RequestService" />
         <service id="Conduction\CommonGroundBundle\Service\CamundaService" />
         <service id="Conduction\CommonGroundBundle\Service\MessageService" />
-        <!--External services-->
+        <!--External Services-->
         <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
+
+        <!--CommonGround Subscribers-->
+        <service id="health.check.subscriber" class="Conduction\CommonGroundBundle\Subscriber\HealthCheckSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
     </services>
 </container>
