@@ -18,12 +18,12 @@
         <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
 
         <!--CommonGround Security: User Providers-->
-        <service id="Conduction\CommonGroundBundle\Security\User\CommonGroundApplicationProvider" />
-        <service id="Conduction\CommonGroundBundle\Service\User\CommonGroundUserProvider" />
+        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundApplicationProvider" />
+        <service id="Conduction\CommonGroundBundle\Service\User\CommongroundUserProvider" />
 
         <!--CommonGround Security: Authenticators-->
-        <service id="Conduction\CommonGroundBundle\Security\CommonGroundApplicationAuthenticator" />
-        <service id="Conduction\CommonGroundBundle\Security\CommonGroundUserAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundApplicationAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundUserAuthenticator" />
 
         <!--CommonGround Repositories-->
         <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
