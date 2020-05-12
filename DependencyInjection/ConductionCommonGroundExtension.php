@@ -8,7 +8,9 @@ use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 class ConductionCommonGroundExtension extends Extension
 {
 
-    public function load(array $configs, Container){
+    public function load(array $configs, Container $container){
+        var_dump('HEY!');
+        die;
         $loader = new XmlFileLoader($container, new FileLocator(__DIR__.'/../Resources/config'));
         $loader->load('services.xml');
     }
