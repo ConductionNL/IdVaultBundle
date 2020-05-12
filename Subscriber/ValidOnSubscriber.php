@@ -73,7 +73,7 @@ class ValidOnSubscriber implements EventSubscriberInterface
         }
 
         // Lets try to get an version valid on that date
-        $queryBuilder = $this->em->getRepository('App\Entity\ChangeLog')->createQueryBuilder('l')
+        $queryBuilder = $this->em->getRepository('Conduction\CommonGroundBundle\Entity\ChangeLog')->createQueryBuilder('l')
             ->where('l.objectClass = :objectClass')
             ->setParameter('objectClass', $this->em->getMetadataFactory()->getMetadataFor(get_class($result))->getName())
             ->andWhere('l.objectId = :objectId')
