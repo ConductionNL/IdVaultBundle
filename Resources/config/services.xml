@@ -6,6 +6,14 @@
     <services>
         <defaults autowire="true" autoconfigure="true" />
 
+        <!--CommonGround services-->
         <service id="Conduction\CommonGroundBundle\Service\CommonGroundService" />
+        <service id="Conduction\CommonGroundBundle\Service\NLXLogService" />
+        <service id="Conduction\CommonGroundBundle\Service\ApplicationService" />
+        <service id="Conduction\CommonGroundBundle\Service\RequestService" />
+        <service id="Conduction\CommonGroundBundle\Service\CamundaService" />
+        <service id="Conduction\CommonGroundBundle\Service\MessageService" />
+        <!--External services-->
+        <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
     </services>
 </container>
