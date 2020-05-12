@@ -22,8 +22,8 @@
         <service id="Conduction\CommonGroundBundle\Service\User\CommonGroundUserProvider" />
 
         <!--CommonGround Security: Authenticators-->
-        <service id="Conduction\CommonGroundBundle\Security\CommongroundApplicationAuthenticator" />
-        <service id="Conduction\CommonGroundBundle\Security\CommongroundUserAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommonGroundApplicationAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommonGroundUserAuthenticator" />
 
         <!--CommonGround Repositories-->
         <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
