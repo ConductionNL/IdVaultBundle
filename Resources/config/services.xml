@@ -19,7 +19,7 @@
 
         <!--CommonGround Security: User Providers-->
         <service id="Conduction\CommonGroundBundle\Security\User\CommongroundApplicationProvider" />
-        <service id="Conduction\CommonGroundBundle\Service\User\CommongroundUserProvider" />
+        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundUserProvider" />
 
         <!--CommonGround Security: Authenticators-->
         <service id="Conduction\CommonGroundBundle\Security\CommongroundApplicationAuthenticator" />
