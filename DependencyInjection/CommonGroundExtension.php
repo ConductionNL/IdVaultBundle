@@ -5,7 +5,7 @@ use Symfony\Component\DependencyInjection\ContainerBuilder;
 use Symfony\Component\DependencyInjection\Loader\XmlFileLoader;
 use Symfony\Component\HttpKernel\DependencyInjection\Extension;
 
-class ConductionCommonGroundExtension extends Extension
+class CommonGroundExtension extends Extension
 {
 
     public function load(array $configs, Container $container){
