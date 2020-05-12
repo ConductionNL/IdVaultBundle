@@ -14,14 +14,33 @@ class ResourceCreateEvent extends Event
     public const NAME = 'commonground.resource.create';
 
     protected $resource;
+    protected $component;
 
-    public function __construct(Array $resource)
+    public function __construct(?array $resource, ?array $component)
     {
-    $this->resource = $resource;
+        $this->resource = $resource;
+        $this->component = $component;
+    }
+
+    public function setResource(?array $resource)
+    {
+        $this->resource = $resource;
+        return $this;
     }
 
     public function getResource()
     {
-    return $this->resource;
+        return $this->resource;
+    }
+
+    public function setComponent(?array $component)
+    {
+        $this->component = $component;
+        return $this;
+    }
+
+    public function getComponent()
+    {
+        return $this->component;
     }
 }

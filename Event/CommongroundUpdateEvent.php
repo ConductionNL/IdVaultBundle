@@ -1,17 +1,17 @@
 <?php
 
-// Conduction/CommonGroundBundle/Event/ResourceSavedEvent.php
+// Conduction/CommonGroundBundle/Event/ResourceUpdateEvent.php
 
 namespace Conduction\CommonGroundBundle\Event;
 
 use Symfony\Contracts\EventDispatcher\Event;
 
 /**
-* The commonground.resource.saved event is dispatched each time afther an commonground resource is saved
+* The commonground.resource.update is dispatched each time before an commonground resource is updated
 */
-class ResourceSavedEvent extends Event
+class CommongroundUpdateEvent extends Event
 {
-    public const NAME = 'commonground.resource.saved';
+    public const NAME = 'commonground.update';
 
     protected $resource;
     protected $component;
