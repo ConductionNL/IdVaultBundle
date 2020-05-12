@@ -17,7 +17,16 @@
         <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
 
         <!--CommonGround Subscribers-->
+        <service id="change.log.subscriber" class="Conduction\CommonGroundBundle\Subscriber\ChangeLogSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="fields.and.extend.subscriber" class="Conduction\CommonGroundBundle\Subscriber\ChangeLogSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
         <service id="health.check.subscriber" class="Conduction\CommonGroundBundle\Subscriber\HealthCheckSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="valid.on.subscriber" class="Conduction\CommonGroundBundle\Subscriber\HealthCheckSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
     </services>
