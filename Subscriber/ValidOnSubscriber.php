@@ -73,7 +73,7 @@ class ValidOnSubscriber implements EventSubscriberInterface
         }
 
         // Lets try to get an version valid on that date
-        $queryBuilder = $this->em->getRepository('App\Entity\ChangeLog')->createQueryBuilder('l')
+        $queryBuilder = $this->em->getRepository('Conduction\CommonGroundBundle\Entity\ChangeLog')->createQueryBuilder('l')
             ->where('l.objectClass = :objectClass')
             ->setParameter('objectClass', $this->em->getMetadataFactory()->getMetadataFor(get_class($result))->getName())
             ->andWhere('l.objectId = :objectId')
@@ -91,7 +91,7 @@ class ValidOnSubscriber implements EventSubscriberInterface
         }
 
         // Lets use the found version to rewind the object and return is
-        $repo = $this->em->getRepository('App\Entity\ChangeLog'); // we use default log entry class
+        $repo = $this->em->getRepository('Conduction\CommonGroundBundle\Entity\ChangeLog'); // we use default log entry class
         $repo->revert($result, $version->getVersion());
 
         return $result;
