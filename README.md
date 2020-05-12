@@ -28,6 +28,18 @@ return [
 
 Additionally you will need to copy the parameter file conduction_common_ground.yaml (from resources/config) to config/packages folder of your application
 
+## Events 
+The commonground bundle adds a couple of commonground specific events to your symfony installation
+
+The commonground.resource event is dispatched each time *before* an commongroundresource list aquired through an api
+The commonground.resource.list is dispatched each time *before* an commonground resource list aquired through an api
+The commonground.resource.delete event is dispatched each time *before* an commonground resource is deleted
+The commonground.resource.save event is dispatched each time *before* an commonground resource is saved
+The commonground.resource.saved event is dispatched each time *afther* an commonground resource is saved
+The commonground.resource.update is dispatched each time *before* an commonground resource is updated
+The commonground.resource.updated event is dispatched each time *afther* an commonground resource is updated
+The commonground.resource.create is dispatched each time *before* an commonground resource is created
+The commonground.resource.created event is dispatched each time *afther* an commonground resource is created
 
 ## Commonground
 
