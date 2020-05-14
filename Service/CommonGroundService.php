@@ -707,13 +707,9 @@ class CommonGroundService
      */
     public function getApplication($force = false, $async = false)
     {
-        $applications = $this->getResourceList('https://wrc.'.$this->getDomain().'/applications', ['domain'=>$this->getDomain()], $force, $async);
+        $application = $this->getResource(['component'=>'wrc','type'=>'applications','id'=>$this->params->get('common_ground.app.id')]);
 
-        if (count($applications['hydra:member']) > 0) {
-            return $applications['hydra:member'][0];
-        }
-
-        return false;
+        return $application;
     }
 
     /*
