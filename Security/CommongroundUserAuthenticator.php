@@ -81,7 +81,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         }
         */
 
-        $users = $this->commonGroundService->getResourceList($this->params->get('auth_provider_user').'/users', ['username'=> $credentials['username']], true);
+        $users = $this->commonGroundService->getResourceList(['component'=>'uc','type'=>'users'], ['username'=> $credentials['username']], true);
         $users = $users['hydra:member'];
 
         if (!$users || count($users) < 1) {
@@ -99,7 +99,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-        $user = $this->commonGroundService->createResource($credentials, $this->params->get('auth_provider_user').'/login');
+        $user = $this->commonGroundService->createResource($credentials, ['component'=>'uc','type'=>'login']);
 
         if (!$user) {
             return false;
