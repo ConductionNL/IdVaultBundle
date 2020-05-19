@@ -220,30 +220,132 @@ class VrcService
      */
     public function checkProperties(?array $request)
     {
-        foreach($request['properties'] as $property){
-
+        // Lets first see if we can grap an requested type
+        if(!$requestType = $this->commonGroundService->getResource($resource['requestType'])){
+            return false;
         }
 
-        return $request;
+        foreach($requestType['properties'] as $key => $property){
+            $requestType['properties'][$key] = $this->checkProperty($requestType, $property)
+        }
+
+        return $requestType;
     }
 
     /*
-     * Checks the property of a request against the requestType to determine if it is valid
+     * Gets a requestType from a request and validates stage completion
      *
-     * @param array $request The request to wichs the property belongs
-     * @param string $property The key of the property to checks
-     * @return boolean Whether or not a property is valid to its requestTypes
+     * @param array $request The request before stage completion checks
+     * @return array The resourceType afther stage completion checks
      */
-    public function checkProperty(?array $request, $propertys)
+    public function checkStages(?array $request)
     {
-        // Lets first see if we can grap an requested type and if it has stages
-        if(!$requestType = $this->commonGroundService->getResource($resource['requestType']) || !key_exists('stages', $requestType)){
-            return;
+        // Lets first see if we can grap an requested type
+        if(!$proccesType = $this->commonGroundService->getResource($resource['proccesType'])){
+            return false;
+        }
+
+        foreach($proccesType['stages'] as $key => $stage){
+            $requestType['properties'][$key] = $this->checkStage($requestType, $property)
+        }
+
+        return $proccesType;
+    }
+
+    /*
+     * Checks the property of a requestType agains a given request to see if it is valid
+     *
+     * @param array $request  The request agains wich we test the property
+     * @param string $property The requestTypeproperty of wich we want to now its validation
+     * @return array The given porperty including a valid key indicatings its validity
+     */
+    public function checkProperty(array $request, array  $property)
+    {
+        // Let Assume that an property is valid unles we have a condition and that condition is NOT met
+        $valid = true
+
+        // If the request doesnt have properties this wont fly
+        if(!array_key_exisits('properties', $request)){
+            $property['valid'] = false;
+            return $property;
+        }
+
+        // before we can appply any check we should first detimene if we can apply a default values
+        if(array_key_exisits('defaultValue', $property) && !array_key_exisits($property['name'], $request['properties'])) {
+            $request['properties'][$property['name']] = $property['defaultValue'];
+        }
+
+        // Then we loop trough the propery values's one by one te see if the apply, if we at some point determine that a value is not valid we can can break out of al loops and return a value. Afhet alle a protpet sis not giong o vahnge back to valid at a latter ceck
+        foreach($property as $key => $value){
+            switch ($key) {
+
+                // Check if the value is required
+                case 'required':
+                    // If the proerty is requered and not pressent its is not valid
+                    if($value = true && !array_key_exisits($property['name'], $request)){$valid = false; break 2;}
+                    // But is the property is NOT requierd and not present it is valid AND we want stop further check (since they will couse the value to turn to invalid)
+                    elseif($value = false && !array_key_exisits($property['name'], $request)){$valid = true; break 2;};
+
+                // The simplest form of matching is type based
+                case 'type':
+                    // in case of type checking we can once again switch between values
+                    switch ($value) {
+                        case 'array':
+                            if(!is_array($property['name'])){$valid = false; break 3;}
+                            break;
+                        case 'string':
+                            break;
+                        case 'integer':
+                            break;
+                        case 'boolean':
+                            break;
+                    }
+
+                // Then we have several forms of numerical matchings
+                case 'maximum':
+                    //
+                case 'minimum':
+                    //
+                case 'maxLength':
+                    //
+                case 'minLength':
+                    //
+                case 'maxItems':
+                    //
+                case 'minItems':
+                    //
+                case 'enum':
+                    //
+
+                // Then we check for commonground resources
+                case 'iri':
+                    // We have to types of values, iether a resource on a component in a component/resource notation
+                    if(stringpos('/', $value)){
+                        $parts = explode($value);
+                        $component = $parts[0];
+                        $resource = $parts[1];
+                        // @todo check against the resource type by generating a url and compering that
+
+                        // for now we just want to make sure that this is an url then
+                    }
+
+                // Check the type of the request
+                case 'format':
+                    // in case of type checking we can once again switch between values
+                    // Posible switch values "int32","int64","base64","float","double","byte","binary","date","date-time","duration","password","boolean","string","uuid","uri","url","email","rsin","bag","bsn","iban","service"
+                    switch ($value) {
+                        case 'uuid':
+                            // @todo check against the resource type
+                        break;
+                    }
+                //
+
+            }
         }
 
 
-
-        return $requestType;
+        $property['valid'] = $valid;
+        return $property;
     }
 
 
