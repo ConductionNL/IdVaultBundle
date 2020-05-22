@@ -141,6 +141,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
             Response::HTTP_OK,
             ['content-type' => $contentType]
         );
+        $this->commonGroundService->setHeader($this->params->get('app_commonground_key'));
         $event->setResponse($response);
     }
 
