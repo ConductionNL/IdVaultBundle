@@ -19,17 +19,15 @@ class RequestService
     private $client;
     private $session;
     private $commonGroundService;
-    private $zgwService;
     private $camundaService;
     private $messageService;
 
-    public function __construct(ParameterBagInterface $params, CacheInterface $cache, SessionInterface $session, CommonGroundService $commonGroundService, ZgwService $zgwService, CamundaService $camundaService, MessageService $messageService)
+    public function __construct(ParameterBagInterface $params, CacheInterface $cache, SessionInterface $session, CommonGroundService $commonGroundService, CamundaService $camundaService, MessageService $messageService)
     {
         $this->params = $params;
         $this->cache = $cache;
         $this->session= $session;
         $this->commonGroundService = $commonGroundService;
-        $this->zgwService = $zgwService;
         $this->camundaService = $camundaService;
         $this->messageService = $messageService;
 
@@ -39,20 +37,20 @@ class RequestService
      */
     public function createFromRequestType($requestType, $requestParent = null ,$user = null, $organization= null, $application= null)
     {
-    	// If a user has not been provided let try to get one from the session
-    	if(!$user){
-    		$user = $this->session->get('user');
-    	}
-    	// If a user has not been provided let try to get one from the session
-    	if(!$organization){
-    		$organization = $this->session->get('organization');
-    	}
-    	// If a user has not been provided let try to get one from the session
-    	if(!$application){
-    		$application= $this->session->get('application');
-    	}
-    	// If a request type requires a parent request, and a parent request is not specified then don't start the request
-    	if(key_exists('parentRequired', $requestType)
+        // If a user has not been provided let try to get one from the session
+        if(!$user){
+            $user = $this->session->get('user');
+        }
+        // If a user has not been provided let try to get one from the session
+        if(!$organization){
+            $organization = $this->session->get('organization');
+        }
+        // If a user has not been provided let try to get one from the session
+        if(!$application){
+            $application= $this->session->get('application');
+        }
+        // If a request type requires a parent request, and a parent request is not specified then don't start the request
+        if(key_exists('parentRequired', $requestType)
             && $requestType['parentRequired']
             && $requestParent == null
         )
@@ -66,53 +64,53 @@ class RequestService
         $request['status']='incomplete';
         $request['properties']= [];
 
-    	// Juiste startpagina weergeven
-    	if(!array_key_exists ("currentStage", $request) && array_key_exists (0, $requestType['stages'])){
-    		$request["currentStage"] = $requestType['stages'][0]['slug'];
-    	}
+        // Juiste startpagina weergeven
+        if(!array_key_exists ("currentStage", $request) && array_key_exists (0, $requestType['stages'])){
+            $request["currentStage"] = $requestType['stages'][0]['name'];
+        }
 
-    	$request = $this->commonGroundService->createResource($request, $this->commonGroundService->getComponent('vrc')['href'].'/requests'); //HP Specifiek
+        $request = $this->commonGroundService->createResource($request, ['component'=>'vrc', 'type'=>'requests']);
         if($user){
             $request['submitters'] = [['brp'=>$user['@id']]];
         }
 
-    	// There is an optional case that a request type is a child of an already exsisting one
-    	if($requestParent){
-    		$requestParent = $this->commonGroundService->getResource($requestParent);
-    		$request['parent'] = $requestParent['@id'];
+        // There is an optional case that a request type is a child of an already exsisting one
+        if($requestParent){
+            $requestParent = $this->commonGroundService->getResource($requestParent);
+            $request['parent'] = $requestParent['@id'];
 
-    		// Lets transfer any properties that are both inthe parent and the child request
-    		foreach($requestType['properties'] as $property){
+            // Lets transfer any properties that are both inthe parent and the child request
+            foreach($requestType['properties'] as $property){
 
-                $slug = $property['slug'];
+                $name = $property['name'];
 
                 // We have to find a better way to work with these two slugs, this hardcoded way stands in the way of more configurability
-                if($slug == 'getuige'){
-                        $slug = 'getuigen';
+                if($name == 'getuige'){
+                    $name = 'getuigen';
                 }
-                elseif($slug == 'partner'){
-                        $slug = 'partners';
+                elseif($name == 'partner'){
+                    $name = 'partners';
                 }
 
-    			if(key_exists($slug, $requestParent['properties'])){
-    				$request['properties'][$slug] = $requestParent['properties'][$slug];
-    			}
-    		}
+                if(key_exists($name, $requestParent['properties'])){
+                    $request['properties'][$name] = $requestParent['properties'][$name];
+                }
+            }
             $contact = $requestParent["submitters"][0]['person'];
             $bsn = null;
-    	}
-    	// If we dont have parent we need to mkae a contact
+        }
+        // If we dont have parent we need to mkae a contact
         else{
             //Maybe we should make contacts more generic
             $contact = ['givenName'=>$user['naam']['voornamen'],'familyName'=>$user['naam']['geslachtsnaam']];
-            $contact= $this->commonGroundService->createResource($contact, $this->commonGroundService->getComponent('cc')['href'].'/people')['@id'];
+            $contact= $this->commonGroundService->createResource($contact, ['component'=>'cc', 'type'=>'people'])['@id'];
             $bsn = $user['burgerservicenummer'];
         }
         $request["submitters"][0]['person'] = $contact;
 
 
-    	// Wat doet partners hier?
-        if(!key_exists('partners', $request)){
+        // Wat doet partners hier?
+        if(!key_exists('partners', $request['properties'])){
 
             $assent = [];
             $assent['name'] = 'Instemming '.$requestType['name'];
@@ -122,14 +120,14 @@ class RequestService
             $assent['person'] = $bsn;
             $assent['request'] = $request['@id'];
             $assent['status'] = 'granted';
-            $assent = $this->commonGroundService->createResource($assent, $this->commonGroundService->getComponent('irc')['href'].'/assents');
+            $assent = $this->commonGroundService->createResource($assent, ['component'=>'irc', 'type'=>'assents']);
 
             $request['properties']['partners'][] = $assent['@id'];
             $request['submitters'][0]['assent'] = $assent['@id'];
         }
-    	$request = $this->commonGroundService->updateResource($request, $request['@id']);
+        $request = $this->commonGroundService->updateResource($request, $request['@id']);
 
-    	return $request;
+        return $request;
     }
 
 
@@ -139,114 +137,118 @@ class RequestService
         if($property == "getuige"){
             $property = "getuigen";
         }
-    	// Lets see if the property exists
-    	if(!array_key_exists ($property, $request['properties'])){
-    		return $request;
-    	}
+        // Lets see if the property exists
+        if(!array_key_exists ($property, $request['properties'])){
+            return $request;
+        }
 
-    	// If the propery is an array then we only want to delete the givven value
-    	if(is_array($request['properties'][$property])){
+        // If the propery is an array then we only want to delete the givven value
+        if(is_array($request['properties'][$property])){
 
-    		$key = array_search($value, $request['properties'][$property]);
-    		$deletedValue = $request['properties'][$property][$key];
-    		unset ($request['properties'][$property][$key]);
+            $key = array_search($value, $request['properties'][$property]);
+            $deletedValue = $request['properties'][$property][$key];
+            unset ($request['properties'][$property][$key]);
 
-    		// If the array is now empty we want to drop the property
-    		if(count($request['properties'][$property]) == 0){
-    			unset ($request['properties'][$property]);
-    		}
-    	}
+            // If the array is now empty we want to drop the property
+            if(count($request['properties'][$property]) == 0){
+                unset ($request['properties'][$property]);
+            }
+        }
 
-    	// If else we just drop the property
-    	else{
-    	    $deletedValue = $request['properties'][$property];
-    		unset ($request['properties'][$property]);
-    	}
-    	if(key_exists('order',$request['properties'])){
-    	    $order = $this->commonGroundService->getResource($request['properties']['order']);
-    	    foreach($order['items'] as $item){
-    	        if($item['offer'] = $deletedValue){
-    	            $this->commonGroundService->deleteResource($item['@id']);
+        // If else we just drop the property
+        else{
+            $deletedValue = $request['properties'][$property];
+            unset ($request['properties'][$property]);
+        }
+        $resource = $this->commonGroundService->getResource($deletedValue);
+        if($resource['@type'] == 'Assent'){
+            $resource['status'] = 'cancelled';
+            $this->commonGroundService->updateResource($resource, ['component'=>'irc', 'type'=>'assents', 'id'=>$resource['id']]);
+        }
+
+
+        if(key_exists('order',$request['properties'])){
+            $order = $this->commonGroundService->getResource($request['properties']['order']);
+            foreach($order['items'] as $item){
+                if($item['offer'] == $deletedValue){
+                    $this->commonGroundService->deleteResource($item);
                 }
             }
         }
 
-    	return $request;
+
+        return $request;
 
     }
 
     public function setPropertyOnSlug($request, $requestType, $slug, $value)
     {
-    	// Lets get the curent property
-    	$typeProperty = false;
+        // Lets get the curent property
+        $typeProperty = false;
 
-    	foreach ($requestType['properties'] as $property){
-    		if($property['slug'] == $slug){
-    			$typeProperty= $property;
-    			break;
-    		}
-    	}
+        foreach ($requestType['properties'] as $property){
+            if($property['slug'] == $slug){
+                $typeProperty= $property;
+                break;
+            }
+        }
 
-    	// If this porperty doesn't exsist for this reqoust type we have an issue
-    	if(!$typeProperty){
-    		return false;
-    	}
+        // If this porperty doesn't exsist for this reqoust type we have an issue
+        if(!$typeProperty){
+            return false;
+        }
 
-    	// Let see if we need to do something special
-    	if(array_key_exists ('iri',$typeProperty)){
-	    	switch ($typeProperty['iri']) {
+        // Let see if we need to do something special
+        if(array_key_exists ('iri',$typeProperty)){
+            switch ($typeProperty['iri']) {
                 case 'irc/assent':
 
-	    			// This is a new assent so we also need to create a contact
-	    			if($value == null || !array_key_exists ('@id', $value)) {
+                    $submitter = $request['submitters'][0];
+                    // This is a new assent so we also need to create a contact
+                    if($value == null || !array_key_exists ('@id', $value)) {
 
-	    				$contact = [];
-	    				if($value != null && array_key_exists('givenName',$value)){ $contact['givenName']= $value['givenName'];}
-	    				if($value != null && array_key_exists('familyName',$value)){ $contact['familyName']= $value['familyName'];}
-	    				if($value != null && array_key_exists('email',$value)){
-		    				$contact['emails']=[];
-		    				$contact['emails'][]=["name"=>"primary","email"=> $value['email']];
-	    				}
-	    				if($value != null && array_key_exists('telephone',$value)){
-		    				$contact['telephones']=[];
-		    				$contact['telephones'][]=["name"=>"primary","telephone"=> $value['telephone']];
-	    				}
+                        $contact = [];
+                        if($value != null && array_key_exists('givenName',$value)){ $contact['givenName']= $value['givenName'];}
+                        if($value != null && array_key_exists('familyName',$value)){ $contact['familyName']= $value['familyName'];}
+                        if($value != null && array_key_exists('email',$value)){
+                            $contact['emails']=[];
+                            $contact['emails'][]=["name"=>"primary","email"=> $value['email']];
+                        }
+                        if($value != null && array_key_exists('telephone',$value)){
+                            $contact['telephones']=[];
+                            $contact['telephones'][]=["name"=>"primary","telephone"=> $value['telephone']];
+                        }
                         if($contact['telephones'][0]['telephone'] == null)
                         {
                             unset($contact['telephones']);
                         }
 
-	    				if(!empty($contact))
-	    				    $contact = $this->commonGroundService->createResource($contact, $this->commonGroundService->getComponent('cc')['href'].'/people');
+                        if(!empty($contact))
+                            $contact = $this->commonGroundService->createResource($contact, ['component'=>'cc', 'type'=>'people']);
 
-	    				unset($value['givenName']);
-	    				unset($value['familyName']);
-	    				unset($value['email']);
-	    				unset($value['telephone']);
+                        unset($value['givenName']);
+                        unset($value['familyName']);
+                        unset($value['email']);
+                        unset($value['telephone']);
 
-	    				if($value == null)
-	    				    $value = [];
-	    				$value['name'] = 'Instemming als '.$slug.' bij '.$requestType["name"];
-	    				$value['description'] = 'U bent uitgenodigd als '.$slug.' voor het '.$requestType["name"].'-verzoek dat is opgestart door ';
-                        if(array_key_exists('partner', $value)){
-                            $value['requester'] = $value['partner'];
-                        }
-                        else{
-                            $value['requester'] = $requestType['sourceOrganization']; //@TODO: ook hier een BRP-verwijzing naar de aanvragende partner
-                        }
+                        if($value == null)
+                            $value = [];
+                        $value['name'] = 'Instemming als '.$slug.' bij '.$requestType["name"];
+                        $value['description'] = 'U bent uitgenodigd als '.$slug.' voor het '.$requestType["name"]."-verzoek dat is opgestart door {$this->commonGroundService->getResource($submitter['person'])['name']}";
+                        $value['requester'] = $this->commonGroundService->getResource($submitter['brp'])['burgerservicenummer'];
                         $value['request'] = $request['id'];
-	    				$value['status'] = 'requested';
-	    				if(!empty($contact))
-	    				    $value['contact'] = $contact['@id'];
-	    				$value = $this->commonGroundService->createResource($value, $this->commonGroundService->getComponent('irc')['href'].'/assents');
-                        $template = $this->commonGroundService->getComponent('wrc')['href'].'/templates/e04defee-0bb3-4e5c-b21d-d6deb76bd1bc';
-	    				$this->messageService->createMessage($contact, ['assent'=>$value], $template);
-	    			}
-	    			else{
-	    				//$value = $this->commonGroundService->updateResource($value, $value['@id']);
-	    			}
-	    			$value = $value['@id'];
-	    			break;
+                        $value['status'] = 'requested';
+                        if(!empty($contact))
+                            $value['contact'] = $contact['@id'];
+                        $value = $this->commonGroundService->createResource($value, ['component'=>'irc', 'type'=>'assents']);
+                        $template = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'templates','id'=>'e04defee-0bb3-4e5c-b21d-d6deb76bd1bc'])['@id'];
+                        $this->messageService->createMessage($contact, ['assent'=>$value], $template);
+                    }
+                    else{
+                        //$value = $this->commonGroundService->updateResource($value, $value['@id']);
+                    }
+                    $value = $value['@id'];
+                    break;
                 case 'pdc/offer':
                     if(!key_exists('order', $request['properties'])){
                         $order = [];
@@ -260,7 +262,7 @@ class RequestService
                             $order['description'] = "Huwelijksplanner Order";
                         }
 
-                        $order = $this->commonGroundService->createResource($order, $this->commonGroundService->getComponent('orc')['href'].'/orders');
+                        $order = $this->commonGroundService->createResource($order, ['component'=>'orc', 'type'=>'orders']);
 
                         $request['properties']['order'] = $order['@id'];
                     }
@@ -287,65 +289,65 @@ class RequestService
                     $orderItem['taxPercentage'] = 0; /*@todo dit moet dus nog worden gefixed */
                     $orderItem['order'] = $orderId;
 
-                    $orderItem = $this->commonGroundService->createResource($orderItem, $this->commonGroundService->getComponent('orc')['href'].'/order_items');
+                    $orderItem = $this->commonGroundService->createResource($orderItem, ['component'=>'orc', 'type'=>'order_items']);
                     // $request['properties']['order']['items'] .= $orderItem;
                     break;
-	    			/*
-	    		case 'cc/people':
-	    			// This is a new assent so we also need to create a contact
-	    			if(!array_key_exists ('@id', $value)) {
-	    				$value= $this->commonGroundService->createResource($value, );
-	    			}
-	    			else{
-	    				$value= $this->commonGroundService->updateResource($value, $value['@id']);
-	    			}
-	    			$value ='http://cc.huwelijksplanner.online'.$value['@id'];
-	    			break;
-	    		case 'pdc/product':
-	    			// This is a new assent so we also need to create a contact
-	    			if(!array_key_exists ('@id', $value)) {
-	    				$value= $this->commonGroundService->createResource($value, 'https://pdc.huwelijksplanner.online/product');
-	    			}
-	    			else{
-	    				$value= $this->commonGroundService->updateResource($value, $value['@id']);
-	    			}
-	    			$value = $value['@id'];
-	    			break;
-	    		case 'vrc/request':
-	    			break;
-	    		case 'orc/order':
-	    			// This is a new assent so we also need to create a contact
-	    			if(!$value['@id']){
-	    				$value= $this->commonGroundService->createResource($value, 'https://orc.huwelijksplanner.online/order');
-	    			}
-	    			else{
-	    				$value= $this->commonGroundService->updateResource($value, $value['@id']);
-	    			}
-	    			$value = 'http://orc.huwelijksplanner.online'.$value['@id'];
-	    			break;
-	    			*/
-	    	}
-    	}
+                /*
+            case 'cc/people':
+                // This is a new assent so we also need to create a contact
+                if(!array_key_exists ('@id', $value)) {
+                    $value= $this->commonGroundService->createResource($value, );
+                }
+                else{
+                    $value= $this->commonGroundService->updateResource($value, $value['@id']);
+                }
+                $value ='http://cc.huwelijksplanner.online'.$value['@id'];
+                break;
+            case 'pdc/product':
+                // This is a new assent so we also need to create a contact
+                if(!array_key_exists ('@id', $value)) {
+                    $value= $this->commonGroundService->createResource($value, 'https://pdc.huwelijksplanner.online/product');
+                }
+                else{
+                    $value= $this->commonGroundService->updateResource($value, $value['@id']);
+                }
+                $value = $value['@id'];
+                break;
+            case 'vrc/request':
+                break;
+            case 'orc/order':
+                // This is a new assent so we also need to create a contact
+                if(!$value['@id']){
+                    $value= $this->commonGroundService->createResource($value, 'https://orc.huwelijksplanner.online/order');
+                }
+                else{
+                    $value= $this->commonGroundService->updateResource($value, $value['@id']);
+                }
+                $value = 'http://orc.huwelijksplanner.online'.$value['@id'];
+                break;
+                */
+            }
+        }
 
-    	// Let procces the value
-    	if($typeProperty['type'] == "array"){
-    		// Lets make sure that the value is an array
-    		if(!array_key_exists($typeProperty['name'],$request['properties']) || !is_array($request['properties'][$typeProperty['name']])){
-    			$request['properties'][$typeProperty['name']] = [];
-    		}
-    		// If the post is also an array then lets merge the two together
-    		if(is_array($value)){
-    			$request['properties'][$typeProperty['name']] = array_merge($request['properties'][$typeProperty['name']], $value);
-    		}
-    		else{
-    			$request['properties'][$typeProperty['name']][] = $value;
-    		}
-    	}
-    	else{
-    		$request['properties'][$typeProperty['name']] = $value;
-    	}
+        // Let procces the value
+        if($typeProperty['type'] == "array"){
+            // Lets make sure that the value is an array
+            if(!array_key_exists($typeProperty['name'],$request['properties']) || !is_array($request['properties'][$typeProperty['name']])){
+                $request['properties'][$typeProperty['name']] = [];
+            }
+            // If the post is also an array then lets merge the two together
+            if(is_array($value)){
+                $request['properties'][$typeProperty['name']] = array_merge($request['properties'][$typeProperty['name']], $value);
+            }
+            else{
+                $request['properties'][$typeProperty['name']][] = $value;
+            }
+        }
+        else{
+            $request['properties'][$typeProperty['name']] = $value;
+        }
 
-    	return $request;
+        return $request;
     }
 
     public function checkRequestType($request, $requestType)
@@ -356,33 +358,33 @@ class RequestService
             // Overwrites for omzetten
             // @TODO: Dit mag toch wel wat configurabeler...
             if (
-                    (
+                (
                     $stage['name'] == 'getuigen' ||
                     $stage['name'] == 'ambtenaar' ||
                     $stage['name'] == 'locatie' ||
                     $stage['name'] == 'extras' ||
                     $stage['name'] == 'plechtigheid' ||
                     $stage['name'] == 'melding')
-                    &&
-                    array_key_exists('type', $request['properties'])
-                    &&
-                    $request['properties']['type'] == 'omzetten'
-                ) {
+                &&
+                array_key_exists('type', $request['properties'])
+                &&
+                $request['properties']['type'] == 'omzetten'
+            ) {
                 $requestType['stages'][$key]['completed'] = true;
             }
             if (
-                    (
-                            $stage['name'] == 'getuigen' ||
-                            $stage['name'] == 'ambtenaar' ||
-                            $stage['name'] == 'locatie' ||
-                            $stage['name'] == 'extras' ||
-                            $stage['name'] == 'plechtigheid' ||
-                            $stage['name'] == 'melding')
-                    &&
-                    array_key_exists('type', $request['properties'])
-                    &&
-                    $request['properties']['type'] != 'omzetten'
-                    ) {
+                (
+                    $stage['name'] == 'getuigen' ||
+                    $stage['name'] == 'ambtenaar' ||
+                    $stage['name'] == 'locatie' ||
+                    $stage['name'] == 'extras' ||
+                    $stage['name'] == 'plechtigheid' ||
+                    $stage['name'] == 'melding')
+                &&
+                array_key_exists('type', $request['properties'])
+                &&
+                $request['properties']['type'] != 'omzetten'
+            ) {
                 $requestType['stages'][$key]['completed'] = false;
             }
 
@@ -453,7 +455,7 @@ class RequestService
 //            }
         }
 
-        return $this->commongroundService->updateResource($request, $url);
+        return $this->commonGroundService->updateResource($request, $url);
     }
 
 //    public function caseFromRequest($request, string $caseType)

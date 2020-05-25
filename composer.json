@@ -28,6 +28,7 @@
 		"symfony/contracts" : "^1.0",
 		"symfony/var-exporter" : "^4.2",
 		"symfony/maker-bundle" : "^1.11@stable",
+		"symfony/event-dispatcher" : "^4.2",
 		"api-platform/api-pack" : "^1.2@stable",
 		"api-platform/core" : "^2.4@stable",
 		"api-platform/schema-generator" : "^2.1@stable",

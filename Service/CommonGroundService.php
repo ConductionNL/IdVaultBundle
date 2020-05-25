@@ -1,6 +1,6 @@
 <?php
 
-// src/Service/HuwelijkService.php
+// Conduction/CommonGroundBundle/Service/CommonGroundService.php
 
 namespace Conduction\CommonGroundBundle\Service;
 
@@ -12,18 +12,62 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+
+// Events
+use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
+use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
+
+
 
 class CommonGroundService
 {
+    /**
+     * @var ParameterBagInterface
+     */
     private $params;
+
+    /**
+     * @var CacheInterface
+     */
     private $cache;
+
+    /**
+     * @var SessionInterface
+     */
     private $session;
+
     private $headers;
+
+    /**
+     * @var RequestStack
+     */
     private $requestStack;
+
+    /**
+     * @var FlashBagInterface
+     */
     private $flash;
+
+    /**
+     * @var TranslatorInterface
+     */
     private $translator;
 
-    public function __construct(ParameterBagInterface $params, SessionInterface $session, CacheInterface $cache, RequestStack $requestStack, FlashBagInterface $flash, TranslatorInterface $translator)
+    /**
+     * @var EventDispatcherInterface
+     */
+    private $eventDispatcher;
+
+    public function __construct(
+        ParameterBagInterface $params,
+        SessionInterface $session,
+        CacheInterface $cache,
+        RequestStack $requestStack,
+        FlashBagInterface $flash,
+        TranslatorInterface $translator,
+        EventDispatcherInterface $eventDispatcher
+    )
     {
         $this->params = $params;
         $this->session = $session;
@@ -32,6 +76,7 @@ class CommonGroundService
         $this->requestStack = $requestStack;
         $this->flash = $flash;
         $this->translator = $translator;
+        $this->eventDispatcher = $eventDispatcher;
 
         // To work with NLX we need a couple of default headers
         $this->headers = [
@@ -75,9 +120,15 @@ class CommonGroundService
     {
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+            if(array_key_exists('accept', $url)){
+                $component['accept'] = $url['accept'];
+            }
+
         }
         else {
-            $component = false;
+            /* @to remove temp fix and find component based on url */
+            //$component = false;
+            $component = [];
         }
 
         $url = $this->cleanUrl($url, false, $autowire);
@@ -115,7 +166,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -137,7 +188,19 @@ class CommonGroundService
         }
 
         $statusCode = $response->getStatusCode();
-        $response = json_decode($response->getBody(), true);
+        $body = (string) $response->getBody()->getContents();;
+        $response = json_decode($body, true);
+
+        // Fallback for non-json code
+        if(!$response){
+
+            $response = $body;
+            $item->set($response);
+            $item->expiresAt(new \DateTime('tomorrow'));
+            $this->cache->save($item);
+
+            return $response;
+        }
 
         // The trick here is that if statements are executed left to right. So the prosses errors wil only be called when all other conditions are met
         /* @todo 201 hier vewijderen is een hack */
@@ -161,6 +224,15 @@ class CommonGroundService
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($response, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::LIST
+        );
+        */
+
         return $response;
     }
 
@@ -171,9 +243,14 @@ class CommonGroundService
     {
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+            if(array_key_exists('accept', $url)){
+                $component['accept'] = $url['accept'];
+            }
         }
         else {
-            $component = false;
+            /* @to remove temp fix and find component based on url */
+            //$component = false;
+            $component = [];
         }
 
         $url = $this->cleanUrl($url, false, $autowire);
@@ -196,7 +273,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -219,7 +296,19 @@ class CommonGroundService
         }
 
         $statusCode = $response->getStatusCode();
-        $response = json_decode($response->getBody(), true);
+        $body = (string) $response->getBody();
+        $response = json_decode($body, true);
+
+        // Fallback for non-json code
+        if(!$response){
+
+            $response = $body;
+            $item->set($response);
+            $item->expiresAt(new \DateTime('tomorrow'));
+            $this->cache->save($item);
+
+            return $response;
+        }
 
         // The trick here is that if statements are executed left to right. So the prosses errors wil only be called when all other conditions are met
         if ($statusCode != 200 &&  !$this->proccesErrors($response, $statusCode, $headers, null, $url, 'GET')) {
@@ -236,6 +325,16 @@ class CommonGroundService
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($response, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::RESOURCE
+        );
+        $response = $event->getResource();
+        */
+
         return $response;
     }
 
@@ -244,12 +343,25 @@ class CommonGroundService
      */
     public function updateResource($resource, $url = null, $async = false, $autowire = true)
     {
+
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+
         }
         else {
-            $component = false;
+            /* @to remove temp fix and find component based on url */
+            //$component = false;
+            $component = [];
         }
+
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($resource, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::UPDATE
+        );
+        */
 
         $url = $this->cleanUrl($url, $resource, $autowire);
 
@@ -265,7 +377,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -314,6 +426,14 @@ class CommonGroundService
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($resource, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::UPDATE
+        );
+        */
         return $response;
     }
 
@@ -322,12 +442,25 @@ class CommonGroundService
      */
     public function createResource($resource, $url = null, $async = false, $autowire = true)
     {
+
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+
         }
         else {
-            $component = false;
+            /* @to remove temp fix and find component based on url */
+            //$component = false;
+            $component = [];
         }
+
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($resource, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::CREATE
+        );
+        */
 
         $url = $this->cleanUrl($url, $resource, $autowire);
 
@@ -342,7 +475,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -385,6 +518,14 @@ class CommonGroundService
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($resource, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::CREATED
+        );
+        */
         return $response;
     }
 
@@ -395,11 +536,22 @@ class CommonGroundService
     {
         if(is_array($url) && array_key_exists('component', $url)){
             $component = $this->getComponent($url['component']);
+
         }
         else {
-            $component = false;
+            /* @to remove temp fix and find component based on url */
+            //$component = false;
+            $component = [];
         }
 
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($resource, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::DELETE
+        );
+        */
         $url = $this->cleanUrl($url, $resource, $autowire);
 
         // Set headers
@@ -413,7 +565,7 @@ class CommonGroundService
         if($component && array_key_exists('auth', $component)){
             switch ($component['auth']) {
                 case "jwt":
-                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['id'], $component['secret']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case "username-password":
                     $auth = [$component['username'], $component['password']];
@@ -443,6 +595,14 @@ class CommonGroundService
         // Remove the item from cache
         $this->cache->delete('commonground_'.md5($url));
 
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($resource, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::DELETED
+        );
+        */
         return true;
     }
 
@@ -451,6 +611,30 @@ class CommonGroundService
      */
     public function saveResource($resource, $endpoint = false, $autowire = true)
     {
+        // We dont require an endpoint if a resource is self explanatory
+        if(!$endpoint && array_key_exists('@id', $resource)){
+            $endpoint = $resource['@id'];
+        }
+
+        if(is_array($endpoint) && array_key_exists('component', $endpoint)){
+            $component = $this->getComponent($endpoint['component']);
+            $component['code'] = $endpoint['component'];
+        }
+        else {
+            /* @to remove temp fix and find component based on url */
+            //$component = false;
+            $component = [];
+        }
+
+        // creates the ResourceUpdateEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($resource, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::SAVE
+        );
+        */
+        // determine the endpoint
         $endpoint = $this->cleanUrl($endpoint, $resource, $autowire);
 
         // @tododit zijn echt te veel ifjes
@@ -498,6 +682,14 @@ class CommonGroundService
             }
         }
 
+        // creates the ResourceSavedEvent and dispatches it
+        /*
+        $event = new CommongroundUpdateEvent($resource, $component);
+        $this->eventDispatcher->dispatch(
+            $event,
+            CommonGroundEvents::SAVED
+        );
+        */
         return $resource;
     }
 
@@ -654,9 +846,13 @@ class CommonGroundService
                 break;
             }
 
+            if (array_key_exists('id', $object)) {
             // Fallbask set de id als naams
             $object['name'] = $object['id'];
             break;
+            }
+
+            $object['name'] = null;
         }
 
         while (!array_key_exists('dateCreated', $object)) {
@@ -777,16 +973,22 @@ class CommonGroundService
     }
 
     /*
-     * Get a list of available commonground components
+     * Get Component settings from the configuration
+     *
+     * @param array $code The code of the component
+     * @param array The components settings
      */
-    public function getComponent(string $code)
+    public function getComponent(?string $code)
     {
         // Create the list
         $components = $this->params->get('common_ground.components');
 
         // Get the component
         if(array_key_exists ($code , $components)){
-            return $components[$code];
+            $component = $components[$code];
+            $component['code'] = $code;
+
+            return $component;
         }
 
         // Lets default to a negative
@@ -901,19 +1103,23 @@ class CommonGroundService
     }
 
     /*
-     * Get the current application from the wrc
+     * Create a JWT token from Component settings
+     *
+     * @param array $component The code of the component
+     * @param array The JWT token
      */
-    public function getJwtToken($clientId, $secret)
+    public function getJwtToken(?string $component)
     {
+        $component = $this->getComponent($component);
 
         $userId = '';
         $userRepresentation = '';
 
         // Create token header as a JSON string
-        $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256', 'client_identifier' => $clientId]);
+        $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256', 'client_identifier' => $component['id']]);
 
         // Create token payload as a JSON string
-        $payload = json_encode(['iss' => $clientId, 'client_id' =>$clientId, 'user_id' => $userId, 'user_representation' => $userRepresentation, 'iat' => time()]);
+        $payload = json_encode(['iss' => $component['id'], 'client_id' =>$component['id'], 'user_id' => $userId, 'user_representation' => $userRepresentation, 'iat' => time()]);
 
         // Encode Header to Base64Url String
         $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
@@ -922,12 +1128,25 @@ class CommonGroundService
         $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
 
         // Create Signature Hash
-        $signature = hash_hmac('sha256', $base64UrlHeader.'.'.$base64UrlPayload, $secret, true);
+        $signature = hash_hmac('sha256', $base64UrlHeader.'.'.$base64UrlPayload, $component['secret'], true);
 
         // Encode Signature to Base64Url String
         $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
 
         // Return JWT
         return $base64UrlHeader.'.'.$base64UrlPayload.'.'.$base64UrlSignature;
+    }
+
+    /*
+     * Create a UUID from a given url
+     *
+     * @param array $url The url beind parsed
+     * @param array The UUID
+     */
+    public function getUuidFromUrl(?string $url)
+    {
+        $array = explode("/",$url);
+        /* @todo we might want to validate against uuid and id here */
+        return end($array);
     }
 }
