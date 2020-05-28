@@ -502,7 +502,7 @@ class CommonGroundService
             $event,
             CommonGroundEvents::CREATED
         );
-        
+
         return $response;
     }
 
