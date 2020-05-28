@@ -49,6 +49,14 @@
         <service id="valid.on.subscriber" class="Conduction\CommonGroundBundle\Subscriber\ValidOnSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
+        
+        <!--Component specific suscribers-->
+        <service id="valid.on.subscriber" class="Conduction\CommonGroundBundle\Subscriber\VrcSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="valid.on.subscriber" class="Conduction\CommonGroundBundle\Subscriber\IrcSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
 
         <!--CommonGround Commands-->
         <service id="Conduction\CommonGroundBundle\Command\ApiHelmCommand">
