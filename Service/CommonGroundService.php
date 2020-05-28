@@ -342,13 +342,11 @@ class CommonGroundService
         }
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
         $event = new CommongroundUpdateEvent($resource, $component);
         $this->eventDispatcher->dispatch(
             $event,
             CommonGroundEvents::UPDATE
         );
-        */
 
         $url = $this->cleanUrl($url, $resource, $autowire);
 
@@ -414,13 +412,11 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
         $event = new CommongroundUpdateEvent($resource, $component);
         $this->eventDispatcher->dispatch(
             $event,
             CommonGroundEvents::UPDATE
         );
-        */
         return $response;
     }
 
@@ -438,13 +434,11 @@ class CommonGroundService
         }
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
         $event = new CommongroundUpdateEvent($resource, $component);
         $this->eventDispatcher->dispatch(
             $event,
             CommonGroundEvents::CREATE
         );
-        */
 
         $url = $this->cleanUrl($url, $resource, $autowire);
 
@@ -503,13 +497,12 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
         $event = new CommongroundUpdateEvent($resource, $component);
         $this->eventDispatcher->dispatch(
             $event,
             CommonGroundEvents::CREATED
         );
-        */
+        
         return $response;
     }
 
