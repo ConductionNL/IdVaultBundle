@@ -644,7 +644,7 @@ class CommonGroundService
             if ($resource = $this->updateResource($resource, null, false, $autowire)) {
                 // Lets renew the resource
                 if (array_key_exists('reference', $resource)) {
-                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('saved'));
+                    $this->flash->add('success', $resource['reference'].' '.$this->translator->trans('saved'));
                 } elseif (array_key_exists('name', $resource)) {
                     $this->flash->add('success', $resource['name'].' '.$this->translator->trans('saved'));
                 } elseif (array_key_exists('id', $resource))  {
@@ -667,7 +667,7 @@ class CommonGroundService
             if ($resource = $this->createResource($resource, $endpoint, false, $autowire)) {
                 // Lets renew the resource
                 if (array_key_exists('reference', $resource)) {
-                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('created'));
+                    $this->flash->add('success', $resource['reference'].' '.$this->translator->trans('created'));
                 } elseif (array_key_exists('name', $resource)) {
                     $this->flash->add('success', $resource['name'].' '.$this->translator->trans('created'));
                 } elseif (array_key_exists('id', $resource))  {
