@@ -664,7 +664,7 @@ class CommonGroundService
                 }
             }
         } else {
-            if ($createdResource = $this->createResource($resource, $endpoint, false, $autowire)) {
+            if ($resource = $this->createResource($resource, $endpoint, false, $autowire)) {
                 // Lets renew the resource
                 if (array_key_exists('reference', $resource)) {
                     $this->flash->add('success', $resource['name'].' '.$this->translator->trans('created'));
