@@ -107,8 +107,6 @@ class VrcService
 
             $resource = $this->startProcess($resource, $requestType['camundaProces'], $requestType['caseType']);
 
-            var_dump($this->getTasks($resource));
-            die;
         }
 
         return $resource;
@@ -131,6 +129,10 @@ class VrcService
 
         $properties = [];
 
+        // Lets make sure that we have a procceses array
+        if(!key_exists('processes', $resource)){
+            $resource['processes'] = [];
+        }
         // Declare on behalve on authentication
         $services = [
             'ztc'=>['jwt'=>'Bearer '.$this->commonGroundService->getJwtToken('ztc')],
@@ -139,13 +141,18 @@ class VrcService
 
         $formvariables = $this->commonGroundService->getResource(['component'=>'be','type'=>'process-definition/key/'.$proccess.'/form-variables']);
 
-
         // Transfer the  default properties
         foreach($formvariables as $key => $value){
-            $properties[] = ['naam'=> $key,'waarde'=>$value['value']];
+            // $properties[] = ['naam'=> $key,'waarde'=>$value['value']];
         }
 
-        // Transfer te request properties
+        // hacky tacky
+        unset($resource['properties']['gegevens']);
+        unset($resource['properties']['naam']);
+        unset($resource['properties']['partners']);
+        unset($resource['properties']['organisatieRSIN']);
+        unset($resource['properties']['zaaktype']);
+
         foreach($resource['properties'] as $key => $value){
             $properties[] = ['naam'=> $key,'waarde'=> $value];
         }
@@ -161,14 +168,16 @@ class VrcService
         $post = ['withVariablesInReturn'=>true,'variables'=>$variables];
 
         $procces = $this->commonGroundService->createResource($post, ['component'=>'be','type'=>'process-definition/key/'.$requestType['camundaProces'].'/submit-form']);
-        $resource['processes'] = [$procces['links'][0]['href']];
+        $resource['processes'][] = $procces['links'][0]['href'];
 
         /* @todo dit is  natuurlijk but lellijk en moet eigenlijk worden upgepakt in een onCreate hook */
         unset($resource['submitters']);
         unset($resource['children']);
         unset($resource['parent']);
 
-        return $resource = $this->commonGroundService->saveResource($resource, ['component'=>'vrc','type'=>'requests']);
+        $resource = $this->commonGroundService->saveResource($resource, ['component'=>'vrc','type'=>'requests']);
+
+        return $resource;
     }
 
     /*
@@ -183,18 +192,18 @@ class VrcService
 
         // Lets see if we have procceses tied to this request
         if(!key_exists('processes', $resource)|| !is_array($resource['processes'])){
-          return $tasks;
+            return $tasks;
         }
 
         // Lets get the tasks for each procces atached to this request
         foreach ($resource['processes'] as $process){
-             //$processTasks = $this->commonGroundService->getResourceList(['component'=>'be','type'=>'task'],['processInstanceId'=> $this->commonGroundService->getUuidFromUrl($process)]);
-             $processTasks = $this->commonGroundService->getResourceList(['component'=>'be','type'=>'task'],['processInstanceId'=> '0a3d56dd-9345-11ea-ae32-0e13a3f6559d']);
-             // Lets get the form elements
-             foreach ($processTasks as $key=>$value){
-                 $processTasks[$key]['form'] = $this->getTaskForm($value['id']);
-             }
-             $tasks = array_merge($tasks, $processTasks);
+            //$processTasks = $this->commonGroundService->getResourceList(['component'=>'be','type'=>'task'],['processInstanceId'=> $this->commonGroundService->getUuidFromUrl($process)]);
+            $processTasks = $this->commonGroundService->getResourceList(['component'=>'be','type'=>'task'],['processInstanceId'=> '0a3d56dd-9345-11ea-ae32-0e13a3f6559d']);
+            // Lets get the form elements
+            foreach ($processTasks as $key=>$value){
+                $processTasks[$key]['form'] = $this->getTaskForm($value['id']);
+            }
+            $tasks = array_merge($tasks, $processTasks);
 
         }
 
