@@ -615,23 +615,22 @@ class CommonGroundService
 
         // If the resource exists we are going to update it, if not we are going to create it
         if (array_key_exists('@id', $resource) && $resource['@id']) {
-            if ($this->updateResource($resource, null, false, $autowire)) {
+            if ($resource = $this->updateResource($resource, null, false, $autowire)) {
                 // Lets renew the resource
-                $resource = $this->getResource($resource['@id'], [], false, false, $autowire);
-                if (array_key_exists('name', $resource)) {
-                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('saved'));
-                } elseif (array_key_exists('reference', $resource)) {
+                if (array_key_exists('reference', $resource)) {
                     $this->flash->add('success', $resource['reference'].' '.$this->translator->trans('saved'));
-                } elseif (array_key_exists('id', $resource)) {
+                } elseif (array_key_exists('name', $resource)) {
+                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('saved'));
+                } elseif (array_key_exists('id', $resource))  {
                     $this->flash->add('success', $resource['id'].' '.$this->translator->trans('saved'));
                 } else {
                     $this->flash->add('success', $this->translator->trans('saved'));
                 }
             } else {
-                if (array_key_exists('name', $resource)) {
-                    $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be saved'));
-                } elseif (array_key_exists('reference', $resource)) {
+                if (array_key_exists('reference', $resource)) {
                     $this->flash->add('error', $resource['reference'].' '.$this->translator->trans('could not be saved'));
+                } elseif (array_key_exists('name', $resource)) {
+                    $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be saved'));
                 } elseif (array_key_exists('id', $resource)) {
                     $this->flash->add('error', $resource['id'].' '.$this->translator->trans('could not be saved'));
                 } else {
@@ -639,10 +638,17 @@ class CommonGroundService
                 }
             }
         } else {
-            if ($createdResource = $this->createResource($resource, $endpoint, false, $autowire)) {
+            if ($resource = $this->createResource($resource, $endpoint, false, $autowire)) {
                 // Lets renew the resource
-                $resource = $this->getResource($createdResource['@id'], [], false, false, $autowire);
-                $this->flash->add('success', $resource['name'].' '.$this->translator->trans('created'));
+                if (array_key_exists('reference', $resource)) {
+                    $this->flash->add('success', $resource['reference'].' '.$this->translator->trans('created'));
+                } elseif (array_key_exists('name', $resource)) {
+                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('created'));
+                } elseif (array_key_exists('id', $resource))  {
+                    $this->flash->add('success', $resource['id'].' '.$this->translator->trans('created'));
+                } else{
+                    $this->flash->add('success', $this->translator->trans('saved'));
+                }
             } else {
                 if (array_key_exists('name', $resource)) {
                     $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be created'));
@@ -667,9 +673,11 @@ class CommonGroundService
         return $resource;
     }
 
-    public function isResource($url)
-    {
-        try {
+    public function isResource($url){
+        if(!is_array($url) && !parse_url($url)){
+            return false;
+        }
+        try{
             return $this->getResource($url);
         } catch (HttpException $e) {
             return false;
