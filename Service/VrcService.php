@@ -109,6 +109,31 @@ class VrcService
 
         }
 
+        // Let run al the tasks
+        if(key_exists('tasks', $requestType))
+        {
+            // Loop trough the tasks atached to this resource and add them to the stack
+            foreach ($requestType['tasks'] as $task){
+
+                // Lets preparte the task for the que
+                unset($task['id']);
+                unset($task['@id']);
+                unset($task['dateCreated']);
+                unset($task['dateModified']);
+
+                // Lets hook the task to the propper resource
+                $tasks['resource'] = $resource['@id'];
+
+                // Lets set the time to trigger
+                $dateToTrigger = new DateTime();
+                $dateToTrigger->add(new DateInterval($task['timeInterval']));
+                $tasks['dateToTrigger'] =$dateToTrigger->format('Y-m-d H:i:s');
+
+                // Lets add the task to the que
+                $task = $this->commonGroundService->createResource($task,(['component'=>'qc','type'=>'tasks']));
+            }
+        }
+
         return $resource;
     }
 
