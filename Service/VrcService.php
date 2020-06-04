@@ -71,12 +71,36 @@ class VrcService
             /* @todo create a case */
         }
 
-        // If the request has Camunda requests we need to trigger those
-        if(key_exists('camundaProces', $requestType) && !key_exists('processes', $resource)){
-            /* @todo start a camunda procces */
-            $procces = $this->camundaService->proccesFromRequest($resource);
-            $resource['processes'] = [$procces];
+        // Let run al the tasks
+        if(key_exists('tasks', $requestType))
+        {
+            // Loop trough the tasks atached to this resource and add them to the stack
+            foreach ($requestType['tasks'] as $trigger){
+
+                if(!$trigger['event'] || $trigger['event'] == "create"){
+                    // Lets preparte the task for the que
+                    unset($trigger['id']);
+                    unset($trigger['@id']);
+                    unset($trigger['@type']);
+                    unset($trigger['dateCreated']);
+                    unset($trigger['dateModified']);
+
+                    // Lets hook the task to the propper resource
+                    $trigger['resource'] = $resource['@id'];
+                    $trigger['type'] = strtoupper ($trigger['type']);
+
+                    // Lets set the time to trigger
+                    $dateToTrigger = new \DateTime();
+                    $dateToTrigger->add(new \DateInterval($trigger['timeInterval']));
+                    $trigger['dateToTrigger'] = $dateToTrigger->format('Y-m-d H:i:s');
+
+                    // Lets add the task to the que
+                    $trigger = $this->commonGroundService->createResource($trigger,['component'=>'qc','type'=>'tasks']);
+                }
+            }
         }
+
+        return $resource;
     }
 
     /*
@@ -92,45 +116,32 @@ class VrcService
             return;
         }
 
-        // If the request has Zaak properties we need to trigger those
-        if(key_exists('caseType', $requestType) && !key_exists('cases', $resource) && !key_exists('camundaProces', $requestType)){
-            /* @todo create a case */
-            $case = null;
-            $resource['cases'] = [$case];
-        }
-
-        // If the request has Camunda requests we need to trigger those
-        if(key_exists('camundaProces', $requestType)) //&& (!key_exists('processes', $resource) || count($resource['processes']) == 0))
-        {
-
-            /* @todo start a camunda procces */
-
-            $resource = $this->startProcess($resource, $requestType['camundaProces'], $requestType['caseType']);
-
-        }
-
         // Let run al the tasks
         if(key_exists('tasks', $requestType))
         {
             // Loop trough the tasks atached to this resource and add them to the stack
-            foreach ($requestType['tasks'] as $task){
+            foreach ($requestType['tasks'] as $trigger){
 
-                // Lets preparte the task for the que
-                unset($task['id']);
-                unset($task['@id']);
-                unset($task['dateCreated']);
-                unset($task['dateModified']);
+                if(!$trigger['event'] || $trigger['event'] == "update"){
+                    // Lets preparte the task for the que
+                    unset($trigger['id']);
+                    unset($trigger['@id']);
+                    unset($trigger['@type']);
+                    unset($trigger['dateCreated']);
+                    unset($trigger['dateModified']);
 
-                // Lets hook the task to the propper resource
-                $tasks['resource'] = $resource['@id'];
+                    // Lets hook the task to the propper resource
+                    $trigger['resource'] = $resource['@id'];
+                    $trigger['type'] = strtoupper ($trigger['type']);
 
-                // Lets set the time to trigger
-                $dateToTrigger = new DateTime();
-                $dateToTrigger->add(new DateInterval($task['timeInterval']));
-                $tasks['dateToTrigger'] =$dateToTrigger->format('Y-m-d H:i:s');
+                    // Lets set the time to trigger
+                    $dateToTrigger = new \DateTime();
+                    $dateToTrigger->add(new \DateInterval($trigger['timeInterval']));
+                    $trigger['dateToTrigger'] = $dateToTrigger->format('Y-m-d H:i:s');
 
-                // Lets add the task to the que
-                $task = $this->commonGroundService->createResource($task,(['component'=>'qc','type'=>'tasks']));
+                    // Lets add the task to the que
+                    $trigger = $this->commonGroundService->createResource($trigger,['component'=>'qc','type'=>'tasks']);
+                }
             }
         }
 
