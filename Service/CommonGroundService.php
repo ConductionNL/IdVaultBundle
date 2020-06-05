@@ -860,7 +860,7 @@ class CommonGroundService
         if (array_key_exists('@id', $object) && key_exists('scheme', $parsedUrl)) {
             $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$object['@id'];
         }
-        else{
+        elseif(array_key_exists('@id', $object)){
             $object['@id'] ='http://'.explode('/',$parsedUrl['path'])[0].$object['@id'];
         }
         foreach ($object as $key=>$subObject) {
