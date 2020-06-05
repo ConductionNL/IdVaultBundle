@@ -857,8 +857,11 @@ class CommonGroundService
      */
     private function convertAtId(array $object, array $parsedUrl)
     {
-        if (array_key_exists('@id', $object)) {
+        if (array_key_exists('@id', $object) && key_exists('scheme', $parsedUrl)) {
             $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$object['@id'];
+        }
+        else{
+            $object['@id'] ='http://'.explode('/',$parsedUrl['path'])[0].$object['@id'];
         }
         foreach ($object as $key=>$subObject) {
             if (is_array($subObject)) {
