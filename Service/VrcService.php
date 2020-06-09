@@ -89,6 +89,7 @@ class VrcService
                     unset($trigger['@type']);
                     unset($trigger['dateCreated']);
                     unset($trigger['dateModified']);
+                    unset($trigger['requestBody']);
 
                     // Lets hook the task to the propper resource
                     $trigger['resource'] = $resource['@id'];
@@ -134,6 +135,7 @@ class VrcService
                     unset($trigger['@type']);
                     unset($trigger['dateCreated']);
                     unset($trigger['dateModified']);
+                    unset($trigger['requestBody']);
 
                     // Lets hook the task to the propper resource
                     $trigger['resource'] = $resource['@id'];
