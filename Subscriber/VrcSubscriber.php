@@ -70,6 +70,8 @@ class VrcSubscriber implements EventSubscriberInterface
         // Lets make sure we only triger on requests resources
         /* @todo lets also check for a vrc component */
         if ($event->getResource()['@type'] != 'Request') {
+            var_dump('We should not go here');
+            die;
             return;
         }
 
@@ -87,5 +89,13 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function created(CommongroundUpdateEvent $event)
     {
+        if ($event->getResource()['@type'] != 'Request') {
+            return;
+        }
+
+        $resource = $this->vrcService->onUpdated($event->getResource());
+        $event->setResource($resource);
+
+        return $event;
     }
 }
