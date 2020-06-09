@@ -66,6 +66,11 @@ class VrcService
      */
     public function onCreated(?array $resource)
     {
+
+        if(!$requestType = $this->commonGroundService->getResource($resource['requestType'])){
+            return;
+        }
+
         // If the request has Zaak properties we need to trigger those
         if(key_exists('caseType', $requestType) && !key_exists('cases', $resource)){
             /* @todo create a case */
@@ -113,14 +118,12 @@ class VrcService
     {
         // Lets first see if we can grap an requested type
         if(!$requestType = $this->commonGroundService->getResource($resource['requestType'])){
-            var_dump('We should definitely not go here');
             return;
         }
 
         // Let run al the tasks
         if(key_exists('tasks', $requestType))
         {
-            var_dump('tasks found');
             // Loop trough the tasks atached to this resource and add them to the stack
             foreach ($requestType['tasks'] as $trigger){
 
@@ -146,10 +149,6 @@ class VrcService
                 }
             }
         }
-        else{
-            var_dump('no tasks found');
-        }
-        die;
         return $resource;
     }
 
