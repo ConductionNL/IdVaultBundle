@@ -415,7 +415,7 @@ class CommonGroundService
         $event = new CommongroundUpdateEvent($resource, $component);
         $this->eventDispatcher->dispatch(
             $event,
-            CommonGroundEvents::UPDATE
+            CommonGroundEvents::UPDATED
         );
         return $response;
     }
