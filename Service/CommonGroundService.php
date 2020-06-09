@@ -674,7 +674,7 @@ class CommonGroundService
     }
 
     public function isResource($url){
-        if(!is_array($url) && (!parse_url($url) || key_exists('host', parse_url($url)))){
+        if(!is_array($url) && (!parse_url($url) || !key_exists('host', parse_url($url)))){
             return false;
         }
         try{
