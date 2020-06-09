@@ -427,9 +427,6 @@ class CommonGroundService
     {
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
-            var_dump($url['component']);
-            var_dump($component);
-            die;
         } else {
             /* @to remove temp fix and find component based on url */
             //$component = false;
