@@ -25,7 +25,7 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
         return $this->commongroundService->isResource($resource);
     }
 
-    public function getResourceList($url, $query)
+    public function getResourceList($url, $query = null)
     {
         return $this->commongroundService->getResourceList($url, $query);
     }
