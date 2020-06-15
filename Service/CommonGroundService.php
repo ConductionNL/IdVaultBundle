@@ -903,9 +903,7 @@ class CommonGroundService
 
         // Split enviroments, if the env is not dev the we need add the env to the url name
         $parsedUrl = parse_url($url);
-        var_dump($this->params->get('app_web'));
-        if (key_exists('host',$parsedUrl) && $this->params->get('app_env') != 'prod' && $this->params->get('app_web') && $autowire) {
-
+        if (key_exists('host',$parsedUrl) && $this->params->get('app_env') != 'prod' && $this->params->get('app_web') == 'true' && $autowire) {
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
 
