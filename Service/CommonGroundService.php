@@ -103,6 +103,8 @@ class CommonGroundService
             'timeout'  => 4000.0,
             // To work with NLX we need a couple of default headers
             'headers' => $this->headers,
+            // The commonground service will primarily work with internal calls
+            'verify' => false,
         ];
 
         // Lets start up a default client
@@ -901,9 +903,7 @@ class CommonGroundService
 
         // Split enviroments, if the env is not dev the we need add the env to the url name
         $parsedUrl = parse_url($url);
-
-        if (key_exists('host',$parsedUrl) && $this->params->get('app_env') != 'prod' && $autowire) {
-
+        if (key_exists('host',$parsedUrl) && $this->params->get('app_env') != 'prod' && $this->params->get('app_web') == 'true' && $autowire) {
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
 
