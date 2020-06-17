@@ -912,9 +912,6 @@ class CommonGroundService
             $subdomain = $host[0];
             $url = str_replace($subdomain.'.', $subdomain.'.'.$this->params->get('app_env').'.', $url);
         }
-        if($this->params->get('app_web') == 'false'){
-            $url = str_replace('https://', 'http://', $url);
-        }
 
         // We only do this on non-production enviroments
 
