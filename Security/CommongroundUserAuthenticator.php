@@ -111,14 +111,12 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->urlGenerator->generate('app_user_dashboard'));
+        return new RedirectResponse($this->router->generate('app_user_dashboard', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        var_dump('noooz');
-
-        return new RedirectResponse($this->urlGenerator->generate('app_user_login'));
+        return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     /**
@@ -126,7 +124,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        return new RedirectResponse($this->urlGenerator->generate('app_user_login'));
+        return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     public function supportsRememberMe()
@@ -136,6 +134,6 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     protected function getLoginUrl()
     {
-        return $this->router->generate('app_user_login');
+        return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
     }
 }
