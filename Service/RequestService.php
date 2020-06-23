@@ -81,7 +81,7 @@ class RequestService
 
             // Lets transfer any properties that are both inthe parent and the child request
             foreach ($requestType['properties'] as $property) {
-                $name = $property['name'];
+                $name = str_replace('-melding','',$property['name']);
 
                 // We have to find a better way to work with these two slugs, this hardcoded way stands in the way of more configurability
                 if ($name == 'getuige') {
@@ -91,7 +91,7 @@ class RequestService
                 }
 
                 if (array_key_exists($name, $requestParent['properties'])) {
-                    $request['properties'][$name] = $requestParent['properties'][$name];
+                    $request['properties'][$name] = $requestParent['properties'][$property['name']];
                 }
             }
             $contact = $requestParent['submitters'][0]['person'];

@@ -103,6 +103,8 @@ class CommonGroundService
             'timeout'  => 4000.0,
             // To work with NLX we need a couple of default headers
             'headers' => $this->headers,
+            // The commonground service will primarily work with internal calls
+            'verify' => false,
         ];
 
         // Lets start up a default client
@@ -412,10 +414,10 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        $event = new CommongroundUpdateEvent($resource, $component);
+        $event = new CommongroundUpdateEvent($response, $component);
         $this->eventDispatcher->dispatch(
             $event,
-            CommonGroundEvents::UPDATE
+            CommonGroundEvents::UPDATED
         );
         return $response;
     }
@@ -497,7 +499,7 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        $event = new CommongroundUpdateEvent($resource, $component);
+        $event = new CommongroundUpdateEvent($response, $component);
         $this->eventDispatcher->dispatch(
             $event,
             CommonGroundEvents::CREATED
@@ -674,7 +676,7 @@ class CommonGroundService
     }
 
     public function isResource($url){
-        if(!is_array($url) && !parse_url($url)){
+        if(!is_array($url) && (!parse_url($url) || !key_exists('host', parse_url($url)))){
             return false;
         }
         try{
@@ -857,8 +859,11 @@ class CommonGroundService
      */
     private function convertAtId(array $object, array $parsedUrl)
     {
-        if (array_key_exists('@id', $object)) {
+        if (array_key_exists('@id', $object) && key_exists('scheme', $parsedUrl)) {
             $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$object['@id'];
+        }
+        elseif(array_key_exists('@id', $object)){
+            $object['@id'] ='http://'.explode('/',$parsedUrl['path'])[0].$object['@id'];
         }
         foreach ($object as $key=>$subObject) {
             if (is_array($subObject)) {
@@ -898,9 +903,7 @@ class CommonGroundService
 
         // Split enviroments, if the env is not dev the we need add the env to the url name
         $parsedUrl = parse_url($url);
-
-        if (key_exists('host',$parsedUrl) && $this->params->get('app_env') != 'prod' && $autowire) {
-
+        if (key_exists('host',$parsedUrl) && $this->params->get('app_env') != 'prod' && $this->params->get('app_web') == 'true' && $autowire) {
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
 

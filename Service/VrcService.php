@@ -66,6 +66,11 @@ class VrcService
      */
     public function onCreated(?array $resource)
     {
+
+        if(!$requestType = $this->commonGroundService->getResource($resource['requestType'])){
+            return;
+        }
+
         // If the request has Zaak properties we need to trigger those
         if(key_exists('caseType', $requestType) && !key_exists('cases', $resource)){
             /* @todo create a case */
@@ -84,6 +89,7 @@ class VrcService
                     unset($trigger['@type']);
                     unset($trigger['dateCreated']);
                     unset($trigger['dateModified']);
+                    unset($trigger['requestBody']);
 
                     // Lets hook the task to the propper resource
                     $trigger['resource'] = $resource['@id'];
@@ -129,6 +135,7 @@ class VrcService
                     unset($trigger['@type']);
                     unset($trigger['dateCreated']);
                     unset($trigger['dateModified']);
+                    unset($trigger['requestBody']);
 
                     // Lets hook the task to the propper resource
                     $trigger['resource'] = $resource['@id'];
@@ -144,7 +151,6 @@ class VrcService
                 }
             }
         }
-
         return $resource;
     }
 
