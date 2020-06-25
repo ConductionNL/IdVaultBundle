@@ -107,6 +107,8 @@ class CommonGroundService
             'timeout'  => 4000.0,
             // To work with NLX we need a couple of default headers
             'headers' => $this->headers,
+            // Do not check certificates
+            'verify' => false,
         ];
 
         // Lets start up a default client
@@ -915,8 +917,11 @@ class CommonGroundService
             }
 
             // If it is not we "gues" the endpoint (this is where we could force nlx)
-            elseif($this->params->get('app_internal')){
-                $url = "https://".$url['component'].'.'.$this->params->get('app_env').$route;
+            elseif($this->params->get('app_internal') == "true"){
+                $url = "http://".$url['component'].'.'.$this->params->get('app_env').$route;
+            }
+            elseif($this->params->get('app_env')=="prod"){
+                $url = "https://".$url['component'].'.'.$this->params->get('app_domain').$route;
             }
             else{
                 $url = "https://".$url['component'].'.'.$this->params->get('app_env').'.'.$this->params->get('app_domain').$route;
