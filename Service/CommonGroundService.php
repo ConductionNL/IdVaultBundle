@@ -90,8 +90,11 @@ class CommonGroundService
             'Content-Crs'  => 'EPSG:4326',
         ];
 
-        if ($session->get('user') && array_key_exists('@id', $session->get('user'))) {
+        if ($session->get('user') && is_array($session->get('user')) && array_key_exists('@id', $session->get('user'))) {
             $headers['X-NLX-Request-User-Id'] = $session->get('user')['@id'];
+        }
+        elseif($session->get('user')){
+            $headers['X-NLX-Request-User-Id'] = $session->get('user');
         }
 
         if ($session->get('process')) {
