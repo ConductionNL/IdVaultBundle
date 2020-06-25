@@ -918,7 +918,7 @@ class CommonGroundService
 
             // If it is not we "gues" the endpoint (this is where we could force nlx)
             elseif($this->params->get('app_internal') == "true"){
-                $url = "https://".$url['component'].'.'.$this->params->get('app_env').$route;
+                $url = "http://".$url['component'].'.'.$this->params->get('app_env').$route;
             }
             else{
                 $url = "https://".$url['component'].'.'.$this->params->get('app_env').'.'.$this->params->get('app_domain').$route;
