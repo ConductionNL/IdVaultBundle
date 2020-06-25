@@ -920,6 +920,9 @@ class CommonGroundService
             elseif($this->params->get('app_internal') == "true"){
                 $url = "http://".$url['component'].'.'.$this->params->get('app_env').$route;
             }
+            elseif($this->params->get('app_env')=="prod"){
+                $url = "https://".$url['component'].'.'.$this->params->get('app_domain').$route;
+            }
             else{
                 $url = "https://".$url['component'].'.'.$this->params->get('app_env').'.'.$this->params->get('app_domain').$route;
             }
