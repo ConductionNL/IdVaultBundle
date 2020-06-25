@@ -47,7 +47,7 @@ class ApplicationService
         // Lets handle a posible login
         $bsn = $this->request->get('bsn');
         if ($bsn || $bsn = $this->request->query->get('bsn')) {
-            $user = $this->commonGroundService->getResource("component"=>"brp","type"=>"ingeschrevenpersonen","id"=>$bsn);
+            $user = $this->commonGroundService->getResource(["component"=>"brp","type"=>"ingeschrevenpersonen","id"=>$bsn]);
             //$user = $this->commonGroundService->getResource('https://brp.huwelijksplanner.online/ingeschrevenpersonen/'.$bsn);
             $this->session->set('user', $user);
         }
@@ -62,7 +62,7 @@ class ApplicationService
         // lets default
         elseif (!$this->session->get('organization')) {
             /*@todo param bag interface */
-            //$organization = $this->commonGroundService->getResource("component"=>"wrc","type"=>"organizations","id"=>$this->params->get('app_organization'));
+            //$organization = $this->commonGroundService->getResource(["component"=>"wrc","type"=>"organizations","id"=>$this->params->get('app_organization')]);
             //$organization = $this->commonGroundService->getResource('http://wrc.huwelijksplanner.online/organizations/68b64145-0740-46df-a65a-9d3259c2fec8');
             $this->session->set('organization', $organization);
             //$this->session->set('organization', 0000);
@@ -78,7 +78,7 @@ class ApplicationService
         // lets default
         elseif (!$this->session->get('application')) {
             /*@todo param bag interface */
-            $organization = $this->commonGroundService->getResource("component"=>"wrc","type"=>"applications","id"=>$this->params->get('app_id'));
+            $organization = $this->commonGroundService->getResource(["component"=>"wrc","type"=>"applications","id"=>$this->params->get('app_id')]);
             //$application = $this->commonGroundService->getResource('http://wrc.huwelijksplanner.online/applications/536bfb73-63a5-4719-b535-d835607b88b2');
             $this->session->set('application', $application);
         }
