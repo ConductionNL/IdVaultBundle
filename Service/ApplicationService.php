@@ -48,7 +48,6 @@ class ApplicationService
         $bsn = $this->request->get('bsn');
         if ($bsn || $bsn = $this->request->query->get('bsn')) {
             $user = $this->commonGroundService->getResource(["component"=>"brp","type"=>"ingeschrevenpersonen","id"=>$bsn]);
-            //$user = $this->commonGroundService->getResource('https://brp.huwelijksplanner.online/ingeschrevenpersonen/'.$bsn);
             $this->session->set('user', $user);
         }
         $variables['user'] = $this->session->get('user');
