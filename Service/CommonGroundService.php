@@ -107,6 +107,8 @@ class CommonGroundService
             'timeout'  => 4000.0,
             // To work with NLX we need a couple of default headers
             'headers' => $this->headers,
+            // Do not check certificates
+            'verify' => false,
         ];
 
         // Lets start up a default client
