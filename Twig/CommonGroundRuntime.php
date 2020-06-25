@@ -49,4 +49,9 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     {
         return $this->commongroundService->getApplication();
     }
+
+    public function cleanUrl($url = false, $resource = false, $autowire = true)
+    {
+        return $this->commongroundService->cleanUrl($url, $resource, $autowire);
+    }
 }
