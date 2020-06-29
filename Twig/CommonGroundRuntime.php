@@ -54,4 +54,5 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     {
         return $this->commongroundService->cleanUrl($url, $resource, $autowire);
     }
+    public function getPath()
 }
