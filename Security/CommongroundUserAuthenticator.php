@@ -134,6 +134,10 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     protected function getLoginUrl()
     {
-        return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+        if($this->params->get('app_subpath') != 'false') {
+            return '/' . $this->params->get('app_subpath') . $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+        }else{
+            return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+        }
     }
 }
