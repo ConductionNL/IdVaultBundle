@@ -8,6 +8,7 @@ use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Twig\Extension\RuntimeExtensionInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CommonGroundRuntime implements RuntimeExtensionInterface
 {
