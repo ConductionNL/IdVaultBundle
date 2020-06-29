@@ -10,10 +10,14 @@ use Twig\Extension\RuntimeExtensionInterface;
 class CommonGroundRuntime implements RuntimeExtensionInterface
 {
     private $commongroundService;
+    private $params;
+    private $router;
 
-    public function __construct(CommonGroundService $commongroundService)
+    public function __construct(CommonGroundService $commongroundService, ParameterBagInterface $params, RouterInterface $router)
     {
         $this->commongroundService = $commongroundService;
+        $this->params = $params;
+        $this->router = $router;
     }
 
     public function getResource($resource)
