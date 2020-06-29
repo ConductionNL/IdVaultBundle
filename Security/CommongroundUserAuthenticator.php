@@ -111,9 +111,9 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        var_dump($this->params->get('app_subpath'));
-        die;
         if($this->params->get('app_subpath') != 'false') {
+            var_dump('/' . $this->params->get('app_subpath') .$this->router->generate('app_user_dashboard', [], UrlGeneratorInterface::RELATIVE_PATH));
+            die;
             return new RedirectResponse('/' . $this->params->get('app_subpath') .$this->router->generate('app_user_dashboard', [], UrlGeneratorInterface::RELATIVE_PATH));
         }
         return new RedirectResponse($this->router->generate('app_user_dashboard', [], UrlGeneratorInterface::RELATIVE_PATH));
@@ -121,9 +121,10 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        var_dump($this->params->get('app_subpath'));
-        die;
+
         if($this->params->get('app_subpath') != 'false') {
+            var_dump('/' . $this->params->get('app_subpath') .$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+            die;
             return new RedirectResponse('/' . $this->params->get('app_subpath') .$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
         }
         return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
