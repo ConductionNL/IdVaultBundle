@@ -10,10 +10,14 @@ use Twig\Extension\RuntimeExtensionInterface;
 class CommonGroundRuntime implements RuntimeExtensionInterface
 {
     private $commongroundService;
+    private $params;
+    private $router;
 
-    public function __construct(CommonGroundService $commongroundService)
+    public function __construct(CommonGroundService $commongroundService, ParameterBagInterface $params, RouterInterface $router)
     {
         $this->commongroundService = $commongroundService;
+        $this->params = $params;
+        $this->router = $router;
     }
 
     public function getResource($resource)
@@ -53,5 +57,13 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     public function cleanUrl($url = false, $resource = false, $autowire = true)
     {
         return $this->commongroundService->cleanUrl($url, $resource, $autowire);
+    }
+    public function getPath(){
+        if($this->params->get('app_subpath') != 'false'){
+            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+        }
+        else{
+            return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+        }
     }
 }
