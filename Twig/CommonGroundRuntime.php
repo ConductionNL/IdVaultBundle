@@ -61,7 +61,7 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     {
         return $this->commongroundService->cleanUrl($url, $resource, $autowire);
     }
-    public function getPath(string $route, ?array $route_parameters, bool $relative = false){
+    public function getPath(string $route, ?array $route_parameters, ?bool $relative = false){
         if($this->params->get('app_subpath') != 'false'){
             return '/'.$this->params->get('app_subpath').$this->router->generate($route, $route_parameters, $relative);
         }
