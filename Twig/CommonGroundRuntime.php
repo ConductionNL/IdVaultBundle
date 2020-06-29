@@ -6,6 +6,9 @@ namespace Conduction\CommonGroundBundle\Twig;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Twig\Extension\RuntimeExtensionInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CommonGroundRuntime implements RuntimeExtensionInterface
 {
@@ -58,12 +61,12 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     {
         return $this->commongroundService->cleanUrl($url, $resource, $autowire);
     }
-    public function getPath(){
+    public function getPath(string $path){
         if($this->params->get('app_subpath') != 'false'){
-            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+            return '/'.$this->params->get('app_subpath').$this->router->generate($path);
         }
         else{
-            return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+            return $this->router->generate($path);
         }
     }
 }
