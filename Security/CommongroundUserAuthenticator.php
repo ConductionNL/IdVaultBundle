@@ -114,6 +114,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         if($this->params->get('app_subpath') != 'false') {
             return new RedirectResponse('/' . $this->params->get('app_subpath') .$this->router->generate('app_user_dashboard', [], UrlGeneratorInterface::RELATIVE_PATH));
         }
+       
         return new RedirectResponse($this->router->generate('app_user_dashboard', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
@@ -122,6 +123,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         if($this->params->get('app_subpath') != 'false') {
             return new RedirectResponse('/' . $this->params->get('app_subpath') .$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
         }
+        
         return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 

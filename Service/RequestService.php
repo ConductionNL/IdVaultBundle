@@ -19,7 +19,12 @@ class RequestService
     private $camundaService;
     private $messageService;
 
-    public function __construct(ParameterBagInterface $params, CacheInterface $cache, SessionInterface $session, CommonGroundService $commonGroundService, CamundaService $camundaService, MessageService $messageService)
+    public function __construct(ParameterBagInterface $params,
+                                CacheInterface $cache,
+                                SessionInterface $session,
+                                CommonGroundService $commonGroundService,
+                                CamundaService $camundaService,
+                                MessageService $messageService)
     {
         $this->params = $params;
         $this->cache = $cache;
@@ -53,10 +58,12 @@ class RequestService
         ) {
             return false;
         }
+        
+        
 
         $request = [];
         $request['requestType'] = $requestType['@id'];
-        $request['organization'] = $organization['@id']; //@TODO: dit moet de organisatie van het requestType worden, maar daar hangen nog legen RSINs in waar het vrc niets mee kan
+        $request['organization'] = $requestType['organization']; //@TODO: dit moet de organisatie van het requestType worden, maar daar hangen nog legen RSINs in waar het vrc niets mee kan
         $request['status'] = 'incomplete';
         $request['properties'] = [];
 
