@@ -22,6 +22,7 @@ class CommonGroundExtension extends AbstractExtension
             new TwigFunction('commonground_application', [CommonGroundRuntime::class, 'getApplication']),
             new TwigFunction('commonground_cleanurl', [CommonGroundRuntime::class, 'cleanUrl']),
             new TwigFunction('commonground_path', [CommonGroundRuntime::class, 'getPath']),
+            new TwigFunction('path', [CommonGroundRuntime::class, 'getPath']),
         ];
     }
 }
