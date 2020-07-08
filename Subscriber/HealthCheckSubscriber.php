@@ -2,6 +2,7 @@
 
 namespace Conduction\CommonGroundBundle\Subscriber;
 
+use ApiPlatform\Core\Api\Entrypoint;
 use ApiPlatform\Core\Bridge\Doctrine\Orm\Paginator;
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Conduction\CommonGroundBundle\Service\NLXLogService;
@@ -76,17 +77,11 @@ class HealthCheckSubscriber implements EventSubscriberInterface
             'output'    => '',
         ];
 
-        if (!$result instanceof Paginator) {
+        if ($result != null && !$result instanceof Paginator && !$result instanceof Entrypoint && !is_array($result)) {
             $result['serviceID'] = $result->getid();
             $result['description'] = $this->em->getMetadataFactory()->getMetadataFor(get_class($result))->getName();
         }
-
-        /*
-
-
-        $results = $this->em->getRepository('App:AuditTrail')->findBy(['resource'=> $itemId,'resourceType'=> $entityType]);
-
-        */
+        
         $response = $this->serializer->serialize(
             $results,
             'json',
