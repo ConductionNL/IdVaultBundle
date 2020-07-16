@@ -70,4 +70,20 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
             return $this->router->generate($route, $route_parameters, $relative);
         }
     }
+    public function iterableArray(array $item, string $data)
+    {
+        $result = '';
+        foreach($item as $subItem){
+
+            if(is_array($subItem)){
+                $temp = $this->iterableArray($subItem, $data);
+            }else{
+                $temp = $data;
+            }
+
+            $result.='<li>'.$temp.'</li>';
+        }
+
+        return '<ul>'.$result.'</ul>';
+    }
 }
