@@ -5,10 +5,11 @@ parameters:
   # You should not need to change this value.
 
   # Security Details
-  env(APP_COMMONGROUND_ID): "huwelijksplanner-Wex83XXe"
+  env(APP_COMMONGROUND_ID): ""
   env(APP_COMMONGROUND_KEY): ""
-  env(APP_COMMONGROUND_SECRET): '4_]}Khfxa;~"78Qm'
+  env(APP_COMMONGROUND_SECRET): ""
 
+  common_ground.app.id: "%env(APP_COMMONGROUND_ID)%"
   app_commonground_id: "%env(APP_COMMONGROUND_ID)%"
   app_commonground_key: "%env(APP_COMMONGROUND_KEY)%"
   app_commonground_secret: "%env(APP_COMMONGROUND_SECRET)%"
@@ -476,7 +477,7 @@ parameters:
     - name: Conduction
       url: https://github.com/ConductionNL
       email: info@conduction.nl
-    - name: Gemeente 's-Hertogenbosch
+    - name: Gemeente "s-Hertogenbosch
       url: https://github.com/gemeenteshertogenbosch
       email: info@s-hertogenbosch.nl/
     - name: Gemeente Utrecht

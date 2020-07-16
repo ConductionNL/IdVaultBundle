@@ -6,14 +6,21 @@ namespace Conduction\CommonGroundBundle\Twig;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Twig\Extension\RuntimeExtensionInterface;
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\Routing\RouterInterface;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 
 class CommonGroundRuntime implements RuntimeExtensionInterface
 {
     private $commongroundService;
+    private $params;
+    private $router;
 
-    public function __construct(CommonGroundService $commongroundService)
+    public function __construct(CommonGroundService $commongroundService, ParameterBagInterface $params, RouterInterface $router)
     {
         $this->commongroundService = $commongroundService;
+        $this->params = $params;
+        $this->router = $router;
     }
 
     public function getResource($resource)
@@ -21,9 +28,13 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
         return $this->commongroundService->getResource($resource);
     }
 
-    public function getResourceList($query)
+    public function isResource($resource){
+        return $this->commongroundService->isResource($resource);
+    }
+
+    public function getResourceList($url, $query = null)
     {
-        return $this->commongroundService->getResourceList($query);
+        return $this->commongroundService->getResourceList($url, $query);
     }
 
     public function getComponentList()
@@ -44,5 +55,19 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     public function getApplication()
     {
         return $this->commongroundService->getApplication();
+    }
+
+    public function cleanUrl($url = false, $resource = false, $autowire = true)
+    {
+        return $this->commongroundService->cleanUrl($url, $resource, $autowire);
+    }
+    public function getPath(string $route, array $route_parameters = [], $relative = false)
+    {
+        if($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false'){
+            return '/'.$this->params->get('app_subpath').$this->router->generate($route, $route_parameters, $relative);
+        }
+        else{
+            return $this->router->generate($route, $route_parameters, $relative);
+        }
     }
 }
