@@ -20,13 +20,15 @@ class ApplicationService
     private $commonGroundService;
     private $requestService;
 
-    public function __construct(ParameterBagInterface $params,
-                                CacheInterface $cache,
-                                SessionInterface $session,
-                                FlashBagInterface $flash,
-                                RequestStack $requestStack,
-                                CommonGroundService $commonGroundService,
-                                RequestService $requestService)
+    public function __construct(
+        ParameterBagInterface $params,
+        CacheInterface $cache,
+        SessionInterface $session,
+        FlashBagInterface $flash,
+        RequestStack $requestStack,
+        CommonGroundService $commonGroundService,
+        RequestService $requestService
+    )
     {
         $this->params = $params;
         $this->cash = $cache;
@@ -54,7 +56,7 @@ class ApplicationService
         // Lets handle a posible login
         $bsn = $this->request->get('bsn');
         if ($bsn || $bsn = $this->request->query->get('bsn')) {
-            $user = $this->commonGroundService->getResource(["component"=>"brp","type"=>"ingeschrevenpersonen","id"=>$bsn]);
+            $user = $this->commonGroundService->getResource(['component'=>'brp', 'type'=>'ingeschrevenpersonen', 'id'=>$bsn]);
             $this->session->set('user', $user);
         }
         $variables['user'] = $this->session->get('user');
@@ -84,7 +86,7 @@ class ApplicationService
         // lets default
         elseif (!$this->session->get('application')) {
             /*@todo param bag interface */
-            $organization = $this->commonGroundService->getResource(["component"=>"wrc","type"=>"applications","id"=>$this->params->get('app_id')]);
+            $organization = $this->commonGroundService->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
             //$application = $this->commonGroundService->getResource('http://wrc.huwelijksplanner.online/applications/536bfb73-63a5-4719-b535-d835607b88b2');
             $this->session->set('application', $application);
         }
@@ -92,7 +94,6 @@ class ApplicationService
 
         // Let handle posible request creation
         if ($requestType = $this->request->get('requestType')) {
-
             $requestParent = $this->request->get('requestParent');
 
             $requestType = $this->commonGroundService->getResource($requestType);
