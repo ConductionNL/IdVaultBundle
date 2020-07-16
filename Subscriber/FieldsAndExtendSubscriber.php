@@ -56,7 +56,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         }
         $authorization = $event->getRequest()->headers->get('Authorization');
 
-        $this->commonGroundService->setHeader('Authorization',$authorization);
+        $this->commonGroundService->setHeader('Authorization', $authorization);
         // Lets set a return content type
         switch ($contentType) {
             case 'application/json':
@@ -136,7 +136,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
             Response::HTTP_OK,
             ['content-type' => $contentType]
         );
-        $this->commonGroundService->setHeader('Authorization',$this->params->get('app_commonground_key'));
+        $this->commonGroundService->setHeader('Authorization', $this->params->get('app_commonground_key'));
         $event->setResponse($response);
     }
 

@@ -81,7 +81,7 @@ class HealthCheckSubscriber implements EventSubscriberInterface
             $result['serviceID'] = $result->getid();
             $result['description'] = $this->em->getMetadataFactory()->getMetadataFor(get_class($result))->getName();
         }
-        
+
         $response = $this->serializer->serialize(
             $results,
             'json',
