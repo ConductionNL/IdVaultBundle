@@ -74,11 +74,20 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     public function iterableArray(array $item, string $data)
     {
         $result = '';
+<<<<<<< Updated upstream
         foreach ($item as $subItem) {
             if (is_array($subItem)) {
                 $temp = $this->iterableArray($subItem, $data);
             } else {
                 $temp = $data;
+=======
+        foreach($item as $key => $value){
+
+            if(is_array($value)){
+                $temp = $this->iterableArray($value, $data);
+            }else{
+                $temp = $value;
+>>>>>>> Stashed changes
             }
 
             $result .= '<li>'.$temp.'</li>';
