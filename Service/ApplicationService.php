@@ -28,8 +28,7 @@ class ApplicationService
         RequestStack $requestStack,
         CommonGroundService $commonGroundService,
         RequestService $requestService
-    )
-    {
+    ) {
         $this->params = $params;
         $this->cash = $cache;
         $this->session = $session;

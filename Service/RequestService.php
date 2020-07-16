@@ -26,8 +26,7 @@ class RequestService
         CommonGroundService $commonGroundService,
         CamundaService $camundaService,
         MessageService $messageService
-    )
-    {
+    ) {
         $this->params = $params;
         $this->cache = $cache;
         $this->session = $session;
