@@ -1,6 +1,6 @@
 <?php
 
-namespace App\ValueObject;
+namespace Conduction\CommonGroundBundle\ValueObject;
 
 class UnderInvestigation
 {

@@ -49,14 +49,14 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         if (!$contentType) {
             $contentType = $event->getRequest()->headers->get('Accept');
         }
-        $authorization = $event->getRequest()->headers->get('Authorization');
 
-        $this->commonGroundService->setHeader('Authorization', $authorization);
         // Only do somthing if fields is query supplied
         if ((!$fields && !$extends) || $method != 'GET') {
             return $result;
         }
+        $authorization = $event->getRequest()->headers->get('Authorization');
 
+        $this->commonGroundService->setHeader('Authorization', $authorization);
         // Lets set a return content type
         switch ($contentType) {
             case 'application/json':
@@ -136,6 +136,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
             Response::HTTP_OK,
             ['content-type' => $contentType]
         );
+        $this->commonGroundService->setHeader('Authorization', $this->params->get('app_commonground_key'));
         $event->setResponse($response);
     }
 

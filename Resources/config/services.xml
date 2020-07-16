@@ -14,6 +14,10 @@
         <service id="Conduction\CommonGroundBundle\Service\CamundaService" />
         <service id="Conduction\CommonGroundBundle\Service\MessageService" />
 
+        <!--CommonGround Services-->
+        <service id="Conduction\CommonGroundBundle\Service\VrcService" />
+        <service id="Conduction\CommonGroundBundle\Service\IrcService" />
+
         <!--External Services-->
         <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
 
@@ -50,12 +54,28 @@
             <tag name="kernel.event_subscriber"/>
         </service>
 
+        <!--Component Subscribers-->
+        <service id="vrc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\VrcSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="irc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\IrcSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+
         <!--CommonGround Commands-->
         <service id="Conduction\CommonGroundBundle\Command\ApiHelmCommand">
             <tag name="console.command"/>
         </service>
         <service id="Conduction\CommonGroundBundle\Command\PubliccodeCommand">
             <tag name="console.command"/>
+        </service>
+
+        <!--CommonGround Twig extensions-->
+        <service id="Conduction\CommonGroundBundle\Twig\CommonGroundExtension"  class="Conduction\CommonGroundBundle\Twig\CommonGroundExtension">
+            <tag name="twig.extension"/>
+        </service>
+        <service id="Conduction\CommonGroundBundle\Twig\CommonGroundRuntime"  class="Conduction\CommonGroundBundle\Twig\CommonGroundRuntime">
+            <tag name="twig.runtime"/>
         </service>
     </services>
 </container>

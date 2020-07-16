@@ -81,7 +81,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         }
         */
 
-        $users = $this->commonGroundService->getResourceList($this->params->get('auth_provider_user').'/users', ['username'=> $credentials['username']], true);
+        $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true);
         $users = $users['hydra:member'];
 
         if (!$users || count($users) < 1) {
@@ -99,7 +99,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-        $user = $this->commonGroundService->createResource($credentials, $this->params->get('auth_provider_user').'/login');
+        $user = $this->commonGroundService->createResource($credentials, ['component'=>'uc', 'type'=>'login']);
 
         if (!$user) {
             return false;
@@ -111,14 +111,20 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->urlGenerator->generate('app_user_dashboard'));
+        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_wrc_templates', []));
+        }
+
+        return new RedirectResponse($this->router->generate('app_wrc_templates', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        var_dump('noooz');
+        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
+        }
 
-        return new RedirectResponse($this->urlGenerator->generate('app_user_login'));
+        return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     /**
@@ -126,7 +132,11 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
      */
     public function start(Request $request, AuthenticationException $authException = null)
     {
-        return new RedirectResponse($this->urlGenerator->generate('app_user_login'));
+        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
+        } else {
+            return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+        }
     }
 
     public function supportsRememberMe()
@@ -136,6 +146,10 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     protected function getLoginUrl()
     {
-        return $this->router->generate('app_user_login');
+        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
+            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+        } else {
+            return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+        }
     }
 }

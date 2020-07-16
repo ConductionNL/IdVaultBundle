@@ -60,17 +60,44 @@ class VrcService
      */
     public function onCreated(?array $resource)
     {
+        if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
+            return;
+        }
+
         // If the request has Zaak properties we need to trigger those
         if (array_key_exists('caseType', $requestType) && !array_key_exists('cases', $resource)) {
             /* @todo create a case */
         }
 
-        // If the request has Camunda requests we need to trigger those
-        if (array_key_exists('camundaProces', $requestType) && !array_key_exists('processes', $resource)) {
-            /* @todo start a camunda procces */
-            $procces = $this->camundaService->proccesFromRequest($resource);
-            $resource['processes'] = [$procces];
+        // Let run al the tasks
+        if (array_key_exists('tasks', $requestType)) {
+            // Loop trough the tasks atached to this resource and add them to the stack
+            foreach ($requestType['tasks'] as $trigger) {
+                if (!$trigger['event'] || $trigger['event'] == 'create') {
+                    // Lets preparte the task for the que
+                    unset($trigger['id']);
+                    unset($trigger['@id']);
+                    unset($trigger['@type']);
+                    unset($trigger['dateCreated']);
+                    unset($trigger['dateModified']);
+                    unset($trigger['requestBody']);
+
+                    // Lets hook the task to the propper resource
+                    $trigger['resource'] = $resource['@id'];
+                    $trigger['type'] = strtoupper($trigger['type']);
+
+                    // Lets set the time to trigger
+                    $dateToTrigger = new \DateTime();
+                    $dateToTrigger->add(new \DateInterval($trigger['timeInterval']));
+                    $trigger['dateToTrigger'] = $dateToTrigger->format('Y-m-d H:i:s');
+
+                    // Lets add the task to the que
+                    $trigger = $this->commonGroundService->createResource($trigger, ['component'=>'qc', 'type'=>'tasks']);
+                }
+            }
         }
+
+        return $resource;
     }
 
     /*
@@ -86,21 +113,32 @@ class VrcService
             return;
         }
 
-        // If the request has Zaak properties we need to trigger those
-        if (array_key_exists('caseType', $requestType) && !array_key_exists('cases', $resource) && !array_key_exists('camundaProces', $requestType)) {
-            /* @todo create a case */
-            $case = null;
-            $resource['cases'] = [$case];
-        }
+        // Let run al the tasks
+        if (array_key_exists('tasks', $requestType)) {
+            // Loop trough the tasks atached to this resource and add them to the stack
+            foreach ($requestType['tasks'] as $trigger) {
+                if (!$trigger['event'] || $trigger['event'] == 'update') {
+                    // Lets preparte the task for the que
+                    unset($trigger['id']);
+                    unset($trigger['@id']);
+                    unset($trigger['@type']);
+                    unset($trigger['dateCreated']);
+                    unset($trigger['dateModified']);
+                    unset($trigger['requestBody']);
 
-        // If the request has Camunda requests we need to trigger those
-        if (array_key_exists('camundaProces', $requestType)) { //&& (!key_exists('processes', $resource) || count($resource['processes']) == 0))
-            /* @todo start a camunda procces */
+                    // Lets hook the task to the propper resource
+                    $trigger['resource'] = $resource['@id'];
+                    $trigger['type'] = strtoupper($trigger['type']);
 
-            $resource = $this->startProcess($resource, $requestType['camundaProces'], $requestType['caseType']);
+                    // Lets set the time to trigger
+                    $dateToTrigger = new \DateTime();
+                    $dateToTrigger->add(new \DateInterval($trigger['timeInterval']));
+                    $trigger['dateToTrigger'] = $dateToTrigger->format('Y-m-d H:i:s');
 
-            var_dump($this->getTasks($resource));
-            die;
+                    // Lets add the task to the que
+                    $trigger = $this->commonGroundService->createResource($trigger, ['component'=>'qc', 'type'=>'tasks']);
+                }
+            }
         }
 
         return $resource;
@@ -123,6 +161,10 @@ class VrcService
 
         $properties = [];
 
+        // Lets make sure that we have a procceses array
+        if (!array_key_exists('processes', $resource)) {
+            $resource['processes'] = [];
+        }
         // Declare on behalve on authentication
         $services = [
             'ztc'=> ['jwt'=>'Bearer '.$this->commonGroundService->getJwtToken('ztc')],
@@ -133,10 +175,16 @@ class VrcService
 
         // Transfer the  default properties
         foreach ($formvariables as $key => $value) {
-            $properties[] = ['naam'=> $key, 'waarde'=>$value['value']];
+            // $properties[] = ['naam'=> $key,'waarde'=>$value['value']];
         }
 
-        // Transfer te request properties
+        // hacky tacky
+        unset($resource['properties']['gegevens']);
+        unset($resource['properties']['naam']);
+        unset($resource['properties']['partners']);
+        unset($resource['properties']['organisatieRSIN']);
+        unset($resource['properties']['zaaktype']);
+
         foreach ($resource['properties'] as $key => $value) {
             $properties[] = ['naam'=> $key, 'waarde'=> $value];
         }
@@ -152,14 +200,16 @@ class VrcService
         $post = ['withVariablesInReturn'=>true, 'variables'=>$variables];
 
         $procces = $this->commonGroundService->createResource($post, ['component'=>'be', 'type'=>'process-definition/key/'.$requestType['camundaProces'].'/submit-form']);
-        $resource['processes'] = [$procces['links'][0]['href']];
+        $resource['processes'][] = $procces['links'][0]['href'];
 
         /* @todo dit is  natuurlijk but lellijk en moet eigenlijk worden upgepakt in een onCreate hook */
         unset($resource['submitters']);
         unset($resource['children']);
         unset($resource['parent']);
 
-        return $resource = $this->commonGroundService->saveResource($resource, ['component'=>'vrc', 'type'=>'requests']);
+        $resource = $this->commonGroundService->saveResource($resource, ['component'=>'vrc', 'type'=>'requests']);
+
+        return $resource;
     }
 
     /*
