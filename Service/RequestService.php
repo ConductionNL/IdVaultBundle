@@ -19,13 +19,14 @@ class RequestService
     private $camundaService;
     private $messageService;
 
-    public function __construct(ParameterBagInterface $params,
-                                CacheInterface $cache,
-                                SessionInterface $session,
-                                CommonGroundService $commonGroundService,
-                                CamundaService $camundaService,
-                                MessageService $messageService)
-    {
+    public function __construct(
+        ParameterBagInterface $params,
+        CacheInterface $cache,
+        SessionInterface $session,
+        CommonGroundService $commonGroundService,
+        CamundaService $camundaService,
+        MessageService $messageService
+    ) {
         $this->params = $params;
         $this->cache = $cache;
         $this->session = $session;
@@ -37,7 +38,7 @@ class RequestService
     /*
      * Creates a new requested based on a request type
      */
-    public function createFromRequestType($requestType, $requestParent = null ,$user = null, $organization= null, $application= null, $property = null)
+    public function createFromRequestType($requestType, $requestParent = null, $user = null, $organization = null, $application = null, $property = null)
     {
         // If a user has not been provided let try to get one from the session
         if (!$user) {
@@ -58,8 +59,6 @@ class RequestService
         ) {
             return false;
         }
-        
-        
 
         $request = [];
         $request['requestType'] = $requestType['@id'];
@@ -81,14 +80,14 @@ class RequestService
         if ($requestParent) {
             $requestParent = $this->commonGroundService->getResource($requestParent);
             $request['parent'] = $requestParent['@id'];
-            if($property){
+            if ($property) {
                 $requestParent['properties'][$property] = $request['@id'];
                 $this->commonGroundService->saveResource($requestParent);
             }
 
             // Lets transfer any properties that are both inthe parent and the child request
             foreach ($requestType['properties'] as $property) {
-                $name = str_replace('-melding','',$property['name']);
+                $name = str_replace('-melding', '', $property['name']);
 
                 // We have to find a better way to work with these two slugs, this hardcoded way stands in the way of more configurability
                 if ($name == 'getuige') {
@@ -133,18 +132,15 @@ class RequestService
         return $request;
     }
 
-
     public function unsetPropertyOnSlug($request, $requestType, $slug, $value = null)
     {
-
-        foreach($requestType['properties'] as $typeProperty){
-            if($typeProperty['slug'] == $slug){
+        foreach ($requestType['properties'] as $typeProperty) {
+            if ($typeProperty['slug'] == $slug) {
                 $property = $typeProperty['name'];
             }
-
         }
         // Should be CGS isResource when converted to bundle
-        if(filter_var($value, FILTER_VALIDATE_URL)){
+        if (filter_var($value, FILTER_VALIDATE_URL)) {
             $value = $this->commonGroundService->cleanUrl($value);
         }
         // Lets see if the property exists
@@ -159,9 +155,9 @@ class RequestService
             unset($request['properties'][$property][$key]);
 
             // If the array is now empty we want to drop the property
-            if(count($request['properties'][$property]) == 0){
-                unset ($request['properties'][$property]);
-            }else{
+            if (count($request['properties'][$property]) == 0) {
+                unset($request['properties'][$property]);
+            } else {
                 $request['properties'][$property] = array_values($request['properties'][$property]);
             }
         }
@@ -324,7 +320,7 @@ class RequestService
                 $value = $value['@id'];
                 break;*/
                 case 'vrc/request':
-                    $this->createFromRequestType($typeProperty['type'],$request, null, null, null, $typeProperty['name']);
+                    $this->createFromRequestType($typeProperty['type'], $request, null, null, null, $typeProperty['name']);
                     break;
                 /*case 'orc/order':
                     // This is a new assent so we also need to create a contact
@@ -359,16 +355,17 @@ class RequestService
         return $request;
     }
 
-    public function checkRequestStatus($request, $requestType){
+    public function checkRequestStatus($request, $requestType)
+    {
         $noFinishedProperties = 0;
-        foreach($requestType['properties'] as $typeProperty)
-        {
-            if(key_exists($typeProperty['name'], $request['properties'])){
+        foreach ($requestType['properties'] as $typeProperty) {
+            if (array_key_exists($typeProperty['name'], $request['properties'])) {
                 //TODO: dit is nu super basic, maar mag per property specifieker opgelost worden
                 $noFinishedProperties++;
             }
         }
-        return ($noFinishedProperties/count($requestType['properties']))*100;
+
+        return ($noFinishedProperties / count($requestType['properties'])) * 100;
     }
 
     public function checkRequestType($request, $requestType)
@@ -442,25 +439,22 @@ class RequestService
                 // als het een array is zonder minimum waarden
                 elseif (!array_key_exists('minItems', $property)) {
                     $requestType['stages'][$key]['completed'] = true;
-                }
-                elseif(array_key_exists('minItems',$property) && array_key_exists('maxItems', $property))
-                {
-                    if(count($request['properties'][$stage['name']]) >= $property['minItems']){
+                } elseif (array_key_exists('minItems', $property) && array_key_exists('maxItems', $property)) {
+                    if (count($request['properties'][$stage['name']]) >= $property['minItems']) {
                         $requestType['stages'][$key]['sufficient'] = true;
                     }
-                    if(count($request['properties'][$stage['name']]) == $property['maxItems']){
+                    if (count($request['properties'][$stage['name']]) == $property['maxItems']) {
                         $requestType['stages'][$key]['completed'] = true;
                     }
-                    if(key_exists('sufficient',$requestType['stages'][$key])
+                    if (array_key_exists('sufficient', $requestType['stages'][$key])
                         && $requestType['stages'][$key]['sufficient']
                         && count($request['properties'][$stage['name']]) < $property['minItems']
-                    ){
+                    ) {
                         $requestType['stages'][$key]['sufficient'] = false;
-                        if(key_exists('completed',$requestType['stages'][$key])){
+                        if (array_key_exists('completed', $requestType['stages'][$key])) {
                             $requestType['stages'][$key]['completed'] = false;
                         }
                     }
-
                 }
                 // als de array een minimum waarde heeft en die waarde wordt gehaald
                 elseif (array_key_exists('minItems', $property) && $property['minItems'] && count($request['properties'][$stage['name']]) >= (int) $property['minItems']) {
@@ -472,6 +466,7 @@ class RequestService
                 $requestType['stages'][$key]['completed'] = false;
             }
         }
+
         return $requestType;
     }
 

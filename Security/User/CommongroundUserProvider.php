@@ -47,7 +47,7 @@ class CommongroundUserProvider implements UserProviderInterface
 
     private function fetchUser($username)
     {
-        $users = $this->commonGroundService->getResourceList(['component'=>'uc','type'=>'users'], ['username'=> $username]);
+        $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $username]);
         $users = $users['hydra:member'];
 
         if (!$users || count($users) < 1) {
