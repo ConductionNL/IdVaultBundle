@@ -5,10 +5,9 @@
 namespace Conduction\CommonGroundBundle\Twig;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
-use Twig\Extension\RuntimeExtensionInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\RouterInterface;
-use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Twig\Extension\RuntimeExtensionInterface;
 
 class CommonGroundRuntime implements RuntimeExtensionInterface
 {
@@ -28,7 +27,8 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
         return $this->commongroundService->getResource($resource);
     }
 
-    public function isResource($resource){
+    public function isResource($resource)
+    {
         return $this->commongroundService->isResource($resource);
     }
 
@@ -61,27 +61,27 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     {
         return $this->commongroundService->cleanUrl($url, $resource, $autowire);
     }
+
     public function getPath(string $route, array $route_parameters = [], $relative = false)
     {
-        if($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false'){
+        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
             return '/'.$this->params->get('app_subpath').$this->router->generate($route, $route_parameters, $relative);
-        }
-        else{
+        } else {
             return $this->router->generate($route, $route_parameters, $relative);
         }
     }
+
     public function iterableArray(array $item, string $data)
     {
         $result = '';
-        foreach($item as $key => $value){
-
-            if(is_array($value)){
+        foreach ($item as $key => $value) {
+            if (is_array($value)) {
                 $temp = $this->iterableArray($value, $data);
-            }else{
+            } else {
                 $temp = $value;
             }
 
-            $result.='<li>'.$temp.'</li>';
+            $result .= '<li>'.$temp.'</li>';
         }
 
         return '<ul>'.$result.'</ul>';
