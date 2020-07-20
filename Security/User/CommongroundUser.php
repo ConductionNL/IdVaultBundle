@@ -33,7 +33,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
     /* Either user, organisation or application */
     private $type;
 
-    public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null,  $person = null, $organization = null, $type = null)
+    public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null)
     {
         $this->username = $username;
         $this->password = $password;

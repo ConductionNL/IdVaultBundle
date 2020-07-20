@@ -3,7 +3,7 @@
 // src/Security/TokenAuthenticator.php
 
 /*
- * This authenticator authenticas agains digispoof
+ * This authenticator authenticates against DigiSpoof
  *
  */
 
@@ -66,9 +66,8 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     public function getCredentials(Request $request)
     {
         $credentials = [
-            'username'   => $request->request->get('username'),
-            'password'   => $request->request->get('password'),
-            'csrf_token' => $request->request->get('_csrf_token'),
+            'bsn'   => $request->request->get('bsn'),
+
         ];
 
         $request->getSession()->set(
@@ -83,8 +82,7 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     {
         
         // Aan de hand van BSN persoon ophalen uit haal centraal
-        $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true);
-        $users = $users['hydra:member'];
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
 
         if (!$users || count($users) < 1) {
             return;

@@ -3,7 +3,7 @@
 // src/Security/TokenAuthenticator.php
 
 /*
- * This authenticator authenticas agains e-Herkenning
+ * This authenticator authenticates against e-Herkenning
  *
  */
 
