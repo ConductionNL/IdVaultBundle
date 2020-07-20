@@ -3,7 +3,7 @@
 // src/Security/TokenAuthenticator.php
 
 /*
- * This authenticator authenticas agains the commonground user component
+ * This authenticator authenticas agains e-Herkenning
  *
  */
 
@@ -29,7 +29,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
+class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;
@@ -101,7 +101,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'person');
+        return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'organization');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
