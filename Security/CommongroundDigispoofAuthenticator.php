@@ -3,7 +3,7 @@
 // src/Security/TokenAuthenticator.php
 
 /*
- * This authenticator authenticas agains the commonground user component
+ * This authenticator authenticas agains digispoof
  *
  */
 
@@ -29,7 +29,7 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
+class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;

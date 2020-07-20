@@ -15,8 +15,9 @@ class CommongroundUser implements UserInterface, EquatableInterface
     private $roles;
     private $person;
     private $organization;
+    private $type;
 
-    public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null)
+    public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null,  $person = null, $organization = null, $type = null)
     {
         $this->username = $username;
         $this->password = $password;
@@ -25,6 +26,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
         $this->person = $person;
         $this->organization = $organization;
         $this->isActive = true;
+        $this->type = $type;
     }
 
     public function getRoles()
