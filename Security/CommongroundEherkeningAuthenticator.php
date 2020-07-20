@@ -81,15 +81,12 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        /*
-        $token = new CsrfToken('authenticate', $credentials['csrf_token']);
-        if (!$this->csrfTokenManager->isTokenValid($token)) {
-            throw new InvalidCsrfTokenException();
-        }
-        */
 
+        // Aan de hand van bsn persoon ophalen
         $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true);
         $users = $users['hydra:member'];
+
+        // Organisaite hoeven we niet op te halen, maar pasen we de kvk uri
 
         if (!$users || count($users) < 1) {
             return;
