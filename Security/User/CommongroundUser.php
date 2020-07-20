@@ -9,12 +9,28 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class CommongroundUser implements UserInterface, EquatableInterface
 {
+    /* The username displayd */
     private $username;
+
+    /* Provide UUID instead of normal password */
     private $password;
+
+    /* Leave empty! */
     private $salt;
+
+    /* Iether a BRP or CC person URI */
     private $roles;
+
+    /* Always true */
+    private $isActive;
+
+    /* Iether a BRP or CC person URI */
     private $person;
+
+    /* Iether a kvk or wrc organization OR cc organization URI */
     private $organization;
+
+    /* Either user, organisation or application */
     private $type;
 
     public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null,  $person = null, $organization = null, $type = null)
