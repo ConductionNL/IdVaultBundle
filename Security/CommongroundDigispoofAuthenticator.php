@@ -55,7 +55,7 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return 'app_user_login' === $request->attributes->get('_route')
+        return 'app_user_digispoof' === $request->attributes->get('_route')
         && $request->isMethod('POST');
     }
 
@@ -71,8 +71,8 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
         ];
 
         $request->getSession()->set(
-            Security::LAST_USERNAME,
-            $credentials['username']
+            Security::LAST_BSN,
+            $credentials['bsn']
         );
 
         return $credentials;
@@ -99,7 +99,7 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-        $user = $this->commonGroundService->createResource($credentials, ['component'=>'uc', 'type'=>'login']);
+        $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
 
         if (!$user) {
             return false;
@@ -121,10 +121,10 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', []));
         }
 
-        return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+        return new RedirectResponse($this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     /**
@@ -133,9 +133,9 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     public function start(Request $request, AuthenticationException $authException = null)
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', []));
         } else {
-            return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+            return new RedirectResponse($this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH));
         }
     }
 
@@ -147,9 +147,9 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     protected function getLoginUrl()
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH);
         } else {
-            return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+            return $this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH);
         }
     }
 }
