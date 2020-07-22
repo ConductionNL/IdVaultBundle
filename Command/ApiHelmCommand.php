@@ -70,5 +70,6 @@ class ApiHelmCommand extends Command
                 $chart,
             ]);
         }
+        return 0;
     }
 }

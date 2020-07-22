@@ -64,8 +64,9 @@ class PubliccodeCommand extends Command
             $output->writeln([
                 'Publiccode Chart',
                 '============',
-                $chart,
+                $publiccode,
             ]);
         }
+        return 0;
     }
 }
