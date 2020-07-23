@@ -84,7 +84,7 @@ class AuditSubscriber implements EventSubscriberInterface
         //$log->setOk($responce->isOk());
 
         $this->em->persist($log);
-        $this->em->flush($log);
+        $this->em->flush();
 
         // $authorization = $this->params->get('nlx.components.authorization.');
         // We need to do serveral things for  nlx
