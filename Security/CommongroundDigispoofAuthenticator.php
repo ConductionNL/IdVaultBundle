@@ -55,8 +55,9 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
+
         return 'app_user_digispoof' === $request->attributes->get('_route')
-        && $request->isMethod('POST');
+            && $request->isMethod('POST');
     }
 
     /**
@@ -65,13 +66,14 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
+
         $credentials = [
             'bsn'   => $request->request->get('bsn'),
 
         ];
 
         $request->getSession()->set(
-            Security::LAST_BSN,
+            Security::LAST_USERNAME,
             $credentials['bsn']
         );
 
@@ -80,29 +82,36 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        
         // Aan de hand van BSN persoon ophalen uit haal centraal
         $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
 
-        if (!$users || count($users) < 1) {
+
+
+        if ($users == '[]' || count($users) < 1) {
             return;
         }
 
         $user = $users[0];
 
+        if(!isset($user['roles'])){
+            $user['roles'] = [];
+        }
+
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'person');
+
+        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
     {
+
         $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
 
-        if (!$user) {
-            return false;
+        if ($user == '[]' || count($user) < 1) {
+            return;
         }
 
         // no adtional credential check is needed in this case so return true to cause authentication success
@@ -115,7 +124,10 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
             return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_wrc_templates', []));
         }
 
-        return new RedirectResponse($this->router->generate('app_wrc_templates', [], UrlGeneratorInterface::RELATIVE_PATH));
+        $backUrl = $request->request->get('back_url');
+
+
+        return new RedirectResponse($backUrl);
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
@@ -124,7 +136,7 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
             return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', []));
         }
 
-        return new RedirectResponse($this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH));
+        return new RedirectResponse($this->router->generate('app_wrc_templates', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     /**

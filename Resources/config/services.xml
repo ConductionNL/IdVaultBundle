@@ -24,10 +24,12 @@
         <!--CommonGround Security: User Providers-->
         <service id="Conduction\CommonGroundBundle\Security\User\CommongroundApplicationProvider" />
         <service id="Conduction\CommonGroundBundle\Security\User\CommongroundUserProvider" />
+        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundDigispoofProvider" />
 
         <!--CommonGround Security: Authenticators-->
         <service id="Conduction\CommonGroundBundle\Security\CommongroundApplicationAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundUserAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundDigispoofAuthenticator" />
 
         <!--CommonGround Repositories-->
         <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
