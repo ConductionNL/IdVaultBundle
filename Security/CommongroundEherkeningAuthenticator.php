@@ -3,7 +3,7 @@
 // src/Security/TokenAuthenticator.php
 
 /*
- * This authenticator authenticates against e-Herkenning
+ * This authenticator authenticates against DigiSpoof
  *
  */
 
@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -28,8 +29,9 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
+use Symfony\Component\HttpFoundation\Session\Session;
 
-class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
+class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;
@@ -38,7 +40,7 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
     private $router;
     private $urlGenerator;
 
-    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator)
+    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, SessionInterface $session)
     {
         $this->em = $em;
         $this->params = $params;
@@ -46,6 +48,7 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
         $this->csrfTokenManager = $csrfTokenManager;
         $this->router = $router;
         $this->urlGenerator = $urlGenerator;
+        $this->session = $session;
     }
 
     /**
@@ -55,8 +58,9 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return 'app_user_login' === $request->attributes->get('_route')
-        && $request->isMethod('POST');
+
+        return 'app_user_digispoof' === $request->attributes->get('_route')
+            && $request->isMethod('POST');
     }
 
     /**
@@ -65,15 +69,15 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
+
         $credentials = [
-            'username'   => $request->request->get('username'),
-            'password'   => $request->request->get('password'),
-            'csrf_token' => $request->request->get('_csrf_token'),
+            'bsn'   => $request->request->get('bsn'),
+
         ];
 
         $request->getSession()->set(
             Security::LAST_USERNAME,
-            $credentials['username']
+            $credentials['bsn']
         );
 
         return $credentials;
@@ -81,32 +85,36 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
+        // Aan de hand van BSN persoon ophalen uit haal centraal
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
 
-        // Aan de hand van bsn persoon ophalen
-        $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true);
-        $users = $users['hydra:member'];
 
-        // Organisaite hoeven we niet op te halen, maar pasen we de kvk uri
 
-        if (!$users || count($users) < 1) {
+        if ($users == '[]' || count($users) < 1) {
             return;
         }
 
         $user = $users[0];
 
+        if(!isset($user['roles'])){
+            $user['roles'] = [];
+        }
+
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'organization');
+
+        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-        $user = $this->commonGroundService->createResource($credentials, ['component'=>'uc', 'type'=>'login']);
 
-        if (!$user) {
-            return false;
+        $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
+
+        if ($user == '[]' || count($user) < 1) {
+            return;
         }
 
         // no adtional credential check is needed in this case so return true to cause authentication success
@@ -115,20 +123,22 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_wrc_templates', []));
-        }
+        $backUrl = $request->request->get('back_url');
+        $bsn = $request->request->get('bsn');
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $bsn], true);
+        $user = $users[0];
+        $this->session->set('user', $user);
 
-        return new RedirectResponse($this->router->generate('app_wrc_templates', [], UrlGeneratorInterface::RELATIVE_PATH));
+        return new RedirectResponse($backUrl);
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', []));
         }
 
-        return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+        return new RedirectResponse($this->router->generate('app_wrc_templates', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     /**
@@ -137,9 +147,9 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
     public function start(Request $request, AuthenticationException $authException = null)
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', []));
         } else {
-            return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+            return new RedirectResponse($this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH));
         }
     }
 
@@ -151,9 +161,9 @@ class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
     protected function getLoginUrl()
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH);
         } else {
-            return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+            return $this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH);
         }
     }
 }
