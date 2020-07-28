@@ -32,7 +32,7 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Component\HttpFoundation\Session\Session;
 use GuzzleHttp\Client;
 
-class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
+class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;

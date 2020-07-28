@@ -25,13 +25,13 @@
         <service id="Conduction\CommonGroundBundle\Security\User\CommongroundApplicationProvider" />
         <service id="Conduction\CommonGroundBundle\Security\User\CommongroundUserProvider" />
         <service id="Conduction\CommonGroundBundle\Security\User\CommongroundDigispoofProvider" />
-        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundEherkeningProvider" />
+        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundEherkenningProvider" />
 
         <!--CommonGround Security: Authenticators-->
         <service id="Conduction\CommonGroundBundle\Security\CommongroundApplicationAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundUserAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundDigispoofAuthenticator" />
-        <service id="Conduction\CommonGroundBundle\Security\CommongroundEherkeningAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundEherkenningAuthenticator" />
 
         <!--CommonGround Repositories-->
         <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
