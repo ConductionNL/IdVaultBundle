@@ -30,8 +30,9 @@ use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 use Symfony\Component\HttpFoundation\Session\Session;
+use GuzzleHttp\Client;
 
-class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
+class CommongroundEherkeningAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;
@@ -59,7 +60,7 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     public function supports(Request $request)
     {
 
-        return 'app_user_digispoof' === $request->attributes->get('_route')
+        return 'app_user_eherkenning' === $request->attributes->get('_route')
             && $request->isMethod('POST');
     }
 
@@ -72,13 +73,15 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 
         $credentials = [
             'bsn'   => $request->request->get('bsn'),
-
+            'kvk'   => $request->request->get('kvk'),
         ];
 
         $request->getSession()->set(
             Security::LAST_USERNAME,
             $credentials['bsn']
         );
+
+
 
         return $credentials;
     }
@@ -88,12 +91,25 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
         // Aan de hand van BSN persoon ophalen uit haal centraal
         $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
 
+        $client = new Client([
+            // Base URI is used with relative requests
+            'base_uri' => 'https://api.kvk.nl',
+            // You can set any number of default request options.
+            'timeout'  => 2.0,
+        ]);
 
+        $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$credentials['kvk']);
+        $companies = json_decode($response->getBody()->getContents(), true);
+
+        if(!$companies || count($companies) < 1){
+            return;
+        }
 
         if ($users == '[]' || count($users) < 1) {
             return;
         }
 
+        $kvk = $companies[0];
         $user = $users[0];
 
         if(!isset($user['roles'])){
@@ -105,13 +121,28 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
         }
 
 
-        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person');
+        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'person');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
     {
 
+        // Aan de hand van BSN persoon ophalen uit haal centraal
         $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
+
+        $client = new Client([
+            // Base URI is used with relative requests
+            'base_uri' => 'https://api.kvk.nl',
+            // You can set any number of default request options.
+            'timeout'  => 2.0,
+        ]);
+
+        $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$credentials['kvk']);
+        $company = json_decode($response->getBody()->getContents(), true);
+
+        if(!$company || count($company) < 1){
+            return;
+        }
 
         if ($user == '[]' || count($user) < 1) {
             return;
