@@ -7,8 +7,6 @@
  *
  */
 
-
-
 namespace Conduction\CommonGroundBundle\Security;
 
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
@@ -22,14 +20,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\Exception\InvalidCsrfTokenException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
-use Symfony\Component\HttpFoundation\Session\Session;
 
 class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 {
@@ -59,7 +54,6 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-
         return 'app_user_digispoof' === $request->attributes->get('_route')
             && $request->isMethod('POST');
     }
@@ -70,7 +64,6 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-
         $credentials = [
             'bsn'   => $request->request->get('bsn'),
 
@@ -89,15 +82,13 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
         // Aan de hand van BSN persoon ophalen uit haal centraal
         $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true)['hydra:member'];
 
-
-
         if (!$users || count($users) < 1) {
             return;
         }
 
         $user = $users[0];
 
-        if(!isset($user['roles'])){
+        if (!isset($user['roles'])) {
             $user['roles'] = [];
         }
 
@@ -105,13 +96,11 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-
         return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-
         $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true)['hydra:member'];
 
         if (!$user || count($user) < 1) {
@@ -138,7 +127,6 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
             return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', []));
         }
-
 
         return new RedirectResponse($this->router->generate('app_user_digispoof', ['response' => $request->request->get('back_url'), 'back_url' => $request->request->get('back_url')]));
     }

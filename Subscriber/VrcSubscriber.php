@@ -56,7 +56,7 @@ class VrcSubscriber implements EventSubscriberInterface
     public function deleted(CommongroundUpdateEvent $event)
     {
         var_dump($event->getResource());
-        die;
+        exit;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that

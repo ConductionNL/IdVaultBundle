@@ -7,7 +7,6 @@ namespace Conduction\CommonGroundBundle\Security\User;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
-use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 
@@ -57,7 +56,7 @@ class CommongroundDigispoofProvider implements UserProviderInterface
 
         $user = $users[0];
 
-        if(!isset($user['roles'])){
+        if (!isset($user['roles'])) {
             $user['roles'] = [];
         }
 
