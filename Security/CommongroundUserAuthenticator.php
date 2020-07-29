@@ -7,8 +7,6 @@
  *
  */
 
-
-
 namespace Conduction\CommonGroundBundle\Security;
 
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;

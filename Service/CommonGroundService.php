@@ -895,12 +895,9 @@ class CommonGroundService
                 if (array_key_exists('autowire', $component)) {
                     $autowire = $component['autowire'];
                 }
-            }
-
-
-            elseif($this->params->get('app_internal') == 'true' && $this->params->has('app_local') && $this->params->get('app_env') == 'prod'){
+            } elseif ($this->params->get('app_internal') == 'true' && $this->params->has('app_local') && $this->params->get('app_env') == 'prod') {
                 $url = 'https://'.$this->params->get('app_domain').'/api/v1/'.$url['component'].$route;
-            } elseif($this->params->get('app_internal') == 'true' && $this->params->has('app_local')) {
+            } elseif ($this->params->get('app_internal') == 'true' && $this->params->has('app_local')) {
                 $url = 'https://'.$this->params->get('app_env').'.'.$this->params->get('app_domain').'/api/v1/'.$url['component'].$route;
             }
             // If it is not we "gues" the endpoint (this is where we could force nlx)
@@ -911,7 +908,6 @@ class CommonGroundService
             } else {
                 $url = 'https://'.$url['component'].'.'.$this->params->get('app_env').'.'.$this->params->get('app_domain').$route;
             }
-
         }
 
         if (!$url && $resource && array_key_exists('@id', $resource)) {

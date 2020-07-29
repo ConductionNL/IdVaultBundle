@@ -7,13 +7,12 @@
  *
  */
 
-
-
 namespace Conduction\CommonGroundBundle\Security;
 
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
+use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -22,15 +21,11 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\Exception\InvalidCsrfTokenException;
 use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
-use Symfony\Component\HttpFoundation\Session\Session;
-use GuzzleHttp\Client;
 
 class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
 {
@@ -59,7 +54,6 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-
         return 'app_user_eherkenning' === $request->attributes->get('_route')
             && $request->isMethod('POST');
     }
@@ -70,7 +64,6 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-
         $credentials = [
             'bsn'   => $request->request->get('bsn'),
             'kvk'   => $request->request->get('kvk'),
@@ -80,8 +73,6 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             Security::LAST_USERNAME,
             $credentials['bsn']
         );
-
-
 
         return $credentials;
     }
@@ -101,7 +92,7 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
         $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$credentials['kvk']);
         $companies = json_decode($response->getBody()->getContents(), true);
 
-        if(!$companies['data']['items'] || count($companies['data']['items']) < 1){
+        if (!$companies['data']['items'] || count($companies['data']['items']) < 1) {
             return;
         }
 
@@ -112,14 +103,13 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
         $kvk = $companies['data']['items'][0];
         $user = $users[0];
 
-        if(!isset($user['roles'])){
+        if (!isset($user['roles'])) {
             $user['roles'] = [];
         }
 
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
-
 
         return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'person');
     }
@@ -140,7 +130,7 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
         $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$credentials['kvk']);
         $company = json_decode($response->getBody()->getContents(), true);
 
-        if(!$company['data']['items'] || count($company['data']['items']) < 1){
+        if (!$company['data']['items'] || count($company['data']['items']) < 1) {
             return;
         }
 
@@ -171,9 +161,9 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
         $companies = json_decode($response->getBody()->getContents(), true);
         $company = $companies['data']['items'][0];
 
-
         $this->session->set('user', $user);
         $this->session->set('company', $company);
+
         return new RedirectResponse($backUrl);
     }
 
