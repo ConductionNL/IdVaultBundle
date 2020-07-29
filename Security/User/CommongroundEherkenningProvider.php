@@ -48,7 +48,7 @@ class CommongroundEherkenningProvider implements UserProviderInterface
     private function fetchUser($username)
     {
 
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true)['hydra:member'];
 
         $client = new Client([
             // Base URI is used with relative requests
@@ -64,7 +64,7 @@ class CommongroundEherkenningProvider implements UserProviderInterface
             return;
         }
 
-        if ($users == '[]' || count($users) < 1) {
+        if (!$users || count($users) < 1) {
             return;
         }
 

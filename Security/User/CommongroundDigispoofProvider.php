@@ -49,7 +49,7 @@ class CommongroundDigispoofProvider implements UserProviderInterface
     {
 
         // Aan de hand van BSN persoon ophalen uit haal centraal
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $username], true);
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $username], true)['hydra:member'];
 
         if (!$users || count($users) < 1) {
             return;

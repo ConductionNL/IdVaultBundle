@@ -87,11 +87,11 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         // Aan de hand van BSN persoon ophalen uit haal centraal
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true)['hydra:member'];
 
 
 
-        if ($users == '[]' || count($users) < 1) {
+        if (!$users || count($users) < 1) {
             return;
         }
 
@@ -112,9 +112,9 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     public function checkCredentials($credentials, UserInterface $user)
     {
 
-        $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
+        $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true)['hydra:member'];
 
-        if ($user == '[]' || count($user) < 1) {
+        if (!$user || count($user) < 1) {
             return;
         }
 
@@ -126,7 +126,7 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
     {
         $backUrl = $request->request->get('back_url');
         $bsn = $request->request->get('bsn');
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $bsn], true);
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $bsn], true)['hydra:member'];
         $user = $users[0];
         $this->session->set('user', $user);
 

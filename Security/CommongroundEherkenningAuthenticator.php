@@ -89,7 +89,7 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         // Aan de hand van BSN persoon ophalen uit haal centraal
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true)['hydra:member'];
 
         $client = new Client([
             // Base URI is used with relative requests
@@ -101,15 +101,15 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
         $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$credentials['kvk']);
         $companies = json_decode($response->getBody()->getContents(), true);
 
-        if(!$companies || count($companies) < 1){
+        if(!$companies['data']['items'] || count($companies['data']['items']) < 1){
             return;
         }
 
-        if ($users == '[]' || count($users) < 1) {
+        if (!$users || count($users) < 1) {
             return;
         }
 
-        $kvk = $companies[0];
+        $kvk = $companies['data']['items'][0];
         $user = $users[0];
 
         if(!isset($user['roles'])){
@@ -128,7 +128,7 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
     {
 
         // Aan de hand van BSN persoon ophalen uit haal centraal
-        $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true);
+        $user = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true)['hydra:member'];
 
         $client = new Client([
             // Base URI is used with relative requests
@@ -140,11 +140,11 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
         $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$credentials['kvk']);
         $company = json_decode($response->getBody()->getContents(), true);
 
-        if(!$company || count($company) < 1){
+        if(!$company['data']['items'] || count($company['data']['items']) < 1){
             return;
         }
 
-        if ($user == '[]' || count($user) < 1) {
+        if (!$user || count($user) < 1) {
             return;
         }
 
@@ -156,20 +156,30 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
     {
         $backUrl = $request->request->get('back_url');
         $bsn = $request->request->get('bsn');
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $bsn], true);
+        $kvk = $request->request->get('kvk');
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $bsn], true)['hydra:member'];
         $user = $users[0];
-        $this->session->set('user', $user);
 
+        $client = new Client([
+            // Base URI is used with relative requests
+            'base_uri' => 'https://api.kvk.nl',
+            // You can set any number of default request options.
+            'timeout'  => 2.0,
+        ]);
+
+        $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$kvk);
+        $companies = json_decode($response->getBody()->getContents(), true);
+        $company = $companies['data']['items'][0];
+
+
+        $this->session->set('user', $user);
+        $this->session->set('company', $company);
         return new RedirectResponse($backUrl);
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', []));
-        }
-
-        return new RedirectResponse($this->router->generate('app_wrc_templates', [], UrlGeneratorInterface::RELATIVE_PATH));
+        return new RedirectResponse($this->router->generate('app_user_eherkenning', ['response' => $request->request->get('back_url'), 'back_url' => $request->request->get('back_url')]));
     }
 
     /**
