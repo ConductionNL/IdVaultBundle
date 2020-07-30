@@ -81,6 +81,9 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         );
 
         $array = json_decode($json, true);
+        /**
+         * @TODO: This way of checking if we have an array is not ideal, but for the moment it works. If someone has a better solution feel free to apply.
+         */
         if(is_array(json_decode($json, false))){
             foreach($array as $key=>$resource){
                 $array[$key] = $this->getExtends($extends, $resource);
