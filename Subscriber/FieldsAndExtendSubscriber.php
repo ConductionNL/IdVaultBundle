@@ -199,7 +199,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         foreach ($fields as $key=>$field) {
             if (!is_array($field) && array_key_exists($field, $resource)) {
                 $returnArray[$field] = $resource[$field];
-            } elseif (array_key_exists($key, $resource)) {
+            } elseif (array_key_exists($key, $resource) && $resource[$key]) {
                 if (!array_key_exists($key, $returnArray)) {
                     $returnArray[$key] = $this->selectFields($resource[$key], $field);
                 } else {
