@@ -4,7 +4,6 @@ namespace Conduction\CommonGroundBundle\Subscriber;
 
 use ApiPlatform\Core\EventListener\EventPriorities;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
-use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
@@ -80,8 +79,8 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         );
 
         $array = json_decode($json, true);
-        if(!key_exists('id',$array)){
-            foreach($array as $key=>$resource){
+        if (!key_exists('id', $array)) {
+            foreach ($array as $key=> $resource) {
                 $array[$key] = $resource = $this->getExtends($extends, $resource);
 
                 if ($fields != [] && $fields != '') {
@@ -102,8 +101,8 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
                     $response['totalItems'] = count($array);
                     $response['itemsPerPage'] = 30;
                     $links = [];
-                    foreach($array as $key=>$resource){
-                        array_push($links, json_decode($json,true)[$key]['_links']['self']);
+                    foreach ($array as $key=>$resource) {
+                        array_push($links, json_decode($json, true)[$key]['_links']['self']);
                     }
                     $response['_links'] = $response['_links'] = [
                         'self' => ['href'=>$event->getRequest()->getRequestUri()],
@@ -111,8 +110,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
                     ];
                     break;
             }
-        }
-        else{
+        } else {
             $array = $this->getExtends($extends, $array);
             if ($fields != [] && $fields != '') {
                 $array = $this->getFields($fields, $array);
@@ -145,7 +143,8 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         $event->setResponse($response);
     }
 
-    public function getExtends($extends, $array){
+    public function getExtends($extends, $array)
+    {
         if (!is_array($extends)) {
             $extends = explode(',', $extends);
         }
@@ -156,7 +155,9 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
 
         return $array;
     }
-    public function getFields($fields, $array){
+
+    public function getFields($fields, $array)
+    {
         if (!is_array($fields)) {
             $fields = explode(',', $fields);
         }
@@ -183,6 +184,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         if (!in_array('@context', $fields)) {
             $fields[] = '@context';
         }
+
         return $this->selectFields($array, $fields);
     }
 
