@@ -50,7 +50,6 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         if (!$contentType) {
             $contentType = $event->getRequest()->headers->get('Accept');
         }
-
         // Only do somthing if fields is query supplied
         if ((!$fields && !$extends) || $method != 'GET') {
             return $result;
@@ -83,7 +82,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         $array = json_decode($json, true);
         if(!key_exists('id',$array)){
             foreach($array as $key=>$resource){
-                $array[$key] = $this->getExtends($extends, $resource);
+                $array[$key] = $resource = $this->getExtends($extends, $resource);
 
                 if ($fields != [] && $fields != '') {
                     $array[$key] = $this->getFields($fields, $resource);
@@ -223,7 +222,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         foreach ($fields as $key=>$field) {
             if (!is_array($field) && array_key_exists($field, $resource)) {
                 $returnArray[$field] = $resource[$field];
-            } elseif (array_key_exists($key, $resource) && $resource[$key]) {
+            } elseif (array_key_exists($key, $resource) && $resource[$key] && is_array($resource[$key])) {
                 if (!array_key_exists($key, $returnArray)) {
                     $returnArray[$key] = $this->selectFields($resource[$key], $field);
                 } else {
