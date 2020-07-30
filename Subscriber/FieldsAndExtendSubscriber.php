@@ -81,10 +81,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         );
 
         $array = json_decode($json, true);
-        /**
-         * @TODO: This way of checking if we have an array is not ideal, but for the moment it works. If someone has a better solution feel free to apply.
-         */
-        if(is_array(json_decode($json, false))){
+        if(!key_exists('id',$array)){
             foreach($array as $key=>$resource){
                 $array[$key] = $this->getExtends($extends, $resource);
 
@@ -92,25 +89,49 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
                     $array[$key] = $this->getFields($fields, $resource);
                 }
             }
+
+            switch ($renderType) {
+                case 'jsonld':
+                    $response['@context'] = $array[0]['@context'];
+                    $response['@id'] = $event->getRequest()->getPathInfo();
+                    $response['@type'] = 'hydra:Collection';
+                    $response['hydra:member'] = $array;
+                    $response['hydra:totalItems'] = count($array);
+                    break;
+                default:
+                    $response['_embedded']['item'] = $array;
+                    $response['totalItems'] = count($array);
+                    $response['itemsPerPage'] = 30;
+                    $links = [];
+                    foreach($array as $key=>$resource){
+                        array_push($links, json_decode($json,true)[$key]['_links']['self']);
+                    }
+                    $response['_links'] = $response['_links'] = [
+                        'self' => ['href'=>$event->getRequest()->getRequestUri()],
+                        'item' => $links,
+                    ];
+                    break;
+            }
         }
         else{
             $array = $this->getExtends($extends, $array);
             if ($fields != [] && $fields != '') {
                 $array = $this->getFields($fields, $array);
             }
+            $response = $array;
         }
 
         if ($fields != [] && $fields != '') {
             // now we need to overide the normal subscriber
             $json = $this->serializer->serialize(
-                $array,
+                $response,
                 $renderType,
                 ['enable_max_depth' => true,
                     'attributes'    => $fields, ]
             );
         } else {
             $json = $this->serializer->serialize(
-                $array,
+                $response,
                 $renderType,
                 ['enable_max_depth' => true]
             );
