@@ -95,7 +95,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
                     $response['@context'] = $array[0]['@context'];
                     $response['@id'] = $event->getRequest()->getPathInfo();
                     $response['@type'] = 'hydra:Collection';
-                    $response['hydra:member'] = $array;
+                    $response['hydra:member'] = array_values($array);
                     $response['hydra:totalItems'] = count($array);
                     break;
                 default:
