@@ -78,6 +78,11 @@ class CommongroundUser implements UserInterface, EquatableInterface
         return $this->organization;
     }
 
+    public function getType()
+    {
+        return $this->type;
+    }
+
     public function getResidence()
     {
         return $this->residence;
@@ -108,8 +113,8 @@ class CommongroundUser implements UserInterface, EquatableInterface
     public function unserialize($serialized)
     {
         list(
-                $this->isActive
-                ) = unserialize($serialized);
+            $this->isActive
+            ) = unserialize($serialized);
     }
 
     public function isEqualTo(UserInterface $user)
