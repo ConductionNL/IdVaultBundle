@@ -96,12 +96,14 @@ class CommongroundProvider implements UserProviderInterface
             $user['roles'][] = 'ROLE_USER';
         }
 
-        //d
+        //We create a CommongroundUser based on user type.
         switch ($type){
             case 'person':
-                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person');
+                $resident = $this->checkResidence('person', $user, null);
+                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person', $resident);
             case 'organization':
-                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'organization');
+                $resident = $this->checkResidence('organization', $user, $kvk);
+                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'organization', $resident);
             case 'user':
                 return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'user');
             default:
@@ -111,5 +113,27 @@ class CommongroundProvider implements UserProviderInterface
                 break;
         }
 
+    }
+    private function checkResidence($type, $user, $organization){
+        $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
+        $resident = false;
+        if(isset($application['defaultConfiguration']['configuration']['cityNames'])){
+            foreach ($application['defaultConfiguration']['configuration']['cityNames'] as $name){
+                if($type == 'person') {
+                    if ($user['verblijfplaats']['woonplaatsnaam'] == $name) {
+                        $resident = true;
+                    }
+                }elseif($type == 'organization'){
+                    if($organization['addresses'][0]['city'] == $name){
+                        $resident = true;
+                    }
+                }else{
+                    $resident = false;
+                }
+            }
+            return $resident;
+        }else{
+            return false;
+        }
     }
 }
