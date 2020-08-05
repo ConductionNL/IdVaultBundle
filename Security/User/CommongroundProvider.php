@@ -42,9 +42,10 @@ class CommongroundProvider implements UserProviderInterface
         $username = $user->getUsername();
         $organization = $user->getOrganization();
         $type = $user->getType();
+        $person = $user->getPerson();
 
 
-        return $this->fetchUser($username, $organization, $type);
+        return $this->fetchUser($username, $organization, $type, $person);
     }
 
     public function supportsClass($class)
@@ -52,7 +53,7 @@ class CommongroundProvider implements UserProviderInterface
         return CommongroundUser::class === $class;
     }
 
-    private function fetchUser($username, $organization, $type)
+    private function fetchUser($username, $organization, $type, $person)
     {
         //only trigger if type of user is organization
         if($type == 'organization'){
@@ -75,7 +76,7 @@ class CommongroundProvider implements UserProviderInterface
         }
 
         //get user from brp
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $username], true)['hydra:member'];
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $person], true)['hydra:member'];
 
         //if fails we try to get user from uc component
         if (!$users || count($users) < 1) {
