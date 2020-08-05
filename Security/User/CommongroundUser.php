@@ -30,10 +30,14 @@ class CommongroundUser implements UserInterface, EquatableInterface
     /* Iether a kvk or wrc organization OR cc organization URI */
     private $organization;
 
-    /* Either user, organisation or application */
+    /* Either user, organisation, person, application */
     private $type;
 
-    public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null)
+    /* Either true or false if a user is a resident */
+    private $resident;
+
+
+    public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false)
     {
         $this->username = $username;
         $this->password = $password;
@@ -43,6 +47,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
         $this->organization = $organization;
         $this->isActive = true;
         $this->type = $type;
+        $this->resident = $resident;
     }
 
     public function getRoles()
@@ -75,6 +80,16 @@ class CommongroundUser implements UserInterface, EquatableInterface
         return $this->organization;
     }
 
+    public function getType()
+    {
+        return $this->type;
+    }
+
+    public function getResident()
+    {
+        return $this->resident;
+    }
+
     public function __toString()
     {
         return $this->getUsername();
@@ -92,16 +107,22 @@ class CommongroundUser implements UserInterface, EquatableInterface
     // serialize and unserialize must be updated - see below
     public function serialize()
     {
-        return serialize([
+        return serialize(array(
+            $this->username,
+            $this->password,
             $this->isActive,
-        ]);
+            // see section on salt below
+            // $this->salt,
+        ));
     }
 
     public function unserialize($serialized)
     {
         list(
-                $this->isActive
-                ) = unserialize($serialized);
+            $this->username,
+            $this->password,
+            $this->isActive,
+            ) = unserialize($serialized);
     }
 
     public function isEqualTo(UserInterface $user)

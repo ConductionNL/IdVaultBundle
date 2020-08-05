@@ -24,8 +24,7 @@
         <!--CommonGround Security: User Providers-->
         <service id="Conduction\CommonGroundBundle\Security\User\CommongroundApplicationProvider" />
         <service id="Conduction\CommonGroundBundle\Security\User\CommongroundUserProvider" />
-        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundDigispoofProvider" />
-        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundEherkenningProvider" />
+        <service id="Conduction\CommonGroundBundle\Security\User\CommongroundProvider" />
 
         <!--CommonGround Security: Authenticators-->
         <service id="Conduction\CommonGroundBundle\Security\CommongroundApplicationAuthenticator" />

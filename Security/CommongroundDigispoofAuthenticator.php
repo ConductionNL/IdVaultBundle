@@ -69,11 +69,6 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 
         ];
 
-        $request->getSession()->set(
-            Security::LAST_USERNAME,
-            $credentials['bsn']
-        );
-
         return $credentials;
     }
 
@@ -95,8 +90,7 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
-
-        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person');
+        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person', false);
     }
 
     public function checkCredentials($credentials, UserInterface $user)
