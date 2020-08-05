@@ -33,9 +33,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
     /* Either user, organisation or application */
     private $type;
 
-    private $resident;
-
-    public function __construct(bool $resident = false ,string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null)
+    public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null)
     {
         $this->username = $username;
         $this->password = $password;
@@ -45,7 +43,6 @@ class CommongroundUser implements UserInterface, EquatableInterface
         $this->organization = $organization;
         $this->isActive = true;
         $this->type = $type;
-        $this->resident = $resident;
     }
 
     public function getRoles()
@@ -83,11 +80,6 @@ class CommongroundUser implements UserInterface, EquatableInterface
         return $this->type;
     }
 
-    public function getResidence()
-    {
-        return $this->residence;
-    }
-
     public function __toString()
     {
         return $this->getUsername();
@@ -105,15 +97,21 @@ class CommongroundUser implements UserInterface, EquatableInterface
     // serialize and unserialize must be updated - see below
     public function serialize()
     {
-        return serialize([
+        return serialize(array(
+            $this->username,
+            $this->password,
             $this->isActive,
-        ]);
+            // see section on salt below
+            // $this->salt,
+        ));
     }
 
     public function unserialize($serialized)
     {
         list(
-            $this->isActive
+            $this->username,
+            $this->password,
+            $this->isActive,
             ) = unserialize($serialized);
     }
 

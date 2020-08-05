@@ -7,18 +7,23 @@ namespace Conduction\CommonGroundBundle\Security\User;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
+use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
+use GuzzleHttp\Client;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
-class CommongroundEherkenningProvider implements UserProviderInterface
+class CommongroundProvider implements UserProviderInterface
 {
     private $params;
     private $commonGroundService;
+    private $session;
 
-    public function __construct(ParameterBagInterface $params, CommonGroundService $commonGroundService)
+    public function __construct(ParameterBagInterface $params, CommonGroundService $commonGroundService, SessionInterface $session)
     {
         $this->params = $params;
         $this->commonGroundService = $commonGroundService;
+        $this->session = $session;
     }
 
     public function loadUserByUsername($username)
@@ -35,8 +40,11 @@ class CommongroundEherkenningProvider implements UserProviderInterface
         }
 
         $username = $user->getUsername();
+        $organization = $user->getOrganization();
+        $type = $user->getType();
 
-        return $this->fetchUser($username);
+
+        return $this->fetchUser($username, $organization, $type);
     }
 
     public function supportsClass($class)
@@ -44,9 +52,11 @@ class CommongroundEherkenningProvider implements UserProviderInterface
         return CommongroundUser::class === $class;
     }
 
-    private function fetchUser($username)
+    private function fetchUser($username, $organization, $type)
     {
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $credentials['bsn']], true)['hydra:member'];
+
+
+        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $username], true)['hydra:member'];
 
         $client = new Client([
             // Base URI is used with relative requests
@@ -55,7 +65,8 @@ class CommongroundEherkenningProvider implements UserProviderInterface
             'timeout'  => 2.0,
         ]);
 
-        $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$credentials['kvk']);
+
+        $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$organization);
         $companies = json_decode($response->getBody()->getContents(), true);
 
         if (!$companies || count($companies) < 1) {
@@ -66,7 +77,7 @@ class CommongroundEherkenningProvider implements UserProviderInterface
             return;
         }
 
-        $kvk = $companies[0];
+        $kvk = $companies['data']['items'][0];
         $user = $users[0];
 
         if (!isset($user['roles'])) {
@@ -77,6 +88,17 @@ class CommongroundEherkenningProvider implements UserProviderInterface
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'person');
+        switch ($type){
+            case 'person':
+                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person');
+            case 'organization':
+                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'organization');
+            default:
+                throw new UsernameNotFoundException(
+                    sprintf('User "%s" does not exist.', $username)
+                );
+                break;
+        }
+
     }
 }

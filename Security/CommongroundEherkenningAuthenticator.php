@@ -111,7 +111,7 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'person');
+        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'organization');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
