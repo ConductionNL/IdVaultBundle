@@ -101,10 +101,10 @@ class CommongroundProvider implements UserProviderInterface
         switch ($type){
             case 'person':
                 $resident = $this->checkResidence('person', $user, null);
-                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person', $resident);
+                return new CommongroundUser($user['naam']['voornamen'].' '.$user['naam']['geslachtsnaam'], $user['id'], null, $user['roles'], $user['burgerservicenummer'], null, 'person', $resident);
             case 'organization':
                 $resident = $this->checkResidence('organization', $user, $kvk);
-                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'organization', $resident);
+                return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], null, $user['roles'], $user['burgerservicenummer'], $kvk['branchNumber'], 'organization', $resident);
             case 'user':
                 return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'user');
             default:

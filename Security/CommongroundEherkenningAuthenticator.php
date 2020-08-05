@@ -74,6 +74,8 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             $credentials['bsn']
         );
 
+
+
         return $credentials;
     }
 
@@ -111,7 +113,7 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'organization');
+        return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], null, $user['roles'], $user['burgerservicenummer'], $kvk['branchNumber'], 'organization');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -162,7 +164,7 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
         $company = $companies['data']['items'][0];
 
         $this->session->set('user', $user);
-        $this->session->set('company', $company);
+        $this->session->set('organization', $company);
 
         return new RedirectResponse($backUrl);
     }
