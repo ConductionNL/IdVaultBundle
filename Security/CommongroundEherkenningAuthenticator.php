@@ -74,8 +74,6 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             $credentials['bsn']
         );
 
-
-
         return $credentials;
     }
 

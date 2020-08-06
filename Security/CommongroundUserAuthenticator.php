@@ -118,10 +118,9 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     {
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
-        if(isset($application['defaultConfiguration']['configuration']['userPage'])){
+        if (isset($application['defaultConfiguration']['configuration']['userPage'])) {
             return new RedirectResponse($this->router->generate($application['defaultConfiguration']['configuration']['userPage'], [], UrlGeneratorInterface::RELATIVE_PATH));
-
-        }else{
+        } else {
             return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
         }
     }
