@@ -69,9 +69,9 @@ class CommongroundProvider implements UserProviderInterface
             }
             $kvk = $companies['data']['items'][0];
             $user = $this->commonGroundService->getResource($person);
-        }elseif($type == 'person'){
+        } elseif ($type == 'person') {
             $user = $this->commonGroundService->getResource($person);
-        }elseif($type == 'user'){
+        } elseif ($type == 'user') {
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $username], true);
             $users = $users['hydra:member'];
             $user = $users[0];
