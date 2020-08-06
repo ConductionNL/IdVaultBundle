@@ -62,29 +62,20 @@ class CommongroundProvider implements UserProviderInterface
                 // You can set any number of default request options.
                 'timeout'  => 2.0,
             ]);
-
             $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$organization);
             $companies = json_decode($response->getBody()->getContents(), true);
-
             if (!$companies || count($companies) < 1) {
                 return;
             }
-
             $kvk = $companies['data']['items'][0];
-        }
-
-        //get user from brp
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $person], true)['hydra:member'];
-        //if fails we try to get user from uc component
-        if (!$users || count($users) < 1 || count($users) > 1) {
+            $user = $this->commonGroundService->getResource($person);
+        } elseif ($type == 'person') {
+            $user = $this->commonGroundService->getResource($person);
+        } elseif ($type == 'user') {
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $username], true);
             $users = $users['hydra:member'];
-            if (!$users || count($users) < 1) {
-                return;
-            }
+            $user = $users[0];
         }
-
-        $user = $users[0];
 
         if (!isset($user['roles'])) {
             $user['roles'] = [];
@@ -99,11 +90,11 @@ class CommongroundProvider implements UserProviderInterface
             case 'person':
                 $resident = $this->checkResidence('person', $user, null);
 
-                return new CommongroundUser($user['naam']['voornamen'].' '.$user['naam']['geslachtsnaam'], $user['id'], null, $user['roles'], $user['burgerservicenummer'], null, 'person', $resident);
+                return new CommongroundUser($user['naam']['voornamen'].' '.$user['naam']['geslachtsnaam'], $user['id'], null, $user['roles'], $user['@id'], null, 'person', $resident);
             case 'organization':
                 $resident = $this->checkResidence('organization', $user, $kvk);
 
-                return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], null, $user['roles'], $user['burgerservicenummer'], $kvk['branchNumber'], 'organization', $resident);
+                return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization', $resident);
             case 'user':
                 return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'user');
             default:
