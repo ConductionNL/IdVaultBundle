@@ -63,8 +63,7 @@ class CommongroundProvider implements UserProviderInterface
                 // You can set any number of default request options.
                 'timeout'  => 2.0,
             ]);
-
-
+            
             $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$organization);
             $companies = json_decode($response->getBody()->getContents(), true);
 
@@ -77,9 +76,8 @@ class CommongroundProvider implements UserProviderInterface
 
         //get user from brp
         $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $person], true)['hydra:member'];
-
         //if fails we try to get user from uc component
-        if (!$users || count($users) < 1) {
+        if (!$users || count($users) < 1 || count($users) > 1 ) {
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $username], true);
             $users = $users['hydra:member'];
             if (!$users || count($users) < 1) {
@@ -111,7 +109,6 @@ class CommongroundProvider implements UserProviderInterface
                 throw new UsernameNotFoundException(
                     sprintf('User "%s" does not exist.', $username)
                 );
-                break;
         }
 
     }

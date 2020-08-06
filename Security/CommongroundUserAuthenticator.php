@@ -54,7 +54,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     public function supports(Request $request)
     {
         return 'app_user_login' === $request->attributes->get('_route')
-        && $request->isMethod('POST');
+            && $request->isMethod('POST');
     }
 
     /**
@@ -99,7 +99,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'person');
+        return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'user');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -116,11 +116,14 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_wrc_templates', []));
-        }
+        $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
-        return new RedirectResponse($this->router->generate('app_wrc_templates', [], UrlGeneratorInterface::RELATIVE_PATH));
+        if(isset($application['defaultConfiguration']['configuration']['userPage'])){
+            return new RedirectResponse($this->router->generate($application['defaultConfiguration']['configuration']['userPage'], [], UrlGeneratorInterface::RELATIVE_PATH));
+
+        }else{
+            return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+        }
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
