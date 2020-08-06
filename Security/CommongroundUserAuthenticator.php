@@ -116,7 +116,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+        return new RedirectResponse($this->router->generate('app_user_login'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
