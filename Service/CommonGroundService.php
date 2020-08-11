@@ -896,7 +896,6 @@ class CommonGroundService
                     $autowire = $component['autowire'];
                 }
             }
-
             // If it is not we "gues" the endpoint (this is where we could force nlx)
             elseif ($this->params->get('app_internal') == 'true') {
                 $url = 'http://'.$url['component'].'.'.$this->params->get('app_env').$route;
