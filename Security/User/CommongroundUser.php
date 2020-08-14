@@ -36,7 +36,6 @@ class CommongroundUser implements UserInterface, EquatableInterface
     /* Either true or false if a user is a resident */
     private $resident;
 
-
     public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false)
     {
         $this->username = $username;
@@ -107,13 +106,13 @@ class CommongroundUser implements UserInterface, EquatableInterface
     // serialize and unserialize must be updated - see below
     public function serialize()
     {
-        return serialize(array(
+        return serialize([
             $this->username,
             $this->password,
             $this->isActive,
             // see section on salt below
             // $this->salt,
-        ));
+        ]);
     }
 
     public function unserialize($serialized)
@@ -121,8 +120,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
         list(
             $this->username,
             $this->password,
-            $this->isActive,
-            ) = unserialize($serialized);
+            $this->isActive) = unserialize($serialized);
     }
 
     public function isEqualTo(UserInterface $user)

@@ -5,13 +5,13 @@
 namespace Conduction\CommonGroundBundle\Security\User;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
+use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
 use Symfony\Component\Security\Core\Exception\UsernameNotFoundException;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
-use GuzzleHttp\Client;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class CommongroundProvider implements UserProviderInterface
 {
@@ -44,7 +44,6 @@ class CommongroundProvider implements UserProviderInterface
         $type = $user->getType();
         $person = $user->getPerson();
 
-
         return $this->fetchUser($username, $organization, $type, $person);
     }
 
@@ -56,38 +55,27 @@ class CommongroundProvider implements UserProviderInterface
     private function fetchUser($username, $organization, $type, $person)
     {
         //only trigger if type of user is organization
-        if($type == 'organization'){
+        if ($type == 'organization') {
             $client = new Client([
                 // Base URI is used with relative requests
                 'base_uri' => 'https://api.kvk.nl',
                 // You can set any number of default request options.
                 'timeout'  => 2.0,
             ]);
-
-
             $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$organization);
             $companies = json_decode($response->getBody()->getContents(), true);
-
             if (!$companies || count($companies) < 1) {
                 return;
             }
-
             $kvk = $companies['data']['items'][0];
-        }
-
-        //get user from brp
-        $users = $this->commonGroundService->getResourceList(['component'=>'brp', 'type'=>'ingeschrevenpersonen'], ['burgerservicenummer'=> $person], true)['hydra:member'];
-
-        //if fails we try to get user from uc component
-        if (!$users || count($users) < 1) {
+            $user = $this->commonGroundService->getResource($person);
+        } elseif ($type == 'person') {
+            $user = $this->commonGroundService->getResource($person);
+        } elseif ($type == 'user') {
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $username], true);
             $users = $users['hydra:member'];
-            if (!$users || count($users) < 1) {
-                return;
-            }
+            $user = $users[0];
         }
-
-        $user = $users[0];
 
         if (!isset($user['roles'])) {
             $user['roles'] = [];
@@ -98,42 +86,45 @@ class CommongroundProvider implements UserProviderInterface
         }
 
         //We create a CommongroundUser based on user type.
-        switch ($type){
+        switch ($type) {
             case 'person':
                 $resident = $this->checkResidence('person', $user, null);
-                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person', $resident);
+
+                return new CommongroundUser($user['naam']['voornamen'].' '.$user['naam']['geslachtsnaam'], $user['id'], null, $user['roles'], $user['@id'], null, 'person', $resident);
             case 'organization':
                 $resident = $this->checkResidence('organization', $user, $kvk);
-                return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'organization', $resident);
+
+                return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization', $resident);
             case 'user':
                 return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'user');
             default:
                 throw new UsernameNotFoundException(
                     sprintf('User "%s" does not exist.', $username)
                 );
-                break;
         }
-
     }
-    private function checkResidence($type, $user, $organization){
+
+    private function checkResidence($type, $user, $organization)
+    {
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
         $resident = false;
-        if(isset($application['defaultConfiguration']['configuration']['cityNames'])){
-            foreach ($application['defaultConfiguration']['configuration']['cityNames'] as $name){
-                if($type == 'person') {
+        if (isset($application['defaultConfiguration']['configuration']['cityNames'])) {
+            foreach ($application['defaultConfiguration']['configuration']['cityNames'] as $name) {
+                if ($type == 'person') {
                     if ($user['verblijfplaats']['woonplaatsnaam'] == $name) {
                         $resident = true;
                     }
-                }elseif($type == 'organization'){
-                    if($organization['addresses'][0]['city'] == $name){
+                } elseif ($type == 'organization') {
+                    if ($organization['addresses'][0]['city'] == $name) {
                         $resident = true;
                     }
-                }else{
+                } else {
                     $resident = false;
                 }
             }
+
             return $resident;
-        }else{
+        } else {
             return false;
         }
     }
