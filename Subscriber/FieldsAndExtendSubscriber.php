@@ -15,11 +15,11 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class FieldsAndExtendSubscriber implements EventSubscriberInterface
 {
-    private $params;
-    private $serializer;
+    private ParameterBagInterface $params;
+    private SerializerInterface $serializer;
     private $propertyAccessor;
-    private $em;
-    private $commonGroundService;
+    private EntityManagerInterface $em;
+    private CommonGroundService $commonGroundService;
 
     public function __construct(ParameterBagInterface $params, SerializerInterface $serializer, EntityManagerInterface $em, CommonGroundService $commonGroundService)
     {

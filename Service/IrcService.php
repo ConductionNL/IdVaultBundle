@@ -6,7 +6,7 @@ namespace Conduction\CommonGroundBundle\Service;
 
 class IrcService
 {
-    private $commonGroundService;
+    private CommonGroundService $commonGroundService;
 
     public function __construct(CommonGroundService $commonGroundService)
     {

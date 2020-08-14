@@ -27,13 +27,13 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 {
-    private $em;
-    private $params;
-    private $commonGroundService;
-    private $csrfTokenManager;
-    private $router;
-    private $urlGenerator;
-    private $session;
+    private EntityManagerInterface $em;
+    private ParameterBagInterface $params;
+    private CommonGroundService $commonGroundService;
+    private CsrfTokenManagerInterface $csrfTokenManager;
+    private RouterInterface $router;
+    private UrlGeneratorInterface $urlGenerator;
+    private SessionInterface $session;
 
     public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, SessionInterface $session)
     {

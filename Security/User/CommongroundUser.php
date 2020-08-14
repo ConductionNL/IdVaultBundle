@@ -10,31 +10,31 @@ use Symfony\Component\Security\Core\User\UserInterface;
 class CommongroundUser implements UserInterface, EquatableInterface
 {
     /* The username displayd */
-    private $username;
+    private string $username;
 
     /* Provide UUID instead of normal password */
-    private $password;
+    private string $password;
 
     /* Leave empty! */
-    private $salt;
+    private string $salt;
 
     /* Iether a BRP or CC person URI */
-    private $roles;
+    private array $roles;
 
     /* Always true */
-    private $isActive;
+    private bool $isActive;
 
     /* Iether a BRP or CC person URI */
-    private $person;
+    private ?string $person;
 
     /* Iether a kvk or wrc organization OR cc organization URI */
-    private $organization;
+    private ?string $organization;
 
     /* Either user, organisation, person, application */
-    private $type;
+    private ?string $type;
 
     /* Either true or false if a user is a resident */
-    private $resident;
+    private bool $resident;
 
     public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false)
     {

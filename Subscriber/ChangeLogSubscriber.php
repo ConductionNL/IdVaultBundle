@@ -14,10 +14,10 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class ChangeLogSubscriber implements EventSubscriberInterface
 {
-    private $params;
-    private $em;
-    private $serializer;
-    private $nlxLogService;
+    private ParameterBagInterface $params;
+    private EntityManagerInterface $em;
+    private SerializerInterface $serializer;
+    private NLXLogService $nlxLogService;
 
     public function __construct(ParameterBagInterface $params, EntityManagerInterface $em, SerializerInterface $serializer, NLXLogService $nlxLogService)
     {

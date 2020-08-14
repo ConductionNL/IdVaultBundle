@@ -29,12 +29,12 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 {
-    private $em;
-    private $params;
-    private $commonGroundService;
-    private $csrfTokenManager;
-    private $router;
-    private $urlGenerator;
+    private EntityManagerInterface $em;
+    private ParameterBagInterface $params;
+    private CommonGroundService $commonGroundService;
+    private CsrfTokenManagerInterface $csrfTokenManager;
+    private RouterInterface $router;
+    private UrlGeneratorInterface $urlGenerator;
 
     public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator)
     {

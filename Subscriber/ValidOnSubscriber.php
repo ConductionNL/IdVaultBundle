@@ -13,10 +13,10 @@ use Symfony\Component\Serializer\SerializerInterface;
 
 class ValidOnSubscriber implements EventSubscriberInterface
 {
-    private $params;
-    private $em;
-    private $serializer;
-    private $annotationReader;
+    private ParameterBagInterface $params;
+    private EntityManagerInterface $em;
+    private SerializerInterface $serializer;
+    private Reader $annotationReader;
 
     public function __construct(ParameterBagInterface $params, EntityManagerInterface $em, SerializerInterface $serializer, Reader $annotationReader)
     {

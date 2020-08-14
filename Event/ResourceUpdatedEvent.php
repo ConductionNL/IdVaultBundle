@@ -13,8 +13,8 @@ class ResourceUpdatedEvent extends Event
 {
     public const NAME = 'commonground.resource.updated';
 
-    protected $resource;
-    protected $component;
+    protected ?array $resource;
+    protected ?array $component;
 
     public function __construct(?array $resource, ?array $component)
     {

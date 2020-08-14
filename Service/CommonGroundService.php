@@ -22,39 +22,39 @@ class CommonGroundService
     /**
      * @var ParameterBagInterface
      */
-    private $params;
+    private ParameterBagInterface $params;
 
     /**
      * @var CacheInterface
      */
-    private $cache;
+    private CacheInterface $cache;
 
     /**
      * @var SessionInterface
      */
-    private $session;
+    private SessionInterface $session;
 
-    private $headers;
+    private array $headers;
 
     /**
      * @var RequestStack
      */
-    private $requestStack;
+    private RequestStack $requestStack;
 
     /**
      * @var FlashBagInterface
      */
-    private $flash;
+    private FlashBagInterface $flash;
 
     /**
      * @var TranslatorInterface
      */
-    private $translator;
+    private TranslatorInterface $translator;
 
     /**
      * @var EventDispatcherInterface
      */
-    private $eventDispatcher;
+    private EventDispatcherInterface $eventDispatcher;
 
     public function __construct(
         ParameterBagInterface $params,

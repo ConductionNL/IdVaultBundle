@@ -11,13 +11,12 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class RequestService
 {
-    private $params;
-    private $cache;
-    private $client;
-    private $session;
-    private $commonGroundService;
-    private $camundaService;
-    private $messageService;
+    private ParameterBagInterface $params;
+    private CacheInterface $cache;
+    private SessionInterface $session;
+    private CommonGroundService $commonGroundService;
+    private CamundaService $camundaService;
+    private MessageService $messageService;
 
     public function __construct(
         ParameterBagInterface $params,

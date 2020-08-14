@@ -63,7 +63,7 @@ class ChangeLog extends AbstractLogEntry
      * @ORM\GeneratedValue(strategy="CUSTOM")
      * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
      */
-    protected $id;
+    protected UuidInterface $id;
 
     /**
      * @var string A note conserning this log lin
@@ -76,7 +76,7 @@ class ChangeLog extends AbstractLogEntry
      * @Groups({"read","write"})
      * @ORM\Column(type="text", nullable=true)
      */
-    private $note;
+    private string $note;
 
     /**
      * @var string
@@ -84,14 +84,14 @@ class ChangeLog extends AbstractLogEntry
      * @Groups({"read"})
      * @ORM\Column(type="string", length=8)
      */
-    protected $action;
+    protected string $action;
 
     /**
      * @var DateTime
      *
      * @ORM\Column(name="logged_at", type="datetime")
      */
-    protected $loggedAt;
+    protected DateTime $loggedAt;
 
     /**
      * @var string
@@ -99,7 +99,7 @@ class ChangeLog extends AbstractLogEntry
      * @Groups({"read"})
      * @ORM\Column(name="object_id", length=64, nullable=true)
      */
-    protected $objectId;
+    protected string $objectId;
 
     /**
      * @var string
@@ -107,7 +107,7 @@ class ChangeLog extends AbstractLogEntry
      * @Groups({"read"})
      * @ORM\Column(name="object_class", type="string", length=255)
      */
-    protected $objectClass;
+    protected string $objectClass;
 
     /**
      * @var int
@@ -115,7 +115,7 @@ class ChangeLog extends AbstractLogEntry
      * @Groups({"read"})
      * @ORM\Column(type="integer")
      */
-    protected $version;
+    protected string $version;
 
     /**
      * @var array
@@ -123,7 +123,7 @@ class ChangeLog extends AbstractLogEntry
      * @Groups({"read"})
      * @ORM\Column(type="array", nullable=true)
      */
-    protected $data;
+    protected array $data;
 
     /**
      * @var string
@@ -131,7 +131,7 @@ class ChangeLog extends AbstractLogEntry
      * @Groups({"read"})
      * @ORM\Column(length=255, nullable=true)
      */
-    protected $username;
+    protected string $username;
 
     /**
      * @var string The moment this request was created
@@ -142,7 +142,7 @@ class ChangeLog extends AbstractLogEntry
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $session;
+    private string $session;
 
     /**
      * @var Datetime The moment this request was created
@@ -152,7 +152,7 @@ class ChangeLog extends AbstractLogEntry
      * @Gedmo\Timestampable(on="create")
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $dateCreated;
+    private DateTime $dateCreated;
 
     /**
      * @var Datetime The moment this request last Modified
@@ -162,14 +162,14 @@ class ChangeLog extends AbstractLogEntry
      * @Gedmo\Timestampable(on="update")
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $dateModified;
+    private DateTime $dateModified;
 
-    public function getId(): Uuid
+    public function getId(): UuidInterface
     {
         return $this->id;
     }
 
-    public function setId(Uuid $id): self
+    public function setId(UuidInterface $id): self
     {
         $this->id = $id;
 

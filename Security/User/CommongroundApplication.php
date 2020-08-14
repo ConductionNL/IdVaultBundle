@@ -9,10 +9,10 @@ use Symfony\Component\Security\Core\User\UserInterface;
 
 class CommongroundApplication implements UserInterface, EquatableInterface
 {
-    private $username;
-    private $password;
-    private $salt;
-    private $roles;
+    private string $username;
+    private string $password;
+    private string $salt;
+    private array $roles;
 
     public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [])
     {

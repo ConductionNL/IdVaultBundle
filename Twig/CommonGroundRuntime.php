@@ -11,9 +11,9 @@ use Twig\Extension\RuntimeExtensionInterface;
 
 class CommonGroundRuntime implements RuntimeExtensionInterface
 {
-    private $commongroundService;
-    private $params;
-    private $router;
+    private CommonGroundService $commongroundService;
+    private ParameterBagInterface $params;
+    private RouterInterface $router;
 
     public function __construct(CommonGroundService $commongroundService, ParameterBagInterface $params, RouterInterface $router)
     {

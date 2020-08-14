@@ -74,7 +74,7 @@ class AuditTrail
      * @ORM\GeneratedValue(strategy="CUSTOM")
      * @ORM\CustomIdGenerator(class="Ramsey\Uuid\Doctrine\UuidGenerator")
      */
-    private $id;
+    private UuidInterface $id;
 
     /**
      * @var string A note conserning this log lin
@@ -87,7 +87,7 @@ class AuditTrail
      * @Groups({"read","write"})
      * @ORM\Column(type="text", nullable=true)
      */
-    private $note;
+    private string $note;
 
     /**
      * @var string The application that made the request
@@ -99,7 +99,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $application;
+    private string $application;
 
     /**
      * @var string The id of the request within that application
@@ -111,7 +111,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $request;
+    private string $request;
 
     /**
      * @var string The user on behalf of wich the request was made
@@ -123,7 +123,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255, nullable=true, name="username")
      */
-    private $user;
+    private string $user;
 
     /**
      * @var string ???
@@ -134,7 +134,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $subject;
+    private string $subject;
 
     /**
      * @var string The procces on behalf of wich the request was made
@@ -145,7 +145,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $process;
+    private string $process;
 
     /**
      * @var array The moment this request was created
@@ -153,7 +153,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="array", nullable=true)
      */
-    private $dataElements = [];
+    private array $dataElements = [];
 
     /**
      * @var array The moment this request was created
@@ -161,7 +161,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="array", nullable=true)
      */
-    private $dataSubjects = [];
+    private array $dataSubjects = [];
 
     /**
      * @var string The resource that was requested
@@ -172,7 +172,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $resource;
+    private string $resource;
 
     /**
      * @var string The type of the resource that was requested
@@ -183,7 +183,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255, nullable=true)
      */
-    private $resourceType;
+    private string $resourceType;
 
     /**
      * @var string The moment this request was created
@@ -194,7 +194,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255)
      */
-    private $route;
+    private string $route;
 
     /**
      * @var string The endpoint that the request was made to
@@ -205,7 +205,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255)
      */
-    private $endpoint;
+    private string $endpoint;
 
     /**
      * @var string The method that was used
@@ -216,7 +216,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=10)
      */
-    private $method;
+    private string $method;
 
     /**
      * @var string The contentType that was reqousted
@@ -227,7 +227,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255)
      */
-    private $accept;
+    private string $accept;
 
     /**
      * @var string The contentType that was suplieds
@@ -238,7 +238,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255)
      */
-    private $contentType;
+    private string $contentType;
 
     /**
      * @var string The moment this request was created
@@ -249,7 +249,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="text", nullable=true)
      */
-    private $content;
+    private string $content;
 
     /**
      * @var string The moment this request was created
@@ -260,7 +260,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255)
      */
-    private $ip;
+    private string $ip;
 
     /**
      * @var string The moment this request was created
@@ -271,7 +271,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="string", length=255)
      */
-    private $session;
+    private string $session;
 
     /**
      * @var array The headers supplied by client
@@ -279,7 +279,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="array")
      */
-    private $headers = [];
+    private array $headers = [];
 
     /**
      * @var int The status code returned to client
@@ -289,7 +289,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="integer", nullable=true)
      */
-    private $statusCode;
+    private int $statusCode;
 
     /**
      * @var bool Whether or not the reqousted endpoint was found
@@ -299,7 +299,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private $notFound = false;
+    private bool $notFound = false;
 
     /**
      * @var bool Whether or not the client was allowed to the reqousted endpoint
@@ -309,7 +309,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private $forbidden = false;
+    private bool $forbidden = false;
 
     /**
      * @var bool Whether or not there where any problems
@@ -319,7 +319,7 @@ class AuditTrail
      * @Groups({"read"})
      * @ORM\Column(type="boolean", nullable=true)
      */
-    private $ok = true;
+    private bool $ok = true;
 
     /**
      * @var Datetime The moment this request was created
@@ -329,7 +329,7 @@ class AuditTrail
      * @Gedmo\Timestampable(on="create")
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $dateCreated;
+    private DateTime $dateCreated;
 
     /**
      * @var Datetime The moment this request last Modified
@@ -339,14 +339,14 @@ class AuditTrail
      * @Gedmo\Timestampable(on="update")
      * @ORM\Column(type="datetime", nullable=true)
      */
-    private $dateModified;
+    private DateTime $dateModified;
 
-    public function getId(): Uuid
+    public function getId(): UuidInterface
     {
         return $this->id;
     }
 
-    public function setId(Uuid $id): self
+    public function setId(UuidInterface $id): self
     {
         $this->id = $id;
 

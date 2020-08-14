@@ -13,8 +13,8 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 
 class CommongroundUserProvider implements UserProviderInterface
 {
-    private $params;
-    private $commonGroundService;
+    private ParameterBagInterface $params;
+    private CommonGroundService $commonGroundService;
 
     public function __construct(ParameterBagInterface $params, CommonGroundService $commonGroundService)
     {

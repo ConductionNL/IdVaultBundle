@@ -10,7 +10,7 @@ use Symfony\Component\HttpKernel\KernelEvents;
 
 class VrcSubscriber implements EventSubscriberInterface
 {
-    private $vrcService;
+    private VrcService $vrcService;
 
     public function __construct(VrcService $vrcService)
     {

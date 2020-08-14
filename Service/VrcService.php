@@ -10,8 +10,8 @@ namespace Conduction\CommonGroundBundle\Service;
  */
 class VrcService
 {
-    private $commonGroundService;
-    private $camundaService;
+    private CommonGroundService $commonGroundService;
+    private CamundaService $camundaService;
 
     public function __construct(CommonGroundService $commonGroundService, CamundaService $camundaService)
     {

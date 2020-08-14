@@ -17,7 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class NLXLogService
 {
-    private $em;
+    private EntityManagerInterface $em;
 
     public function __construct(EntityManagerInterface $em)
     {

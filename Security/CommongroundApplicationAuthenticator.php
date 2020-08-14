@@ -18,8 +18,8 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class CommongroundApplicationAuthenticator extends AbstractGuardAuthenticator
 {
-    private $em;
-    private $params;
+    private EntityManagerInterface $em;
+    private ParameterBagInterface $params;
 
     public function __construct(EntityManagerInterface $em, ParameterBagInterface $params)
     {

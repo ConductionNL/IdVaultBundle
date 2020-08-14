@@ -8,16 +8,15 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class MessageService
 {
-    private $params;
-    private $cache;
-    private $client;
-    private $session;
-    private $commonGroundService;
+    private ParameterBagInterface $params;
+    private CacheInterface $cache;
+    private SessionInterface $session;
+    private CommonGroundService $commonGroundService;
 
     public function __construct(ParameterBagInterface $params, CacheInterface $cache, SessionInterface $session, CommonGroundService $commonGroundService)
     {
         $this->params = $params;
-        $this->cash = $cache;
+        $this->cache = $cache;
         $this->session = $session;
         $this->commonGroundService = $commonGroundService;
     }

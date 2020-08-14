@@ -8,7 +8,7 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 class IrcSubscriber implements EventSubscriberInterface
 {
-    private $ircService;
+    private IrcService $ircService;
 
     public function __construct(IrcService $ircService)
     {
