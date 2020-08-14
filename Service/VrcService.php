@@ -64,13 +64,17 @@ class VrcService
             return;
         }
 
-        // If the request has Zaak properties we need to trigger those
-        if (array_key_exists('caseType', $requestType) && !array_key_exists('cases', $resource)) {
-            /* @todo create a case */
+        // Run the request through the very small business engine
+        if ($this->commonGroundService->getComponentHealth('vsbe')) {
+            $vsbeResource = [];
+            $vsbeResource['object'] = $resource['@id'];
+            $vsbeResource['action'] = 'CREATE';
+
+            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
         }
 
         // Let run al the tasks
-        if (array_key_exists('tasks', $requestType)) {
+        if (array_key_exists('tasks', $requestType) && $this->commonGroundService->getComponentHealth('qc')) {
             // Loop trough the tasks atached to this resource and add them to the stack
             foreach ($requestType['tasks'] as $trigger) {
                 if (!$trigger['event'] || $trigger['event'] == 'create') {
@@ -113,8 +117,17 @@ class VrcService
             return;
         }
 
+        // Run the request through the very small business engine
+        if ($this->commonGroundService->getComponentHealth('vsbe')) {
+            $vsbeResource = [];
+            $vsbeResource['object'] = $resource['@id'];
+            $vsbeResource['action'] = 'UPDATE';
+
+            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
+        }
+
         // Let run al the tasks
-        if (array_key_exists('tasks', $requestType)) {
+        if (array_key_exists('tasks', $requestType) && $this->commonGroundService->getComponentHealth('qc')) {
             // Loop trough the tasks atached to this resource and add them to the stack
             foreach ($requestType['tasks'] as $trigger) {
                 if (!$trigger['event'] || $trigger['event'] == 'update') {
