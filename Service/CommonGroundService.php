@@ -418,13 +418,13 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
-        $event = new CommongroundUpdateEvent($resource, $component);
+
+        $event = new CommongroundUpdateEvent($response, $component);
         $this->eventDispatcher->dispatch(
             $event,
-            CommonGroundEvents::UPDATE
+            CommonGroundEvents::UPDATED
         );
-        */
+
         return $response;
     }
 
@@ -507,13 +507,11 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
-        $event = new CommongroundUpdateEvent($resource, $component);
+        $event = new CommongroundUpdateEvent($response, $component);
         $this->eventDispatcher->dispatch(
             $event,
             CommonGroundEvents::CREATED
         );
-        */
         return $response;
     }
 
