@@ -68,6 +68,7 @@ class VrcService
         if($this->commonGroundService->getComponentHealth('vsbe')){
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
+            $vsbeResource['action'] = 'CREATE';
 
             $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe','type'=>'results']);
         }
@@ -115,6 +116,15 @@ class VrcService
         // Lets first see if we can grap an requested type
         if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
             return;
+        }
+
+        // Run the request through the very small business engine
+        if($this->commonGroundService->getComponentHealth('vsbe')){
+            $vsbeResource = [];
+            $vsbeResource['object'] = $resource['@id'];
+            $vsbeResource['action'] = 'UPDATE';
+
+            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe','type'=>'results']);
         }
 
         // Let run al the tasks
