@@ -512,6 +512,7 @@ class CommonGroundService
             $event,
             CommonGroundEvents::CREATED
         );
+
         return $response;
     }
 
@@ -983,13 +984,12 @@ class CommonGroundService
         return false;
     }
 
-
     /*
      * Get the health of a commonground componant
      */
     public function getComponentHealth(string $component, $force = false)
     {
-        $url = $this->cleanUrl(["component"=>$component]);
+        $url = $this->cleanUrl(['component'=>$component]);
 
         $item = $this->cache->getItem('componentHealth_'.md5($component));
         if ($item->isHit() && !$force) {
@@ -1000,17 +1000,15 @@ class CommonGroundService
         $headers = $this->headers;
 
         // Component specific congiguration
-        $headers['Accept'] = "application/health+json";
+        $headers['Accept'] = 'application/health+json';
 
         try {
             $response = $this->client->request('GET', $url, ['headers' => $headers, 'http_errors' => false]);
-            if($response->getStatusCode() == 200){
+            if ($response->getStatusCode() == 200) {
                 $item->set(true);
-            }
-            else{
+            } else {
                 $item->set(false);
             }
-
         } catch (\Exception $e) {
             $item->set(false);
         }
@@ -1026,7 +1024,6 @@ class CommonGroundService
      */
     public function getComponentResources(string $component, $force = false)
     {
-
     }
 
     /*

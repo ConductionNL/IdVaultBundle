@@ -65,14 +65,13 @@ class VrcService
         }
 
         // Run the request through the very small business engine
-        if($this->commonGroundService->getComponentHealth('vsbe')){
+        if ($this->commonGroundService->getComponentHealth('vsbe')) {
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
             $vsbeResource['action'] = 'CREATE';
 
-            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe','type'=>'results']);
+            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
         }
-
 
         // Let run al the tasks
         if (array_key_exists('tasks', $requestType) && $this->commonGroundService->getComponentHealth('qc')) {
@@ -119,12 +118,12 @@ class VrcService
         }
 
         // Run the request through the very small business engine
-        if($this->commonGroundService->getComponentHealth('vsbe')){
+        if ($this->commonGroundService->getComponentHealth('vsbe')) {
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
             $vsbeResource['action'] = 'UPDATE';
 
-            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe','type'=>'results']);
+            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
         }
 
         // Let run al the tasks
