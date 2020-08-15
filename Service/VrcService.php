@@ -453,24 +453,24 @@ class VrcService
                     //$order['customer'] = $request['submmiters'];
                 }
 
-                $request['order'] = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders'])['@id'];
-                $order = $request['order'];
+                $order = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders']);
+                $request['order'] = $order['@id'];
             }
             else{
                 $order = $this->commonGroundService->getResource($request['order'], [], true);
             }
 
             $orderItems = [];
-            foreach($order['items'] as $orderItem){
-                // Needs to be deleted
-                if(!array_key_exists($orderItem['offer'], $requestItems)){
-                    var_dump($orderItem['id'].'need to be deleted');
-                    $this->commonGroundService->deleteResource($orderItem);
-                    continue;
+            if(array_key_exists('items',$order)){
+                foreach($order['items'] as $orderItem){
+                    // Needs to be deleted
+                    if(!array_key_exists($orderItem['offer'], $requestItems)){
+                        $this->commonGroundService->deleteResource($orderItem);
+                        continue;
+                    }
+                    // Als we need to keep it
+                    $orderItems[$orderItem['offer']] = $orderItem;
                 }
-                // Als we need to keep it
-                var_dump($orderItem['id'].'need to be kept');
-                $orderItems[$orderItem['offer']] = $orderItem;
             }
 
             foreach($requestItems as $requestItemId => $requestItem){
@@ -481,15 +481,16 @@ class VrcService
                 // We need to add it
                 $requestItem['order'] = $request['order'];
                 $orderItem = $this->commonGroundService->saveResource($requestItem, ['component' => 'orc', 'type' => 'order_items']);
-                var_dump($orderItem['id'].'need to be added');
             }
+
+            // Lets reload the recalculated order
+            $request['order'] = $this->commonGroundService->getResource($request['order'],[],true)['@id'];
 
             unset($request['submitters']);
             unset($request['roles']);
             $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'request'], true, false);
 
         }
-
         return $request;
     }
 
