@@ -25,6 +25,30 @@ class VrcService
      * @param array $resource The resource before enrichment
      * @param array The resource afther enrichment
      */
+    public function onResource(?array $resource)
+    {
+
+        return $resource;
+    }
+
+    /*
+     * Validates a resource with optional commonground and component specific logic
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function onList(?array $resource)
+    {
+
+        return $resource;
+    }
+
+    /*
+     * Validates a resource with optional commonground and component specific logic
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
     public function onSave(?array $resource)
     {
         // Lets get the request type
@@ -53,6 +77,123 @@ class VrcService
     }
 
     /*
+     * Validates a resource with optional commonground and component specific logic
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function onSaved(?array $resource)
+    {
+
+        // Let see if we need to create an order
+        $resource = $this->checkOrder();
+
+        return $resource;
+    }
+
+    /*
+     * Validates a resource with optional commonground and component specific logic
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function onDelete(?array $resource)
+    {
+
+        return $resource;
+    }
+
+    /*
+     * Validates a resource with optional commonground and component specific logic
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function onDeleted(?array $resource)
+    {
+
+        return $resource;
+    }
+
+    /*
+     * Validates a resource with optional commonground and component specific logic
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function onUpdate(?array $resource)
+    {
+
+        return $resource;
+    }
+
+    /*
+         * Aditional logic triggerd afther a Request has been newly created
+         *
+         * @param array $resource The resource before enrichment
+         * @return array The resource afther enrichment
+         */
+    public function onUpdated(?array $resource)
+    {
+        // Lets first see if we can grap an requested type
+        if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
+            return;
+        }
+        // Run the request through the very small business engine
+        if ($this->commonGroundService->getComponentHealth('vsbe')) {
+            $vsbeResource = [];
+            $vsbeResource['object'] = $resource['@id'];
+            $vsbeResource['action'] = 'UPDATE';
+
+            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
+        }
+
+        // Let run al the tasks
+        if (array_key_exists('tasks', $requestType)) {
+            // Loop trough the tasks atached to this resource and add them to the stack
+            foreach ($requestType['tasks'] as $trigger) {
+                if (!$trigger['event'] || $trigger['event'] == 'update') {
+                    // Lets preparte the task for the que
+                    unset($trigger['id']);
+                    unset($trigger['@id']);
+                    unset($trigger['@type']);
+                    unset($trigger['dateCreated']);
+                    unset($trigger['dateModified']);
+                    unset($trigger['requestBody']);
+
+                    // Lets hook the task to the propper resource
+                    $trigger['resource'] = $resource['@id'];
+                    $trigger['type'] = strtoupper($trigger['type']);
+
+                    // Lets set the time to trigger
+                    $dateToTrigger = new \DateTime();
+                    $dateToTrigger->add(new \DateInterval($trigger['timeInterval']));
+                    $trigger['dateToTrigger'] = $dateToTrigger->format('Y-m-d H:i:s');
+
+                    // Lets add the task to the que
+                    $trigger = $this->commonGroundService->createResource($trigger, ['component'=>'qc', 'type'=>'tasks']);
+                }
+            }
+        }
+
+        $this->checkOrder($resource);
+
+        return $resource;
+    }
+
+    /*
+     * Validates a resource with optional commonground and component specific logic
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function onCreate(?array $resource)
+    {
+
+        return $resource;
+    }
+
+    /*
      * Aditional logic triggerd afther a Request has been newly created
      *
      * @param array $resource The resource before enrichment
@@ -63,7 +204,7 @@ class VrcService
         if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
             return;
         }
-
+        
         // Run the request through the very small business engine
         if ($this->commonGroundService->getComponentHealth('vsbe')) {
             $vsbeResource = [];
@@ -73,8 +214,13 @@ class VrcService
             $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
         }
 
+        // If the request has Zaak properties we need to trigger those
+        if (array_key_exists('caseType', $requestType) && !array_key_exists('cases', $resource)) {
+            /* @todo create a case */
+        }
+
         // Let run al the tasks
-        if (array_key_exists('tasks', $requestType) && $this->commonGroundService->getComponentHealth('qc')) {
+        if (array_key_exists('tasks', $requestType)) {
             // Loop trough the tasks atached to this resource and add them to the stack
             foreach ($requestType['tasks'] as $trigger) {
                 if (!$trigger['event'] || $trigger['event'] == 'create') {
@@ -101,58 +247,8 @@ class VrcService
             }
         }
 
-        return $resource;
-    }
-
-    /*
-     * Aditional logic triggerd afther a Request has been newly created
-     *
-     * @param array $resource The resource before enrichment
-     * @return array The resource afther enrichment
-     */
-    public function onUpdated(?array $resource)
-    {
-        // Lets first see if we can grap an requested type
-        if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
-            return;
-        }
-
-        // Run the request through the very small business engine
-        if ($this->commonGroundService->getComponentHealth('vsbe')) {
-            $vsbeResource = [];
-            $vsbeResource['object'] = $resource['@id'];
-            $vsbeResource['action'] = 'UPDATE';
-
-            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
-        }
-
-        // Let run al the tasks
-        if (array_key_exists('tasks', $requestType) && $this->commonGroundService->getComponentHealth('qc')) {
-            // Loop trough the tasks atached to this resource and add them to the stack
-            foreach ($requestType['tasks'] as $trigger) {
-                if (!$trigger['event'] || $trigger['event'] == 'update') {
-                    // Lets preparte the task for the que
-                    unset($trigger['id']);
-                    unset($trigger['@id']);
-                    unset($trigger['@type']);
-                    unset($trigger['dateCreated']);
-                    unset($trigger['dateModified']);
-                    unset($trigger['requestBody']);
-
-                    // Lets hook the task to the propper resource
-                    $trigger['resource'] = $resource['@id'];
-                    $trigger['type'] = strtoupper($trigger['type']);
-
-                    // Lets set the time to trigger
-                    $dateToTrigger = new \DateTime();
-                    $dateToTrigger->add(new \DateInterval($trigger['timeInterval']));
-                    $trigger['dateToTrigger'] = $dateToTrigger->format('Y-m-d H:i:s');
-
-                    // Lets add the task to the que
-                    $trigger = $this->commonGroundService->createResource($trigger, ['component'=>'qc', 'type'=>'tasks']);
-                }
-            }
-        }
+        // Lets see if this request should have an order
+        $this->checkOrder($resource);
 
         return $resource;
     }
@@ -266,6 +362,83 @@ class VrcService
     }
 
     /*
+     * This function tests if a order should be created
+     *
+     * @param array $request The request before stage completion checks
+     * @return array The resourceType afther stage completion checks
+     */
+    public function checkOrder(?array $request)
+    {
+        // Lets first see if we can grap an requested type and if it has stages
+        if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
+            return $request;
+        }
+
+        // Let transform the request properties in something we can search
+        $requestTypeProperties = [];
+        foreach ($requestType['properties'] as $property) {
+            $requestTypeProperties[$property['name']] = $property;
+        }
+
+        // Let check the property
+        $products = [];
+        foreach ($request['properties'] as $name => $value) {
+            // Lets see if the property is part of the request type
+            if(!in_array($name, $requestTypeProperties)){
+                // property is not part of the provide request type
+                continue;
+            }
+            $checkProperty = $requestTypeProperties[$name];
+
+            // Lets see if the property is an product
+            if($checkProperty['iri'] == 'pdc/offer'){
+                if(is_array($value)){
+                    array_merge($products, $value);
+                }
+                else{
+                    $products[] = $value;
+                }
+            }
+
+        }
+
+        if(count($products) > 0){
+            //  Order Items
+            $orderItems = [];
+            foreach($products as $product){
+                $product = $this->commonGroundService->getResource($product);
+                $orderItem = [];
+                $orderItem['offer'] = $product['@id'];
+                if(in_array('name',$product)){$orderItem['name'] = $product['name'];}
+                if(in_array('description',$product)){$orderItem['description'] = $product['description'];}
+                $orderItem['price'] = $product['price'];
+                $orderItem['priceCurrency'] = $product['priceCurrency'];
+                $orderItem['quantity'] = 1;
+                $orderItems[] = $orderItem;
+            }
+
+           // Lets make sure that the request has an order
+           if(!in_array('order',$request) || !$request['order']){
+               $order = [];
+
+               $order['name'] = $request['reference'];
+               $order['description'] = $request['reference'];
+               $order['organization'] = $request['organization'];
+
+               $request['order'] = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders']);
+           }
+
+           foreach($orderItems as $orderItem){
+               $orderItem['order'] = $request['order'];
+               $orderItem = $this->commonGroundService->saveResource($orderItem, ['component' => 'orc', 'type' => 'order_items']);
+           }
+
+        }
+
+        return $request;
+    }
+
+    /*
      * Gets a requestType from a request and validates stage completion
      *
      * @param array $request The request before stage completion checks
@@ -286,13 +459,31 @@ class VrcService
      * @param string $property The key of the property to checks
      * @return boolean Whether or not a property is valid to its requestTypes
      */
-    public function checkProperty(?array $request, $propertys)
+    public function checkProperty(?array $request, $property)
     {
         // Lets first see if we can grap an requested type and if it has stages
         if (!$requestType = $this->commonGroundService->getResource($resource['requestType']) || !array_key_exists('stages', $requestType)) {
-            return;
+            return ['value'=>null,'valid'=>false,'message'=>'could not be checked'];
         }
 
-        return $requestType;
+        // Let transform the request properties in something we can search
+        foreach ($request['properties'] as $name => $value) {
+            // Lets see if the property is part of the request type
+            if(!in_array($name, $requestTypeProperties)){
+                // property is not part of the provide request type
+                continue;
+            }
+            $checkProperty = $requestTypeProperties[$name];
+
+            // Lets see if the property is an product
+            if($checkProperty['iri'] == 'pdc/offer'){
+
+            }
+
+        }
+
+
+
+        return ['value'=>null,'valid'=>false,'message'=>'could not be checked'];
     }
 }

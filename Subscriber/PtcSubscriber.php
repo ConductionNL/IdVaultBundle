@@ -4,17 +4,17 @@ namespace Conduction\CommonGroundBundle\Subscriber;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
-use Conduction\CommonGroundBundle\Service\VrcService;
+use Conduction\CommonGroundBundle\Service\PtcService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-class VrcSubscriber implements EventSubscriberInterface
+class PtcSubscriber implements EventSubscriberInterface
 {
     private $vrcService;
 
-    public function __construct(VrcService $vrcService)
+    public function __construct(PtcService $ptcService)
     {
-        $this->vrcService = $vrcService;
+        $this->ptcService = $ptcService;
     }
 
     public static function getSubscribedEvents()
@@ -36,6 +36,8 @@ class VrcSubscriber implements EventSubscriberInterface
             //ResourceSaveEvent::NAME => 'onSave',
         ];
     }
+
+
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function resource(CommongroundUpdateEvent $event)
