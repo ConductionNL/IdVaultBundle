@@ -140,6 +140,7 @@ class VrcService
             return;
         }
         // Run the request through the very small business engine
+        /*
         if ($this->commonGroundService->getComponentHealth('vsbe')) {
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
@@ -147,7 +148,7 @@ class VrcService
 
             $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
         }
-
+        */
         // Let run al the tasks
         if (array_key_exists('tasks', $requestType)) {
             // Loop trough the tasks atached to this resource and add them to the stack
@@ -206,6 +207,7 @@ class VrcService
         }
 
         // Run the request through the very small business engine
+        /*
         if ($this->commonGroundService->getComponentHealth('vsbe')) {
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
@@ -213,7 +215,7 @@ class VrcService
 
             $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
         }
-
+        */
         // If the request has Zaak properties we need to trigger those
         if (array_key_exists('caseType', $requestType) && !array_key_exists('cases', $resource)) {
             /* @todo create a case */
