@@ -40,106 +40,42 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function resource(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getResource()['@type'] != 'Request') {
-            return;
-        }
-
-        $resource = $this->vrcService->onResource($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
-
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function list(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getList()['@type'] != 'Request') {
-            return;
-        }
-
-        $resource = $this->vrcService->onList($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function save(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getSave()['@type'] != 'Request') {
-            return;
-        }
-
-        $resource = $this->vrcService->onSave($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function saved(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getSaved()['@type'] != 'Request') {
-            return;
-        }
-
-        $resource = $this->vrcService->onSaved($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function delete(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getDelete()['@type'] != 'Request') {
-            return;
-        }
-
-        $resource = $this->vrcService->onDelete($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function deleted(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getDelteted()['@type'] != 'Request') {
-            return;
-        }
-
-        $resource = $this->vrcService->onDeleted($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function update(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getUpdate()['@type'] != 'Request') {
-            return;
-        }
-
-        $resource = $this->vrcService->onUpdate($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
@@ -161,15 +97,6 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function create(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getCreate()['@type'] != 'Request') {
-            return;
-        }
-
-        $resource = $this->vrcService->onCreate($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 

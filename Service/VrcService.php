@@ -206,7 +206,7 @@ class VrcService
         if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
             return;
         }
-        
+
         // Run the request through the very small business engine
         /*
         if ($this->commonGroundService->getComponentHealth('vsbe')) {
@@ -374,68 +374,119 @@ class VrcService
     public function checkOrder(?array $request)
     {
         // Lets first see if we can grap an requested type and if it has stages
-        if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
+        if (!$requestType = $this->commonGroundService->getResource($request['requestType'])) {
             return $request;
         }
 
         // Let transform the request properties in something we can search
         $requestTypeProperties = [];
         foreach ($requestType['properties'] as $property) {
-            $requestTypeProperties[$property['name']] = $property;
+            if(in_array('iri',$property) && $property['iri'] == "pdc/offer"){
+                $requestTypeProperties[$property['name']] = $property;
+            }
+        }
+
+        // Lets skip all other things if this request type isn't supposed to contain products
+        if(count($requestTypeProperties) == 0){
+            return $request;
         }
 
         // Let check the property
         $products = [];
         foreach ($request['properties'] as $name => $value) {
             // Lets see if the property is part of the request type
-            if(!in_array($name, $requestTypeProperties)){
+            if(!array_key_exists($name, $requestTypeProperties)){
                 // property is not part of the provide request type
                 continue;
             }
-            $checkProperty = $requestTypeProperties[$name];
 
-            // Lets see if the property is an product
-            if($checkProperty['iri'] == 'pdc/offer'){
-                if(is_array($value)){
-                    array_merge($products, $value);
-                }
-                else{
-                    $products[] = $value;
-                }
+            // Lets handle possible array values
+            if(is_array($value)){
+                $products = array_merge($products, $value);
             }
+            else{
+                $products[] = $value;
+            }
+        }
 
+        // Lets skip all other things if we do not have products
+        if(count($products) == 0){
+            return $request;
         }
 
         if(count($products) > 0){
             //  Order Items
-            $orderItems = [];
+            $requestItems = [];
             foreach($products as $product){
                 $product = $this->commonGroundService->getResource($product);
                 $orderItem = [];
                 $orderItem['offer'] = $product['@id'];
                 if(in_array('name',$product)){$orderItem['name'] = $product['name'];}
                 if(in_array('description',$product)){$orderItem['description'] = $product['description'];}
-                $orderItem['price'] = $product['price'];
+                $orderItem['price'] = (string) $product['price'];
                 $orderItem['priceCurrency'] = $product['priceCurrency'];
                 $orderItem['quantity'] = 1;
-                $orderItems[] = $orderItem;
+                $requestItems[$product['@id']] = $orderItem;
             }
 
-           // Lets make sure that the request has an order
-           if(!in_array('order',$request) || !$request['order']){
-               $order = [];
+            // Lets make sure that the request has an order
+            if(!array_key_exists('order',$request) || !$request['order']){
+                $order = [];
 
-               $order['name'] = $request['reference'];
-               $order['description'] = $request['reference'];
-               $order['organization'] = $request['organization'];
+                $order['name'] = $request['reference'];
+                $order['description'] = $request['reference'];
+                $order['organization'] = $request['organization'];
+                $order['resources'] = [$request['@id']];
 
-               $request['order'] = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders']);
-           }
+                // Determining the custommer
+                if(array_key_exists('submitters', $request) && !empty($request['submitters'])){
+                    // Lets go trought the options here
+                    if(array_key_exists('brp', $request['submitters'][0])){
+                        $order['customer'] = $request['submitters'][0]['brp'];
+                    }
+                    else{
+                        $order['customer'] = $request['submitters'][0]['person'];
+                    }
+                }
+                else{
+                    /* @todo use the user */
+                    //$order['customer'] = $request['submmiters'];
+                }
 
-           foreach($orderItems as $orderItem){
-               $orderItem['order'] = $request['order'];
-               $orderItem = $this->commonGroundService->saveResource($orderItem, ['component' => 'orc', 'type' => 'order_items']);
-           }
+                $request['order'] = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders'])['@id'];
+                $order = $request['order'];
+            }
+            else{
+                $order = $this->commonGroundService->getResource($request['order'], [], true);
+            }
+
+            $orderItems = [];
+            foreach($order['items'] as $orderItem){
+                // Needs to be deleted
+                if(!array_key_exists($orderItem['offer'], $requestItems)){
+                    var_dump($orderItem['id'].'need to be deleted');
+                    $this->commonGroundService->deleteResource($orderItem);
+                    continue;
+                }
+                // Als we need to keep it
+                var_dump($orderItem['id'].'need to be kept');
+                $orderItems[$orderItem['offer']] = $orderItem;
+            }
+
+            foreach($requestItems as $requestItemId => $requestItem){
+                //let see if we already have it
+                if(array_key_exists($requestItemId,$orderItems)){
+                    continue;
+                }
+                // We need to add it
+                $requestItem['order'] = $request['order'];
+                $orderItem = $this->commonGroundService->saveResource($requestItem, ['component' => 'orc', 'type' => 'order_items']);
+                var_dump($orderItem['id'].'need to be added');
+            }
+
+            unset($request['submitters']);
+            unset($request['roles']);
+            $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'request'], true, false);
 
         }
 
@@ -485,8 +536,6 @@ class VrcService
             }
 
         }
-
-
 
         return ['value'=>null,'valid'=>false,'message'=>'could not be checked'];
     }
