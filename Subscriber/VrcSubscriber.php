@@ -83,8 +83,8 @@ class VrcSubscriber implements EventSubscriberInterface
     public function updated(CommongroundUpdateEvent $event)
     {
         // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getResource()['@type'] != 'Request') {
+        $resource = $event->getResource();
+        if(!array_key_exists('@type',$resource) || $resource['@type'] != 'Request') {
             return;
         }
 
@@ -103,7 +103,8 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function created(CommongroundUpdateEvent $event)
     {
-        if ($event->getResource()['@type'] != 'Request') {
+        $resource = $event->getResource();
+        if(!array_key_exists('@type',$resource) || $resource['@type'] != 'Request') {
             return;
         }
 
