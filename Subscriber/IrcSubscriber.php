@@ -27,10 +27,11 @@ class IrcSubscriber implements EventSubscriberInterface
     public function saved(CommongroundUpdateEvent $event)
     {
         // Lets make sure that we are dealing with a Request resource from the vrc
-        if ($event->getResource()['@type'] != 'Assent') {
+        $resource = $event->getResource();
+        if(!array_key_exists('@type',$resource) || $resource['@type'] !='Assent') {
             return;
         }
-        
+
         // Lets see if we need to do anything with the resource
         $resource = $event->getResource();
         $resource = $this->ircService->scanResource($resource);
