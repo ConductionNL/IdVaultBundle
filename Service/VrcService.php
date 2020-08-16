@@ -489,10 +489,10 @@ class VrcService
             (!array_key_exists('invoice',$order) || !$order['invoice'])
         ){
             // Send the order to the invoice service
-            $order['url'] = $order['@id'];
-            $invoice = $this->commonGroundService->saveResource($order,['component'=>'bc','type'=>'order']);
-            $order['invoice'] = $invoice['@id'];
-            $order = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'order']);
+            //$order['url'] = $order['@id'];
+            //$invoice = $this->commonGroundService->saveResource($order,['component'=>'bc','type'=>'order']);
+            //$order['invoice'] = $invoice['@id'];
+            //$order = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'order']);
         }
 
         unset($request['submitters']);
