@@ -398,30 +398,35 @@ class VrcService
         }
 
         if(count($requestTypeCemeteries) > 0 ) {
-
             foreach ($requestTypeCemeteries as $key => $requestTypeCemetery) {
 
-                // do we have a value?
-                if(!array_key_exists($key, $request['properties']) || $request['properties'][$key]){
-                    continue;
+               // $property =
+                if(array_key_exists($requestTypeCemetery['name'], $request['properties'])){
+                    $cemetery = $this->commonGroundService->getResource($request['properties'][$requestTypeCemetery['name']]);
+                    $calendar = $this->commonGroundService->getResource($cemetery['calendar']);
                 }
                 else{
-                    $value = $request['properties'][$key];
+                    continue;
                 }
 
-                // Do we need to make an event?
-                if (!array_key_exists('event', $request) || !$request['event'] ) {
+                $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'],['calendar.id'=>$calendar['id'],'resource'=>$request['@id']])["hydra:member"];
+
+                if(count($events) > 0){
+                    $event = $events[0];
+                    $event['startDate'] = (new \DateTime())->format('Y-m-d H:i:s');
+                    $event['endDate'] = (new \DateTime())->format('Y-m-d H:i:s');
+                    $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+                }
+                else{
                     $event = [];
                     $event['name'] = $request['reference'];
+                    $event['organization'] = $cemetery['organization'];
+                    $event['resource'] = $request['@id'];
+                    $event['calendar'] = $calendar['@id'];
                     $event['startDate'] = (new \DateTime())->format('Y-m-d H:i:s');
                     $event['endDate'] = (new \DateTime())->format('Y-m-d H:i:s');
                     $event['priority'] = 1;
-                    $event['calendar'] = $value;
                     $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
-                    $request['event'] = $event['@id'];
-                    $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'request'], true, false);
-                } else {
-                    $event = $this->commonGroundService->getResource($request['event'], ['component' => 'arc', 'type' => 'events']);
                 }
             }
 
