@@ -420,6 +420,7 @@ class VrcService
                 else{
                     $event = [];
                     $event['name'] = $request['reference'];
+                    $event['description'] = $requestType['name'];
                     $event['organization'] = $cemetery['organization'];
                     $event['resource'] = $request['@id'];
                     $event['calendar'] = $calendar['@id'];
