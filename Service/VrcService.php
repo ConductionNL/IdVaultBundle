@@ -415,7 +415,7 @@ class VrcService
                     $event = $events[0];
                     $event['startDate'] = (new \DateTime())->format('Y-m-d H:i:s');
                     $event['endDate'] = (new \DateTime())->format('Y-m-d H:i:s');
-                    $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+                    //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
                 }
                 else{
                     $event = [];
@@ -429,30 +429,6 @@ class VrcService
                     $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
                 }
             }
-
-            // Lets make a list of al the calanders in the current event
-            /*
-            if(!array_key_exists('calendar',$event) || !$event['calendar']) {
-                $calendars =[];
-                foreach ($event['calendar'] as $calendar) {
-                    $calendars[] = $calendar['@id'];
-                }
-            }
-            else{
-                $calendars = [];
-            }
-
-            foreach($requestTypeCemeteries as $requestTypeCemetery){
-                // Lets see if we need to add
-                if(!in_array($requestTypeCemetery['calendar'], $calendars)){
-                    $event['calendar'][] = $requestTypeCemetery['calendar'];
-                }
-                // Lets see if we need to remove
-
-            }
-
-            $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
-            */
         }
 
         if(count($requestTypeProperties) > 0 ) {
