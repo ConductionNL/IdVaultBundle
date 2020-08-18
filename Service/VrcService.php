@@ -398,23 +398,82 @@ class VrcService
         }
 
         if(count($requestTypeCemeteries) > 0 ) {
+
+            // Oke we need to try to figure out  a date for this request
+            if(array_key_exists('datum',$requestType['properties'])){
+                $startDate = (new \DateTime($requestType['properties']['datum']))->format('Y-m-d H:i:s');
+            }
+            elseif(array_key_exists('datum',$requestType['properties'])){
+                $startDate = (new \DateTime($requestType['properties']['date']))->format('Y-m-d H:i:s');
+            }
+            else{
+                $startDate = (new \DateTime())->format('Y-m-d H:i:s');
+            }
+
+            // Lets dermine an end date
+            /* @todo this should be calculated */
+            $endDate = (new \DateTime())->format('Y-m-d H:i:s');
+
             foreach ($requestTypeCemeteries as $key => $requestTypeCemetery) {
 
-               // $property =
-                if(array_key_exists($requestTypeCemetery['name'], $request['properties'])){
+                // Lets create events for submitters of requests
+                foreach($request['submitters'] as $submitter){
+
+                    // We only create calenders for validated submitters
+                    if(!array_key_exists('brp', $submitter)){
+                        continue;
+                    }
+
+                    $calendars = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'calendars'], ['resource' => $submitter['brp']])["hydra:member"];
+                    if (count($calendars) > 0) {
+                        $calendar = $calendars[0];
+                    } else {
+                        // Make a user calendar
+                        $calendar = [];
+                        $calendar['resource'] = $submitter['brp'];
+                        $calendar['name'] =  $this->commonGroundService->getResource($submitter['brp'])['burgerservicenummer']; /* @todo nope nope nope dit moet een naam zijn */
+                        $calendar['organization'] = $request['organization'];
+                        $calendar['timeZone'] = "CET";
+                        $calendar = $this->commonGroundService->saveResource($calendar, ['component' => 'arc', 'type' => 'calendars']);
+                    }
+
+                    // create submitter events
+                    $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' => $calendar['id'], 'resource' => $request['@id']])["hydra:member"];
+
+                    if(count($events) > 0){
+                        $event = $events[0];
+                        $event['startDate'] = $startDate;
+                        $event['endDate'] = $endDate;
+                        //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+                    }
+                    else{
+                        $event = [];
+                        $event['name'] = $request['reference'];
+                        $event['description'] = $requestType['name'];
+                        $event['organization'] = $request['organization'];
+                        $event['resource'] = $request['@id'];
+                        $event['calendar'] = $calendar['@id'];
+                        $event['startDate'] = $startDate;
+                        $event['endDate'] = $endDate;
+                        $event['priority'] = 1;
+                        $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+                    }
+                }
+
+                // $property =
+                if (array_key_exists($requestTypeCemetery['name'], $request['properties'])) {
                     $cemetery = $this->commonGroundService->getResource($request['properties'][$requestTypeCemetery['name']]);
                     $calendar = $this->commonGroundService->getResource($cemetery['calendar']);
-                }
-                else{
+                } else {
                     continue;
                 }
 
-                $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'],['calendar.id'=>$calendar['id'],'resource'=>$request['@id']])["hydra:member"];
+                $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' => $calendar['id'], 'resource' => $request['@id']])["hydra:member"];
 
                 if(count($events) > 0){
                     $event = $events[0];
-                    $event['startDate'] = (new \DateTime())->format('Y-m-d H:i:s');
-                    $event['endDate'] = (new \DateTime())->format('Y-m-d H:i:s');
+                    $event['startDate'] = $startDate;
+                    $event['endDate'] = $endDate;
                     //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
                 }
                 else{
@@ -424,14 +483,36 @@ class VrcService
                     $event['organization'] = $cemetery['organization'];
                     $event['resource'] = $request['@id'];
                     $event['calendar'] = $calendar['@id'];
-                    $event['startDate'] = (new \DateTime())->format('Y-m-d H:i:s');
-                    $event['endDate'] = (new \DateTime())->format('Y-m-d H:i:s');
+                    $event['startDate'] =$startDate;
+                    $event['endDate'] = $endDate;
                     $event['priority'] = 1;
                     $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
                 }
             }
         }
 
+
+
+
+        // Lets see if we need to make an invoice
+        /* @todo dit zou een losse service moeten zijn */
+        if (
+            array_key_exists('status', $request) &&
+            in_array($request['status'], ['submitted', 'in progress', 'progressed']) &&
+            array_key_exists('order', $request)  &&
+            $request['order']
+        ) {
+            $invoices = $this->commonGroundService->getResourceList(['component' => 'bc', 'type' => 'invoices'],['order'=>$request['order']])["hydra:member"];
+            if(count($invoices) > 0){
+                $invoice=$invoices[0];
+            }
+            else{
+                $post = ["url"=>$request['order']];
+                $invoice = $this->commonGroundService->saveResource($event, ['component' => 'bc', 'type' => 'order']);
+            }
+        }
+
+        // Making orders
         if(count($requestTypeProperties) > 0 ) {
             // Let check the property
             $products = [];
@@ -454,6 +535,7 @@ class VrcService
             if (count($products) == 0) {
                 return $request;
             }
+
 
             //  Order Items
             $requestItems = [];
@@ -528,23 +610,13 @@ class VrcService
             $order = $this->commonGroundService->getResource($request['order'], [], true);
             $request['order'] = $order['@id'];
 
-            // Lets see if we need to make an invoice
-            if (
-                array_key_exists('status', $request) &&
-                in_array($request['status'], ['submitted', 'in progress', 'progressed']) &&
-                (!array_key_exists('invoice', $order) || !$order['invoice'])
-            ) {
-                // Send the order to the invoice service
-                //$order['url'] = $order['@id'];
-                //$invoice = $this->commonGroundService->saveResource($order,['component'=>'bc','type'=>'order']);
-                //$order['invoice'] = $invoice['@id'];
-                //$order = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'order']);
-            }
-
             unset($request['submitters']);
             unset($request['roles']);
             $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'request'], true, false);
         }
+
+
+
         return $request;
     }
 
