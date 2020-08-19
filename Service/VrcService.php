@@ -628,6 +628,11 @@ class VrcService
      */
     public function checkProperties(?array $request)
     {
+        // Lets first see if we can grap an requested type and if it has stages
+        if (!$requestType = $this->commonGroundService->getResource($request['requestType']) || !array_key_exists('stages', $requestType)) {
+            return $request;
+        }
+
         foreach ($request['properties'] as $property) {
         }
 
@@ -643,27 +648,207 @@ class VrcService
      */
     public function checkProperty(?array $request, $property)
     {
-        // Lets first see if we can grap an requested type and if it has stages
-        if (!$requestType = $this->commonGroundService->getResource($resource['requestType']) || !array_key_exists('stages', $requestType)) {
-            return ['value'=>null,'valid'=>false,'message'=>'could not be checked'];
+        $result = ['value'=>null,'valid'=>true,'message'=>'value is valid'];
+
+        // Lets see if the property is requered and unset, in wich case we do not need to do more validation
+        if((!array_key_exists($property['name'], $request['properties'])) && $property['required']){
+            $result['message'] = 'value is required';
+            return $result;
+        }
+        // If we don't have a validation further checking has no point
+        elseif(!array_key_exists($property['name'], $request['properties'])){
+            return $result;
         }
 
-        // Let transform the request properties in something we can search
-        foreach ($request['properties'] as $name => $value) {
-            // Lets see if the property is part of the request type
-            if(!in_array($name, $requestTypeProperties)){
-                // property is not part of the provide request type
-                continue;
-            }
-            $checkProperty = $requestTypeProperties[$name];
+        $result['value'] = $request['properties'][$property['name']];
 
-            // Lets see if the property is an product
-            if($checkProperty['iri'] == 'pdc/offer'){
+        // Now we could hit multiple problems, so lets turn de message in an array
+        $result['message'] = [];
 
+        // Type validation
+        if($property['type']){
+            switch ($property['type']) {
+                case 'string':
+
+                    if($property['maxLength']){
+
+                    }
+                    if($property['minLength']){
+
+                    }
+                    if($property['pattern']){
+
+                    }
+
+                    // Format is only validated in combination with type string
+                    if($property['format']){
+                        switch ($property['format']) {
+                            case 'date':
+                                if($property['minDate']){
+
+                                }
+                                if($property['maxDate']){
+
+                                }
+
+                                break;
+
+                            default:
+                                $result['message'][] = 'property format '.$property['format'].' is not supported';
+                        }
+                    }
+
+                    break;
+                case 'integer':
+
+                    if($property['multipleOf']){
+
+                    }
+                    if($property['maximum'] && $property['exclusiveMaximum']){
+
+                    }
+                    if($property['maximum'] && !$property['exclusiveMaximum']){
+
+                    }
+                    if($property['minimum'] && $property['exclusiveMinimum']){
+
+                    }
+                    if($property['minimum'] && !$property['exclusiveMinimum']){
+
+                    }
+                    break;
+                case 'boolean':
+
+                    break;
+                case 'number':
+
+                    break;
+                case 'array':
+
+                    if($property['maxItems']){
+
+                    }
+                    if($property['minItems']){
+
+                    }
+                    if($property['uniqueItems']){
+
+                    }
+                    break;
+                default:
+                    $result['message'][] = 'property type '.$property['type'].' is not supported';
             }
+        }
+
+        if($property['enum']){
+
+        }
+        if($property['availableFrom']){
+
+        }
+        if($property['availableUntil']){
+
+        }
+        if($property['readOnly']){
+
+        }
+        if($property['iri']){
 
         }
 
-        return ['value'=>null,'valid'=>false,'message'=>'could not be checked'];
+        // format validation to be implemented
+        /*
+                "query": [],
+                "additionalItems": null,
+                "maxProperties": null,
+                "minProperties": null,
+                "properties": null,
+                "additionalProperties": null,
+                "object": null,
+                "nullable": null,
+                "discriminator": null,
+                "xml": null,
+
+            */
+
+        // format validation noy to bu suporterd
+        /*
+         *  "deprecated": null
+         *  "writeOnly": null,
+         */
+
+
+        return $result;
+    }
+
+
+    /*
+     * This function fills a procces with all the requered data in order to render it
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function extendProcess(?array $procces)
+    {
+        $procces['valid'] = false;
+        foreach($procces['stages'] as $stageKey => $stage){
+            foreach($stage['sections'] as $sectionKey => $section) {
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
+                foreach ($section['properties'] as $propertyKey => $property) {
+                    $property = $this->commonGroundService->getResource($property);
+                    $property['value'] = null;
+                    $property['valid'] = false;
+                    $property['message'] = null;
+                    unset($property['requestType']);
+                    $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'][$property['id']] = $property;
+                }
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+            }
+            $procces['stages'][$stageKey]['valid'] = false;
+        }
+
+        return $procces;
+    }
+
+
+    /*
+     * Aditional logic triggerd afther a Request has been newly created
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function fillProcess(?array $procces, array $request = null)
+    {
+        $procces = $this->extendProcess($procces);
+
+        foreach($procces['stages'] as $stageKey => $stage){
+            $procces['stages'][$stageKey]['valid'] = true;
+            foreach($stage['sections'] as $sectionKey => $section) {
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
+
+                // Lets validate the indivual property forms
+                foreach ($section['propertiesForms'] as $propertyKey => $property) {
+                    // Lets validate
+                    $result = $this->checkProperty($request, $property);
+                    // Set the results
+                    $property['value'] = $result['value'];
+                    $property['valid'] = $result['valid'];
+                    $property['message'] = $result['message'];
+                    // Store results to the current procces
+                    if(!$property['valid']){
+                        $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+                    }
+                }
+
+                if(!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']){
+                    $procces['stages'][$stageKey]['valid'] = false;
+                }
+            }
+            if(!$procces['stages'][$stageKey]['valid']){
+                $procces['valid'] = false;
+            }
+        }
+        return $procces;
     }
 }
