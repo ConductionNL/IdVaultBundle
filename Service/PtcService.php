@@ -180,6 +180,8 @@ class PtcService
      */
     public function fillProcess(?array $procces, array $request = null)
     {
+        $procces = $this->extendProcess($procces);
+
         foreach($resource['stages'] as $stageKey => $stage){
             $resource['stages'][$stageKey]['completed'] = true;
             $resource['stages'][$stageKey]['valid'] = true;

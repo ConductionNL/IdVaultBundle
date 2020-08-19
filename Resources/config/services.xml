@@ -7,16 +7,15 @@
         <defaults autowire="true" autoconfigure="true" />
 
         <!--CommonGround Services-->
-        <service id="Conduction\CommonGroundBundle\Service\CommonGroundService" />
-        <service id="Conduction\CommonGroundBundle\Service\NLXLogService" />
         <service id="Conduction\CommonGroundBundle\Service\ApplicationService" />
-        <service id="Conduction\CommonGroundBundle\Service\RequestService" />
         <service id="Conduction\CommonGroundBundle\Service\CamundaService" />
-        <service id="Conduction\CommonGroundBundle\Service\MessageService" />
-
-        <!--CommonGround Services-->
-        <service id="Conduction\CommonGroundBundle\Service\VrcService" />
+        <service id="Conduction\CommonGroundBundle\Service\CommonGroundService" />
         <service id="Conduction\CommonGroundBundle\Service\IrcService" />
+        <service id="Conduction\CommonGroundBundle\Service\MessageService" />
+        <service id="Conduction\CommonGroundBundle\Service\NLXLogService" />
+        <service id="Conduction\CommonGroundBundle\Service\PtdService" />
+        <service id="Conduction\CommonGroundBundle\Service\RequestService" />
+        <service id="Conduction\CommonGroundBundle\Service\VrcService" />
 
         <!--External Services-->
         <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
@@ -53,15 +52,16 @@
         <service id="health.check.subscriber" class="Conduction\CommonGroundBundle\Subscriber\HealthCheckSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="irc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\IrcSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="vrc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\PtcSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
         <service id="valid.on.subscriber" class="Conduction\CommonGroundBundle\Subscriber\ValidOnSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
-
-        <!--Component Subscribers-->
         <service id="vrc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\VrcSubscriber">
-            <tag name="kernel.event_subscriber"/>
-        </service>
-        <service id="irc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\IrcSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
 
