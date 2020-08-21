@@ -648,32 +648,41 @@ class VrcService
      */
     public function checkProperty(?array $request, $property)
     {
-        $result = ['value'=>null,'valid'=>true,'message'=>'value is valid'];
+        $result = ['value'=>null,'valid'=>true,'messages'=>[]];
 
         // Lets see if the property is requered and unset, in wich case we do not need to do more validation
         if((!array_key_exists($property['name'], $request['properties'])) && $property['required']){
-            $result['message'] = 'value is required';
+            $result['messages'] = ['value is required'];
             return $result;
         }
         // If we don't have a validation further checking has no point
         elseif(!array_key_exists($property['name'], $request['properties'])){
+            $result['messages'] = ['value is empty'];
             return $result;
         }
 
         $result['value'] = $request['properties'][$property['name']];
 
         // Now we could hit multiple problems, so lets turn de message in an array
-        $result['message'] = [];
 
         // Type validation
         if($property['type']){
             switch ($property['type']) {
                 case 'string':
 
-                    if($property['maxLength']){
+                    if(!is_string($property['type'])){
+                        $result['messages'][] = 'value should be a string';
+                        $result['valid'] = false;
+                    }
+
+                    if($property['maxLength'] && strlen($property['vaule']) > (int) $property['maxLength']){
+                        $result['messages'][] = 'value should be longer then'.$property['maxLength'];
+                        $result['valid'] = false;
 
                     }
-                    if($property['minLength']){
+                    if($property['minLength'] && strlen($property['vaule']) < (int) $property['minLength']){
+                        $result['messages'][] = 'value should be shorter then'.$property['minLength'];
+                        $result['valid'] = false;
 
                     }
                     if($property['pattern']){
@@ -683,6 +692,8 @@ class VrcService
                     // Format is only validated in combination with type string
                     if($property['format']){
                         switch ($property['format']) {
+                            case 'url':
+                                break;
                             case 'date':
                                 if($property['minDate']){
 
@@ -692,7 +703,6 @@ class VrcService
                                 }
 
                                 break;
-
                             default:
                                 $result['message'][] = 'property format '.$property['format'].' is not supported';
                         }
@@ -725,33 +735,66 @@ class VrcService
                     break;
                 case 'array':
 
-                    if($property['maxItems']){
-
+                    if(!is_arry($property['type'])){
+                        $result['messages'][] = 'value should be a string';
+                        $result['valid'] = false;
                     }
-                    if($property['minItems']){
+                    else{
+                        if($property['maxItems'] && count($result['value']) > (int) $property['maxItems'] ){
+                            $result['messages'][] = 'There should be no more then '.$property['maxItems'].' items';
+                            $result['valid'] = false;
+                        }
+                        if($property['minItems']  && count($result['value']) < (int) $property['minItems']){
+                            $result['messages'][] = 'There should be no less then '.$property['minItems'].' items';
+                            $result['valid'] = false;
+                        }
+                        if($property['uniqueItems']){
 
+                        }
                     }
-                    if($property['uniqueItems']){
 
-                    }
                     break;
                 default:
                     $result['message'][] = 'property type '.$property['type'].' is not supported';
             }
         }
 
+        // Lets look for requered values
         if($property['enum']){
-
+            if(!is_array($property['enum'])){
+                $property['enum'] = explode(',',$property['enum']);
+            }
+            if(in_array($request['value'],$property['enum'])){
+                $result['messages'][] = 'There the value should be one of '.implode(',',$property['enum']);
+                $result['valid'] = false;
+            }
         }
+
         if($property['availableFrom']){
+            $date = new DateTime($property['availableFrom']);
+            $now = new DateTime();
 
+            if($date > $now) {
+                $result['messages'][] = 'This property is not yet available';
+                $result['valid'] = false;
+            }
         }
+
         if($property['availableUntil']){
+            $date = new DateTime($property['availableFrom']);
+            $now = new DateTime();
 
+            if($date < $now) {
+                $result['messages'][] = 'This property is no longer available';
+                $result['valid'] = false;
+            }
         }
-        if($property['readOnly']){
 
+        if($property['readOnly'] && $request['value']){
+            $result['messages'][] = 'This property is read only';
+            $result['valid'] = false;
         }
+
         if($property['iri']){
 
         }
