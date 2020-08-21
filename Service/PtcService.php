@@ -14,7 +14,7 @@ class PtcService
     private $commonGroundService;
     private $camundaService;
 
-    public function __construct(VrcService $vrcService,CommonGroundService $commonGroundService, CamundaService $camundaService)
+    public function __construct(VrcService $vrcService, CommonGroundService $commonGroundService, CamundaService $camundaService)
     {
         $this->vrcService = $vrcService;
         $this->commonGroundService = $commonGroundService;
@@ -29,7 +29,6 @@ class PtcService
      */
     public function onResource(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -41,7 +40,6 @@ class PtcService
      */
     public function onList(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -53,7 +51,6 @@ class PtcService
      */
     public function onSave(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -65,7 +62,6 @@ class PtcService
      */
     public function onSaved(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -77,7 +73,6 @@ class PtcService
      */
     public function onDelete(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -89,7 +84,6 @@ class PtcService
      */
     public function onDeleted(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -101,7 +95,6 @@ class PtcService
      */
     public function onUpdate(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -113,7 +106,6 @@ class PtcService
      */
     public function onUpdated(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -125,7 +117,6 @@ class PtcService
      */
     public function onCreate(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 
@@ -137,7 +128,6 @@ class PtcService
      */
     public function onCreated(?array $resource)
     {
-
         return $this->extendProcess($resource);
     }
 }

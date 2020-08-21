@@ -84,7 +84,7 @@ class VrcSubscriber implements EventSubscriberInterface
     {
         // Lets make sure we only triger on requests resources
         $resource = $event->getResource();
-        if(!array_key_exists('@type',$resource) || $resource['@type'] != 'Request') {
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
             return;
         }
 
@@ -104,7 +104,7 @@ class VrcSubscriber implements EventSubscriberInterface
     public function created(CommongroundUpdateEvent $event)
     {
         $resource = $event->getResource();
-        if(!array_key_exists('@type',$resource) || $resource['@type'] != 'Request') {
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
             return;
         }
 

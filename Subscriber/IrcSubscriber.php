@@ -28,7 +28,7 @@ class IrcSubscriber implements EventSubscriberInterface
     {
         // Lets make sure that we are dealing with a Request resource from the vrc
         $resource = $event->getResource();
-        if(!array_key_exists('@type',$resource) || $resource['@type'] !='Assent') {
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Assent') {
             return;
         }
 
