@@ -676,12 +676,12 @@ class VrcService
                         $result['valid'] = false;
                     }
 
-                    if($property['maxLength'] && strlen($property['vaule']) > (int) $property['maxLength']){
+                    if($property['maxLength'] && strlen($property['value']) > (int) $property['maxLength']){
                         $result['messages'][] = 'value should be longer then'.$property['maxLength'];
                         $result['valid'] = false;
 
                     }
-                    if($property['minLength'] && strlen($property['vaule']) < (int) $property['minLength']){
+                    if($property['minLength'] && strlen($property['value']) < (int) $property['minLength']){
                         $result['messages'][] = 'value should be shorter then'.$property['minLength'];
                         $result['valid'] = false;
 
