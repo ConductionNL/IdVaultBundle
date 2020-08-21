@@ -653,6 +653,7 @@ class VrcService
         // Lets see if the property is requered and unset, in wich case we do not need to do more validation
         if((!array_key_exists($property['name'], $request['properties'])) && $property['required']){
             $result['messages'] = ['value is required'];
+            $result['valid'] = false;
             return $result;
         }
         // If we don't have a validation further checking has no point
@@ -877,7 +878,7 @@ class VrcService
                     // Set the results
                     $property['value'] = $result['value'];
                     $property['valid'] = $result['valid'];
-                    $property['message'] = $result['message'];
+                    $property['messages'] = $result['messages'];
                     // Store results to the current procces
                     if(!$property['valid']){
                         $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
