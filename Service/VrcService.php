@@ -27,7 +27,6 @@ class VrcService
      */
     public function onResource(?array $resource)
     {
-
         return $resource;
     }
 
@@ -39,7 +38,6 @@ class VrcService
      */
     public function onList(?array $resource)
     {
-
         return $resource;
     }
 
@@ -99,7 +97,6 @@ class VrcService
      */
     public function onDelete(?array $resource)
     {
-
         return $resource;
     }
 
@@ -111,7 +108,6 @@ class VrcService
      */
     public function onDeleted(?array $resource)
     {
-
         return $resource;
     }
 
@@ -123,7 +119,6 @@ class VrcService
      */
     public function onUpdate(?array $resource)
     {
-
         return $resource;
     }
 
@@ -189,7 +184,6 @@ class VrcService
      */
     public function onCreate(?array $resource)
     {
-
         return $resource;
     }
 
@@ -361,7 +355,6 @@ class VrcService
         return $this->commonGroundService->getResource(['component'=>'be', 'type'=>'task', 'id'=> $taskId.'/rendered-form', 'accept'=>'application/xhtml+xml']);
     }
 
-
     /*
      * This function tests if a order should be created
      *
@@ -372,41 +365,38 @@ class VrcService
     {
         // We want to ignore the cache here
 
-        $request = $this->commonGroundService->getResource(['component' => 'vrc', 'type' => 'requests','id'=>$request['id']],[],true);
+        $request = $this->commonGroundService->getResource(['component' => 'vrc', 'type' => 'requests', 'id'=>$request['id']], [], true);
 
         // Lets first see if we can grap an requested type and if it has stages
         if (!$requestType = $this->commonGroundService->getResource($request['requestType'])) {
             return $request;
         }
 
-
         // Let transform the request properties in something we can search
         $requestTypeProperties = [];
         $requestTypeCemeteries = []; /* @todo  abstraheren!*/
         foreach ($requestType['properties'] as $property) {
-            if(in_array('iri',$property) && $property['iri'] == "pdc/offer"){
+            if (in_array('iri', $property) && $property['iri'] == 'pdc/offer') {
                 $requestTypeProperties[$property['name']] = $property;
             }
-            if(in_array('iri',$property) && $property['iri'] == "grc/cemetery"){
+            if (in_array('iri', $property) && $property['iri'] == 'grc/cemetery') {
                 $requestTypeCemeteries[$property['name']] = $property;
             }
         }
 
         // Lets skip all other things if this request type isn't supposed to contain products
-        if(count($requestTypeProperties) == 0 && count($requestTypeCemeteries) == 0){
+        if (count($requestTypeProperties) == 0 && count($requestTypeCemeteries) == 0) {
             return $request;
         }
 
-        if(count($requestTypeCemeteries) > 0 ) {
+        if (count($requestTypeCemeteries) > 0) {
 
             // Oke we need to try to figure out  a date for this request
-            if(array_key_exists('datum',$requestType['properties'])){
+            if (array_key_exists('datum', $requestType['properties'])) {
                 $startDate = (new \DateTime($requestType['properties']['datum']))->format('Y-m-d H:i:s');
-            }
-            elseif(array_key_exists('datum',$requestType['properties'])){
+            } elseif (array_key_exists('datum', $requestType['properties'])) {
                 $startDate = (new \DateTime($requestType['properties']['date']))->format('Y-m-d H:i:s');
-            }
-            else{
+            } else {
                 $startDate = (new \DateTime())->format('Y-m-d H:i:s');
             }
 
@@ -417,36 +407,35 @@ class VrcService
             foreach ($requestTypeCemeteries as $key => $requestTypeCemetery) {
 
                 // Lets create events for submitters of requests
-                foreach($request['submitters'] as $submitter){
+                foreach ($request['submitters'] as $submitter) {
 
                     // We only create calenders for validated submitters
-                    if(!array_key_exists('brp', $submitter)){
+                    if (!array_key_exists('brp', $submitter)) {
                         continue;
                     }
 
-                    $calendars = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'calendars'], ['resource' => $submitter['brp']])["hydra:member"];
+                    $calendars = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'calendars'], ['resource' => $submitter['brp']])['hydra:member'];
                     if (count($calendars) > 0) {
                         $calendar = $calendars[0];
                     } else {
                         // Make a user calendar
                         $calendar = [];
                         $calendar['resource'] = $submitter['brp'];
-                        $calendar['name'] =  $this->commonGroundService->getResource($submitter['brp'])['burgerservicenummer']; /* @todo nope nope nope dit moet een naam zijn */
+                        $calendar['name'] = $this->commonGroundService->getResource($submitter['brp'])['burgerservicenummer']; /* @todo nope nope nope dit moet een naam zijn */
                         $calendar['organization'] = $request['organization'];
-                        $calendar['timeZone'] = "CET";
+                        $calendar['timeZone'] = 'CET';
                         $calendar = $this->commonGroundService->saveResource($calendar, ['component' => 'arc', 'type' => 'calendars']);
                     }
 
                     // create submitter events
-                    $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' => $calendar['id'], 'resource' => $request['@id']])["hydra:member"];
+                    $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' => $calendar['id'], 'resource' => $request['@id']])['hydra:member'];
 
-                    if(count($events) > 0){
+                    if (count($events) > 0) {
                         $event = $events[0];
                         $event['startDate'] = $startDate;
                         $event['endDate'] = $endDate;
-                        //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
-                    }
-                    else{
+                    //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+                    } else {
                         $event = [];
                         $event['name'] = $request['reference'];
                         $event['description'] = $requestType['name'];
@@ -468,22 +457,21 @@ class VrcService
                     continue;
                 }
 
-                $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' => $calendar['id'], 'resource' => $request['@id']])["hydra:member"];
+                $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' => $calendar['id'], 'resource' => $request['@id']])['hydra:member'];
 
-                if(count($events) > 0){
+                if (count($events) > 0) {
                     $event = $events[0];
                     $event['startDate'] = $startDate;
                     $event['endDate'] = $endDate;
-                    //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
-                }
-                else{
+                //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+                } else {
                     $event = [];
                     $event['name'] = $request['reference'];
                     $event['description'] = $requestType['name'];
                     $event['organization'] = $cemetery['organization'];
                     $event['resource'] = $request['@id'];
                     $event['calendar'] = $calendar['@id'];
-                    $event['startDate'] =$startDate;
+                    $event['startDate'] = $startDate;
                     $event['endDate'] = $endDate;
                     $event['priority'] = 1;
                     $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
@@ -491,29 +479,25 @@ class VrcService
             }
         }
 
-
-
-
         // Lets see if we need to make an invoice
         /* @todo dit zou een losse service moeten zijn */
         if (
             array_key_exists('status', $request) &&
             in_array($request['status'], ['submitted', 'in progress', 'progressed']) &&
-            array_key_exists('order', $request)  &&
+            array_key_exists('order', $request) &&
             $request['order']
         ) {
-            $invoices = $this->commonGroundService->getResourceList(['component' => 'bc', 'type' => 'invoices'],['order'=>$request['order']])["hydra:member"];
-            if(count($invoices) > 0){
-                $invoice=$invoices[0];
-            }
-            else{
-                $post = ["url"=>$request['order']];
+            $invoices = $this->commonGroundService->getResourceList(['component' => 'bc', 'type' => 'invoices'], ['order'=>$request['order']])['hydra:member'];
+            if (count($invoices) > 0) {
+                $invoice = $invoices[0];
+            } else {
+                $post = ['url'=>$request['order']];
                 $invoice = $this->commonGroundService->saveResource($event, ['component' => 'bc', 'type' => 'order']);
             }
         }
 
         // Making orders
-        if(count($requestTypeProperties) > 0 ) {
+        if (count($requestTypeProperties) > 0) {
             // Let check the property
             $products = [];
             foreach ($request['properties'] as $name => $value) {
@@ -536,7 +520,6 @@ class VrcService
                 return $request;
             }
 
-
             //  Order Items
             $requestItems = [];
             foreach ($products as $product) {
@@ -549,7 +532,7 @@ class VrcService
                 if (in_array('description', $product)) {
                     $orderItem['description'] = $product['description'];
                 }
-                $orderItem['price'] = (string)$product['price'];
+                $orderItem['price'] = (string) $product['price'];
                 $orderItem['priceCurrency'] = $product['priceCurrency'];
                 $orderItem['quantity'] = 1;
                 $requestItems[$product['@id']] = $orderItem;
@@ -615,8 +598,6 @@ class VrcService
             $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'request'], true, false);
         }
 
-
-
         return $request;
     }
 
@@ -648,17 +629,19 @@ class VrcService
      */
     public function checkProperty(?array $request, $property)
     {
-        $result = ['value'=>null,'valid'=>true,'messages'=>[]];
+        $result = ['value'=>null, 'valid'=>true, 'messages'=>[]];
 
         // Lets see if the property is requered and unset, in wich case we do not need to do more validation
-        if((!array_key_exists($property['name'], $request['properties'])) && $property['required']){
+        if ((!array_key_exists($property['name'], $request['properties'])) && $property['required']) {
             $result['messages'] = ['value is required'];
             $result['valid'] = false;
+
             return $result;
         }
         // If we don't have a validation further checking has no point
-        elseif(!array_key_exists($property['name'], $request['properties'])){
+        elseif (!array_key_exists($property['name'], $request['properties'])) {
             $result['messages'] = ['value is empty'];
+
             return $result;
         }
 
@@ -667,40 +650,35 @@ class VrcService
         // Now we could hit multiple problems, so lets turn de message in an array
 
         // Type validation
-        if($property['type']){
+        if ($property['type']) {
             switch ($property['type']) {
                 case 'string':
 
-                    if(!is_string($property['type'])){
+                    if (!is_string($property['type'])) {
                         $result['messages'][] = 'value should be a string';
                         $result['valid'] = false;
                     }
 
-                    if($property['maxLength'] && strlen($property['vaule']) > (int) $property['maxLength']){
+                    if ($property['maxLength'] && strlen($property['value']) > (int) $property['maxLength']) {
                         $result['messages'][] = 'value should be longer then'.$property['maxLength'];
                         $result['valid'] = false;
-
                     }
-                    if($property['minLength'] && strlen($property['vaule']) < (int) $property['minLength']){
+                    if ($property['minLength'] && strlen($property['value']) < (int) $property['minLength']) {
                         $result['messages'][] = 'value should be shorter then'.$property['minLength'];
                         $result['valid'] = false;
-
                     }
-                    if($property['pattern']){
-
+                    if ($property['pattern']) {
                     }
 
                     // Format is only validated in combination with type string
-                    if($property['format']){
+                    if ($property['format']) {
                         switch ($property['format']) {
                             case 'url':
                                 break;
                             case 'date':
-                                if($property['minDate']){
-
+                                if ($property['minDate']) {
                                 }
-                                if($property['maxDate']){
-
+                                if ($property['maxDate']) {
                                 }
 
                                 break;
@@ -712,20 +690,15 @@ class VrcService
                     break;
                 case 'integer':
 
-                    if($property['multipleOf']){
-
+                    if ($property['multipleOf']) {
                     }
-                    if($property['maximum'] && $property['exclusiveMaximum']){
-
+                    if ($property['maximum'] && $property['exclusiveMaximum']) {
                     }
-                    if($property['maximum'] && !$property['exclusiveMaximum']){
-
+                    if ($property['maximum'] && !$property['exclusiveMaximum']) {
                     }
-                    if($property['minimum'] && $property['exclusiveMinimum']){
-
+                    if ($property['minimum'] && $property['exclusiveMinimum']) {
                     }
-                    if($property['minimum'] && !$property['exclusiveMinimum']){
-
+                    if ($property['minimum'] && !$property['exclusiveMinimum']) {
                     }
                     break;
                 case 'boolean':
@@ -736,21 +709,19 @@ class VrcService
                     break;
                 case 'array':
 
-                    if(!is_arry($property['type'])){
+                    if (!is_arry($property['type'])) {
                         $result['messages'][] = 'value should be a string';
                         $result['valid'] = false;
-                    }
-                    else{
-                        if($property['maxItems'] && count($result['value']) > (int) $property['maxItems'] ){
+                    } else {
+                        if ($property['maxItems'] && count($result['value']) > (int) $property['maxItems']) {
                             $result['messages'][] = 'There should be no more then '.$property['maxItems'].' items';
                             $result['valid'] = false;
                         }
-                        if($property['minItems']  && count($result['value']) < (int) $property['minItems']){
+                        if ($property['minItems'] && count($result['value']) < (int) $property['minItems']) {
                             $result['messages'][] = 'There should be no less then '.$property['minItems'].' items';
                             $result['valid'] = false;
                         }
-                        if($property['uniqueItems']){
-
+                        if ($property['uniqueItems']) {
                         }
                     }
 
@@ -761,43 +732,42 @@ class VrcService
         }
 
         // Lets look for requered values
-        if($property['enum']){
-            if(!is_array($property['enum'])){
-                $property['enum'] = explode(',',$property['enum']);
+        if ($property['enum']) {
+            if (!is_array($property['enum'])) {
+                $property['enum'] = explode(',', $property['enum']);
             }
-            if(in_array($request['value'],$property['enum'])){
-                $result['messages'][] = 'There the value should be one of '.implode(',',$property['enum']);
+            if (in_array($request['value'], $property['enum'])) {
+                $result['messages'][] = 'There the value should be one of '.implode(',', $property['enum']);
                 $result['valid'] = false;
             }
         }
 
-        if($property['availableFrom']){
+        if ($property['availableFrom']) {
             $date = new DateTime($property['availableFrom']);
             $now = new DateTime();
 
-            if($date > $now) {
+            if ($date > $now) {
                 $result['messages'][] = 'This property is not yet available';
                 $result['valid'] = false;
             }
         }
 
-        if($property['availableUntil']){
+        if ($property['availableUntil']) {
             $date = new DateTime($property['availableFrom']);
             $now = new DateTime();
 
-            if($date < $now) {
+            if ($date < $now) {
                 $result['messages'][] = 'This property is no longer available';
                 $result['valid'] = false;
             }
         }
 
-        if($property['readOnly'] && $request['value']){
+        if ($property['readOnly'] && $request['value']) {
             $result['messages'][] = 'This property is read only';
             $result['valid'] = false;
         }
 
-        if($property['iri']){
-
+        if ($property['iri']) {
         }
 
         // format validation to be implemented
@@ -821,10 +791,8 @@ class VrcService
          *  "writeOnly": null,
          */
 
-
         return $result;
     }
-
 
     /*
      * This function fills a procces with all the requered data in order to render it
@@ -835,8 +803,8 @@ class VrcService
     public function extendProcess(?array $procces)
     {
         $procces['valid'] = false;
-        foreach($procces['stages'] as $stageKey => $stage){
-            foreach($stage['sections'] as $sectionKey => $section) {
+        foreach ($procces['stages'] as $stageKey => $stage) {
+            foreach ($stage['sections'] as $sectionKey => $section) {
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
                 foreach ($section['properties'] as $propertyKey => $property) {
                     $property = $this->commonGroundService->getResource($property);
@@ -854,7 +822,6 @@ class VrcService
         return $procces;
     }
 
-
     /*
      * Aditional logic triggerd afther a Request has been newly created
      *
@@ -865,9 +832,9 @@ class VrcService
     {
         $procces = $this->extendProcess($procces);
 
-        foreach($procces['stages'] as $stageKey => $stage){
+        foreach ($procces['stages'] as $stageKey => $stage) {
             $procces['stages'][$stageKey]['valid'] = true;
-            foreach($stage['sections'] as $sectionKey => $section) {
+            foreach ($stage['sections'] as $sectionKey => $section) {
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
 
@@ -880,19 +847,20 @@ class VrcService
                     $property['valid'] = $result['valid'];
                     $property['messages'] = $result['messages'];
                     // Store results to the current procces
-                    if(!$property['valid']){
+                    if (!$property['valid']) {
                         $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
                     }
                 }
 
-                if(!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']){
+                if (!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']) {
                     $procces['stages'][$stageKey]['valid'] = false;
                 }
             }
-            if(!$procces['stages'][$stageKey]['valid']){
+            if (!$procces['stages'][$stageKey]['valid']) {
                 $procces['valid'] = false;
             }
         }
+
         return $procces;
     }
 }

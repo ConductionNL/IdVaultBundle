@@ -425,6 +425,7 @@ class CommonGroundService
                 CommonGroundEvents::UPDATED
             );
         }
+
         return $response;
     }
 
@@ -514,6 +515,7 @@ class CommonGroundService
                 CommonGroundEvents::CREATED
             );
         }
+
         return $response;
     }
 
@@ -589,6 +591,7 @@ class CommonGroundService
                 CommonGroundEvents::DELETED
             );
         }
+
         return true;
     }
 
@@ -630,21 +633,21 @@ class CommonGroundService
                 // Lets renew the resource
                 $resource = $this->getResource($resource['@id'], [], false, false, $autowire, $events);
                 if (array_key_exists('name', $resource)) {
-                    $this->flash->add('success', $resource['name'] . ' ' . $this->translator->trans('saved'));
+                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('saved'));
                 } elseif (array_key_exists('reference', $resource)) {
-                    $this->flash->add('success', $resource['reference'] . ' ' . $this->translator->trans('saved'));
+                    $this->flash->add('success', $resource['reference'].' '.$this->translator->trans('saved'));
                 } elseif (array_key_exists('id', $resource)) {
-                    $this->flash->add('success', $resource['id'] . ' ' . $this->translator->trans('saved'));
+                    $this->flash->add('success', $resource['id'].' '.$this->translator->trans('saved'));
                 } else {
                     $this->flash->add('success', $this->translator->trans('saved'));
                 }
             } else {
                 if (array_key_exists('name', $resource)) {
-                    $this->flash->add('error', $resource['name'] . ' ' . $this->translator->trans('could not be saved'));
+                    $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be saved'));
                 } elseif (array_key_exists('reference', $resource)) {
-                    $this->flash->add('error', $resource['reference'] . ' ' . $this->translator->trans('could not be saved'));
+                    $this->flash->add('error', $resource['reference'].' '.$this->translator->trans('could not be saved'));
                 } elseif (array_key_exists('id', $resource)) {
-                    $this->flash->add('error', $resource['id'] . ' ' . $this->translator->trans('could not be saved'));
+                    $this->flash->add('error', $resource['id'].' '.$this->translator->trans('could not be saved'));
                 } else {
                     $this->flash->add('error', $this->translator->trans('could not be saved'));
                 }
@@ -653,14 +656,14 @@ class CommonGroundService
             if ($createdResource = $this->createResource($resource, $endpoint, false, $autowire)) {
                 // Lets renew the resource
                 $resource = $this->getResource($createdResource['@id'], [], false, false, $autowire);
-                $this->flash->add('success', $resource['name'] . ' ' . $this->translator->trans('created'));
+                $this->flash->add('success', $resource['name'].' '.$this->translator->trans('created'));
             } else {
                 if (array_key_exists('name', $resource)) {
-                    $this->flash->add('error', $resource['name'] . ' ' . $this->translator->trans('could not be created'));
+                    $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be created'));
                 } elseif (array_key_exists('reference', $resource)) {
-                    $this->flash->add('error', $resource['reference'] . ' ' . $this->translator->trans('could not be created'));
+                    $this->flash->add('error', $resource['reference'].' '.$this->translator->trans('could not be created'));
                 } elseif (array_key_exists('id', $resource)) {
-                    $this->flash->add('error', $resource['id'] . ' ' . $this->translator->trans('could not be created'));
+                    $this->flash->add('error', $resource['id'].' '.$this->translator->trans('could not be created'));
                 } else {
                     $this->flash->add('error', $this->translator->trans('could not be created'));
                 }
@@ -675,6 +678,7 @@ class CommonGroundService
                 CommonGroundEvents::SAVED
             );
         }
+
         return $resource;
     }
 
