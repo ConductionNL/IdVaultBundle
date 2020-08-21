@@ -373,19 +373,20 @@ class VrcService
         }
 
         // Let transform the request properties in something we can search
-        $requestTypeProperties = [];
+        $requestTypeOffers = [];
         $requestTypeCemeteries = []; /* @todo  abstraheren!*/
+
         foreach ($requestType['properties'] as $property) {
-            if (in_array('iri', $property) && $property['iri'] == 'pdc/offer') {
-                $requestTypeProperties[$property['name']] = $property;
+            if(array_key_exists('iri',$property) && $property['iri'] == "pdc/offer"){
+                $requestTypeOffers[$property['name']] = $property;
             }
-            if (in_array('iri', $property) && $property['iri'] == 'grc/cemetery') {
+            if(array_key_exists('iri',$property) && $property['iri'] == "grc/cemetery"){
                 $requestTypeCemeteries[$property['name']] = $property;
             }
         }
 
         // Lets skip all other things if this request type isn't supposed to contain products
-        if (count($requestTypeProperties) == 0 && count($requestTypeCemeteries) == 0) {
+        if(count($requestTypeOffers) == 0 && count($requestTypeCemeteries) == 0){
             return $request;
         }
 
@@ -487,22 +488,25 @@ class VrcService
             array_key_exists('order', $request) &&
             $request['order']
         ) {
-            $invoices = $this->commonGroundService->getResourceList(['component' => 'bc', 'type' => 'invoices'], ['order'=>$request['order']])['hydra:member'];
-            if (count($invoices) > 0) {
-                $invoice = $invoices[0];
-            } else {
-                $post = ['url'=>$request['order']];
-                $invoice = $this->commonGroundService->saveResource($event, ['component' => 'bc', 'type' => 'order']);
+            $invoices = $this->commonGroundService->getResourceList(['component' => 'bc', 'type' => 'invoices'],['order'=>$request['order']])["hydra:member"];
+            if(count($invoices) > 0){
+                $invoice=$invoices[0];
             }
+            else{
+                $post = ["url"=>$request['order']];
+                $invoice = $this->commonGroundService->saveResource($post, ['component' => 'bc', 'type' => 'order']);
+            }
+
+            var_dump($invoice);
         }
 
         // Making orders
-        if (count($requestTypeProperties) > 0) {
+        if(count($requestTypeOffers) > 0 ) {
             // Let check the property
             $products = [];
             foreach ($request['properties'] as $name => $value) {
                 // Lets see if the property is part of the request type
-                if (!array_key_exists($name, $requestTypeProperties)) {
+                if (!array_key_exists($name, $requestTypeOffers)) {
                     // property is not part of the provide request type
                     continue;
                 }
@@ -520,16 +524,17 @@ class VrcService
                 return $request;
             }
 
-            //  Order Items
+
+
             $requestItems = [];
             foreach ($products as $product) {
                 $product = $this->commonGroundService->getResource($product);
                 $orderItem = [];
                 $orderItem['offer'] = $product['@id'];
-                if (in_array('name', $product)) {
+                if (array_key_exists('name', $product)) {
                     $orderItem['name'] = $product['name'];
                 }
-                if (in_array('description', $product)) {
+                if (array_key_exists('description', $product)) {
                     $orderItem['description'] = $product['description'];
                 }
                 $orderItem['price'] = (string) $product['price'];
@@ -709,7 +714,7 @@ class VrcService
                     break;
                 case 'array':
 
-                    if (!is_array($property['type'])) {
+                    if(!is_array($property['type'])){
                         $result['messages'][] = 'value should be a string';
                         $result['valid'] = false;
                     } else {
@@ -845,6 +850,7 @@ class VrcService
                     // Set the results
                     $property['value'] = $result['value'];
                     $property['valid'] = $result['valid'];
+                    $property['messages'] = $result['messages'];
                     $property['messages'] = $result['messages'];
                     // Store results to the current procces
                     if (!$property['valid']) {
