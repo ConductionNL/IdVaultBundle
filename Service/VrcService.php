@@ -709,7 +709,7 @@ class VrcService
                     break;
                 case 'array':
 
-                    if (!is_arry($property['type'])) {
+                    if (!is_array($property['type'])) {
                         $result['messages'][] = 'value should be a string';
                         $result['valid'] = false;
                     } else {
@@ -736,7 +736,7 @@ class VrcService
             if (!is_array($property['enum'])) {
                 $property['enum'] = explode(',', $property['enum']);
             }
-            if (in_array($request['value'], $property['enum'])) {
+            if (in_array($result['value'], $property['enum'])) {
                 $result['messages'][] = 'There the value should be one of '.implode(',', $property['enum']);
                 $result['valid'] = false;
             }
