@@ -7,6 +7,7 @@ namespace Conduction\CommonGroundBundle\Service;
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
 use GuzzleHttp\Client;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -113,6 +114,57 @@ class CommonGroundService
         $this->client = new Client($this->guzzleConfig);
     }
 
+    public function isCommonGround(string $url)
+    {
+        $parsedUrl = parse_url($url);
+        $returnUrl = [];
+
+        if (!key_exists('scheme', $parsedUrl) || !key_exists('host', $parsedUrl)) {
+            exit;
+
+            return false;
+        }
+
+        $path = explode('/', $parsedUrl['path']);
+        $host = explode('.', $parsedUrl['host']);
+
+        /**@TODO: Dit moet echt nog even wat dynamischer*/
+        if (in_array('api', $path) && count($path) > 3) {
+            $componentPath = implode('/', array_slice($path, 0, 4));
+
+            $path = array_splice($path, 4);
+
+            $returnUrl['id'] = implode('/', array_splice($path, 1));
+            $returnUrl['type'] = implode('', $path);
+        } else {
+            $componentPath = '';
+
+            $returnUrl['id'] = implode('/', array_splice($path, 2));
+            $returnUrl['type'] = implode('', $path);
+        }
+
+        $componentUrl = "{$parsedUrl['scheme']}://{$parsedUrl['host']}{$componentPath}";
+        $components = $this->params->get('common_ground.components');
+        foreach ($components as $code=>$component) {
+            if ($component['location'] == $componentUrl || strpos($component['location'], $componentUrl, ) !== false) {
+                $returnUrl['component'] = $code;
+
+                return $returnUrl;
+            }
+        }
+        if (count($path) > 1 && $this->getComponentHealth($path[1])) {
+            $returnUrl['component'] = end($path);
+
+            return $returnUrl;
+        } elseif ($this->getComponentHealth($host[0])) {
+            $returnUrl['component'] = $host[0];
+
+            return $returnUrl;
+        }
+
+        return false;
+    }
+
     /*
      * Get a single resource from a common ground componant
      */
@@ -124,9 +176,15 @@ class CommonGroundService
                 $component['accept'] = $url['accept'];
             }
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         $url = $this->cleanUrl($url, false, $autowire);
@@ -244,9 +302,15 @@ class CommonGroundService
                 $component['accept'] = $url['accept'];
             }
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         $url = $this->cleanUrl($url, false, $autowire);
@@ -340,9 +404,15 @@ class CommonGroundService
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
@@ -527,9 +597,15 @@ class CommonGroundService
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
@@ -902,7 +978,7 @@ class CommonGroundService
             }
             // If it is not we "gues" the endpoint (this is where we could force nlx)
             elseif ($this->params->get('app_internal') == 'true') {
-                $url = 'http://'.$url['component'].'.'.$this->params->get('app_env').$route;
+                $url = 'http://'.$url['component'].'.'.$this->params->get('app_env').'.svc.cluster.local'.$route;
             } elseif ($this->params->get('app_env') == 'prod') {
                 $url = 'https://'.$url['component'].'.'.$this->params->get('app_domain').$route;
             } else {
