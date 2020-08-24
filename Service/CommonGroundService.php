@@ -115,28 +115,47 @@ class CommonGroundService
     }
 
     public function isCommonGround(string $url){
+
         $parsedUrl = parse_url($url);
         $returnUrl = [];
 
+        if(!key_exists('scheme', $parsedUrl) || !key_exists('host', $parsedUrl)){
+            die;
+            return false;
+        }
+
         $path = explode("/",$parsedUrl['path']);
         $host = explode('.', $parsedUrl['host']);
-        if(Uuid::isValid(end($path))){
-            $returnUrl['id'] = array_splice($path, -1);
 
+        /**@TODO: Dit moet echt nog even wat dynamischer*/
+        if(in_array('api', $path) && count($path) > 3){
+            $componentPath = implode('/',array_slice($path, 0,4));
+
+            $path = array_splice($path, 4);
+
+            $returnUrl['id'] = implode("/",array_splice($path, 1));
+            $returnUrl['type'] = implode("",$path);
+        }else{
+            $componentPath = '';
+
+            $returnUrl['id'] = implode("/",array_splice($path, 2));
+            $returnUrl['type'] = implode("",$path);
         }
-        $returnUrl['type'] = array_splice($path, -1);
-        $parsedUrl['path'] = implode("/",$path);
 
-        $componentUrl = "{$parsedUrl['scheme']}://{$parsedUrl['host']}/{$parsedUrl['path']}";
+
+
+
+        $componentUrl = "{$parsedUrl['scheme']}://{$parsedUrl['host']}{$componentPath}";
         $components = $this->params->get("common_ground.components");
         foreach($components as $code=>$component){
             if($component['location'] == $componentUrl || strpos($component['location'], $componentUrl, ) !== false){
                 $returnUrl['component'] = $code;
+                var_dump($returnUrl);
                 return $returnUrl;
             }
         }
         if(count($path) > 1 && $this->getComponentHealth($path[1])){
-            $returnUrl['component'] = $path[1];
+            $returnUrl['component'] = end($path);
             return $returnUrl;
         }
         elseif($this->getComponentHealth($host[0])){
