@@ -4,6 +4,8 @@
 
 namespace Conduction\CommonGroundBundle\Service;
 
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
+
 /*
  * The VRC Service handels logic reqoured to properly connect with the vrc component
  *
@@ -172,6 +174,8 @@ class VrcService
         }
 
         $this->checkOrder($resource);
+        $resource = $this->clearDefaults($resource);
+
 
         return $resource;
     }
@@ -184,6 +188,7 @@ class VrcService
      */
     public function onCreate(?array $resource)
     {
+        $resource = $this->clearDefaults($resource);
         return $resource;
     }
 
@@ -342,6 +347,41 @@ class VrcService
         }
 
         return $tasks;
+    }
+
+    public function clearDefaults(?array $request)
+    {
+        // We want to ignore the cache here
+        $request = $this->commonGroundService->getResource(['component' => 'vrc', 'type' => 'requests', 'id'=>$request['id']], [], true);
+        // Lets first see if we can grap an requested type and if it has stages
+        if (!$requestType = $this->commonGroundService->getResource($request['requestType'])) {
+            return $request;
+        }
+        $dependencyArray = [];
+        foreach($requestType['properties'] as $property){
+            $dependencies = [];
+            foreach ($property['query'] as $key => $value){
+                if(strstr($value, 'request')){
+                    $value = substr($value,strrpos($value, '.')+1);
+                    array_push($dependencies, $value);
+                }else{
+                    array_push($dependencies, $value);
+                }
+                $dependencyArray[$property['name']] = $dependencies;
+            }
+        }
+        foreach ($request['properties'] as $key => $value){
+            if(array_key_exists($key, $dependencyArray)){
+                $dependencies = $dependencyArray[$key];
+                foreach ($dependencies as $dependency){
+                    if(!array_key_exists($dependency, $request['properties'])){
+                        unset($request['properties'][$key]);
+                        $this->flash->add('failure', 'Property is leeggehaald omdat deze een afhankelijkheid een verwijderd property');
+                    }
+                }
+            }
+        }
+        return $request;
     }
 
     /*
