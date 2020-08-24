@@ -150,7 +150,6 @@ class CommonGroundService
         foreach($components as $code=>$component){
             if($component['location'] == $componentUrl || strpos($component['location'], $componentUrl, ) !== false){
                 $returnUrl['component'] = $code;
-                var_dump($returnUrl);
                 return $returnUrl;
             }
         }
