@@ -114,53 +114,54 @@ class CommonGroundService
         $this->client = new Client($this->guzzleConfig);
     }
 
-    public function isCommonGround(string $url){
-
+    public function isCommonGround(string $url)
+    {
         $parsedUrl = parse_url($url);
         $returnUrl = [];
 
-        if(!key_exists('scheme', $parsedUrl) || !key_exists('host', $parsedUrl)){
-            die;
+        if (!key_exists('scheme', $parsedUrl) || !key_exists('host', $parsedUrl)) {
+            exit;
+
             return false;
         }
 
-        $path = explode("/",$parsedUrl['path']);
+        $path = explode('/', $parsedUrl['path']);
         $host = explode('.', $parsedUrl['host']);
 
         /**@TODO: Dit moet echt nog even wat dynamischer*/
-        if(in_array('api', $path) && count($path) > 3){
-            $componentPath = implode('/',array_slice($path, 0,4));
+        if (in_array('api', $path) && count($path) > 3) {
+            $componentPath = implode('/', array_slice($path, 0, 4));
 
             $path = array_splice($path, 4);
 
-            $returnUrl['id'] = implode("/",array_splice($path, 1));
-            $returnUrl['type'] = implode("",$path);
-        }else{
+            $returnUrl['id'] = implode('/', array_splice($path, 1));
+            $returnUrl['type'] = implode('', $path);
+        } else {
             $componentPath = '';
 
-            $returnUrl['id'] = implode("/",array_splice($path, 2));
-            $returnUrl['type'] = implode("",$path);
+            $returnUrl['id'] = implode('/', array_splice($path, 2));
+            $returnUrl['type'] = implode('', $path);
         }
 
-
-
-
         $componentUrl = "{$parsedUrl['scheme']}://{$parsedUrl['host']}{$componentPath}";
-        $components = $this->params->get("common_ground.components");
-        foreach($components as $code=>$component){
-            if($component['location'] == $componentUrl || strpos($component['location'], $componentUrl, ) !== false){
+        $components = $this->params->get('common_ground.components');
+        foreach ($components as $code=>$component) {
+            if ($component['location'] == $componentUrl || strpos($component['location'], $componentUrl, ) !== false) {
                 $returnUrl['component'] = $code;
+
                 return $returnUrl;
             }
         }
-        if(count($path) > 1 && $this->getComponentHealth($path[1])){
+        if (count($path) > 1 && $this->getComponentHealth($path[1])) {
             $returnUrl['component'] = end($path);
+
             return $returnUrl;
-        }
-        elseif($this->getComponentHealth($host[0])){
+        } elseif ($this->getComponentHealth($host[0])) {
             $returnUrl['component'] = $host[0];
+
             return $returnUrl;
         }
+
         return false;
     }
 
@@ -175,13 +176,13 @@ class CommonGroundService
                 $component['accept'] = $url['accept'];
             }
         } else {
-            if(!is_array($url) && $componentUrl = $this->isCommonGround($url)){
+            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
-            }else{
+            } else {
                 $component = [];
             }
         }
@@ -301,13 +302,13 @@ class CommonGroundService
                 $component['accept'] = $url['accept'];
             }
         } else {
-            if(!is_array($url) && $componentUrl = $this->isCommonGround($url)){
+            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
-            }else{
+            } else {
                 $component = [];
             }
         }
@@ -403,13 +404,13 @@ class CommonGroundService
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            if(!is_array($url) && $componentUrl = $this->isCommonGround($url)){
+            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
-            }else{
+            } else {
                 $component = [];
             }
         }
@@ -596,13 +597,13 @@ class CommonGroundService
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            if(!is_array($url) && $componentUrl = $this->isCommonGround($url)){
+            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
-            }else{
+            } else {
                 $component = [];
             }
         }
