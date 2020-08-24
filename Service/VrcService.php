@@ -13,11 +13,13 @@ use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 class VrcService
 {
     private $commonGroundService;
+    private $flash;
     private $camundaService;
 
-    public function __construct(CommonGroundService $commonGroundService, CamundaService $camundaService)
+    public function __construct(CommonGroundService $commonGroundService, FlashBagInterface $flash, CamundaService $camundaService)
     {
         $this->commonGroundService = $commonGroundService;
+        $this->flash = $flash;
         $this->camundaService = $camundaService;
     }
 
