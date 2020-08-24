@@ -178,7 +178,6 @@ class VrcService
         $this->checkOrder($resource);
         $resource = $this->clearDefaults($resource);
 
-
         return $resource;
     }
 
@@ -191,6 +190,7 @@ class VrcService
     public function onCreate(?array $resource)
     {
         $resource = $this->clearDefaults($resource);
+
         return $resource;
     }
 
@@ -360,29 +360,30 @@ class VrcService
             return $request;
         }
         $dependencyArray = [];
-        foreach($requestType['properties'] as $property){
+        foreach ($requestType['properties'] as $property) {
             $dependencies = [];
-            foreach ($property['query'] as $key => $value){
-                if(strstr($value, 'request')){
-                    $value = substr($value,strrpos($value, '.')+1);
+            foreach ($property['query'] as $key => $value) {
+                if (strstr($value, 'request')) {
+                    $value = substr($value, strrpos($value, '.') + 1);
                     array_push($dependencies, $value);
-                }else{
+                } else {
                     array_push($dependencies, $value);
                 }
                 $dependencyArray[$property['name']] = $dependencies;
             }
         }
-        foreach ($request['properties'] as $key => $value){
-            if(array_key_exists($key, $dependencyArray)){
+        foreach ($request['properties'] as $key => $value) {
+            if (array_key_exists($key, $dependencyArray)) {
                 $dependencies = $dependencyArray[$key];
-                foreach ($dependencies as $dependency){
-                    if(!array_key_exists($dependency, $request['properties'])){
+                foreach ($dependencies as $dependency) {
+                    if (!array_key_exists($dependency, $request['properties'])) {
                         unset($request['properties'][$key]);
                         $this->flash->add('failure', 'Property is leeggehaald omdat deze een afhankelijkheid een verwijderd property');
                     }
                 }
             }
         }
+
         return $request;
     }
 
@@ -419,16 +420,16 @@ class VrcService
         $requestTypeCemeteries = []; /* @todo  abstraheren!*/
 
         foreach ($requestType['properties'] as $property) {
-            if(array_key_exists('iri',$property) && $property['iri'] == "pdc/offer"){
+            if (array_key_exists('iri', $property) && $property['iri'] == 'pdc/offer') {
                 $requestTypeOffers[$property['name']] = $property;
             }
-            if(array_key_exists('iri',$property) && $property['iri'] == "grc/cemetery"){
+            if (array_key_exists('iri', $property) && $property['iri'] == 'grc/cemetery') {
                 $requestTypeCemeteries[$property['name']] = $property;
             }
         }
 
         // Lets skip all other things if this request type isn't supposed to contain products
-        if(count($requestTypeOffers) == 0 && count($requestTypeCemeteries) == 0){
+        if (count($requestTypeOffers) == 0 && count($requestTypeCemeteries) == 0) {
             return $request;
         }
 
@@ -530,12 +531,11 @@ class VrcService
             array_key_exists('order', $request) &&
             $request['order']
         ) {
-            $invoices = $this->commonGroundService->getResourceList(['component' => 'bc', 'type' => 'invoices'],['order'=>$request['order']])["hydra:member"];
-            if(count($invoices) > 0){
-                $invoice=$invoices[0];
-            }
-            else{
-                $post = ["url"=>$request['order']];
+            $invoices = $this->commonGroundService->getResourceList(['component' => 'bc', 'type' => 'invoices'], ['order'=>$request['order']])['hydra:member'];
+            if (count($invoices) > 0) {
+                $invoice = $invoices[0];
+            } else {
+                $post = ['url'=>$request['order']];
                 $invoice = $this->commonGroundService->saveResource($post, ['component' => 'bc', 'type' => 'order']);
             }
 
@@ -543,7 +543,7 @@ class VrcService
         }
 
         // Making orders
-        if(count($requestTypeOffers) > 0 ) {
+        if (count($requestTypeOffers) > 0) {
             // Let check the property
             $products = [];
             foreach ($request['properties'] as $name => $value) {
@@ -565,8 +565,6 @@ class VrcService
             if (count($products) == 0) {
                 return $request;
             }
-
-
 
             $requestItems = [];
             foreach ($products as $product) {
@@ -756,7 +754,7 @@ class VrcService
                     break;
                 case 'array':
 
-                    if(!is_array($property['type'])){
+                    if (!is_array($property['type'])) {
                         $result['messages'][] = 'value should be a string';
                         $result['valid'] = false;
                     } else {
