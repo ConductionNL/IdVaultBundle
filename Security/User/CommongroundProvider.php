@@ -75,7 +75,7 @@ class CommongroundProvider implements UserProviderInterface
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $username], true);
             $users = $users['hydra:member'];
             $user = $users[0];
-        }elseif ($type == 'idin') {
+        } elseif ($type == 'idin') {
             $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
             $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $username, 'provider.name' => $provider[0]['name']])['hydra:member'];
             $user = $this->commonGroundService->getResource($token[0]['user']['@id']);
@@ -93,9 +93,11 @@ class CommongroundProvider implements UserProviderInterface
         switch ($type) {
             case 'person':
                 $resident = $this->checkResidence('person', $user, null);
+
                 return new CommongroundUser($user['naam']['voornamen'].' '.$user['naam']['geslachtsnaam'], $user['id'], null, $user['roles'], $user['@id'], null, 'person', $resident);
             case 'organization':
                 $resident = $this->checkResidence('organization', $user, $kvk);
+
                 return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization', $resident);
             case 'user':
                 return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'user');

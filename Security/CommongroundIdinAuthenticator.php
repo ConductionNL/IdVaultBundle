@@ -54,7 +54,6 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-
         return 'app_user_idin' === $request->attributes->get('_route')
             && $request->isMethod('GET') && $request->query->get('code');
     }
@@ -68,9 +67,9 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         $code = $request->query->get('code');
 
         $body = [
-            'client_id' => 'demo-preprod-basic',
-            'grant_type' => 'authorization_code',
-            'code' => $code,
+            'client_id'    => 'demo-preprod-basic',
+            'grant_type'   => 'authorization_code',
+            'code'         => $code,
             'redirect_uri' => 'https://checkin.dev.zuid-drecht.nl/idin',
         ];
 
@@ -82,14 +81,14 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         ]);
 
         $response = $client->request('POST', '/oidc/token', [
-            'auth' => ['demo-preprod-basic', 'KmcxXfuttfBGnn86DlW8Tg3_dYu6khWafkn5uVo7fGg'],
-            'form_params' => $body
+            'auth'        => ['demo-preprod-basic', 'KmcxXfuttfBGnn86DlW8Tg3_dYu6khWafkn5uVo7fGg'],
+            'form_params' => $body,
         ]);
 
         $token = json_decode($response->getBody()->getContents(), true);
 
         $headers = [
-            'Authorization' => 'Bearer ' . $token['access_token'],
+            'Authorization' => 'Bearer '.$token['access_token'],
             'Accept'        => 'application/json',
         ];
 
@@ -100,21 +99,21 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         $user = json_decode($response->getBody()->getContents(), true);
 
         $credentials = [
-            'username'   => $user['consumer.bin'],
-            'firstName' => $user['consumer.partnerlastname'],
-            'lastName' => $user['consumer.legallastname'],
-            'postalCode' => $user['consumer.postalcode'],
-            'streetName' => $user['consumer.street'],
+            'username'    => $user['consumer.bin'],
+            'firstName'   => $user['consumer.partnerlastname'],
+            'lastName'    => $user['consumer.legallastname'],
+            'postalCode'  => $user['consumer.postalcode'],
+            'streetName'  => $user['consumer.street'],
             'houseNumber' => $user['consumer.houseno'],
-            'country' => $user['consumer.country'],
-            'city' => $user['consumer.city']
+            'country'     => $user['consumer.country'],
+            'city'        => $user['consumer.city'],
         ];
 
-        if(isset($user['consumer.email'])){
+        if (isset($user['consumer.email'])) {
             $credentials['email'] = $user['consumer.email'];
         }
 
-        if(isset($user['consumer.telephone'])){
+        if (isset($user['consumer.telephone'])) {
             $credentials['telephone'] = $user['consumer.telephone'];
         }
 
@@ -187,13 +186,11 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $user = $this->commonGroundService->getResource($token['user']['@id']);
 
-
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
 
         return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], $user['organization'], 'idin');
-
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -201,7 +198,6 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
         $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $provider[0]['name']])['hydra:member'];
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
-
 
         if (!$token || count($token) < 1) {
             return;
