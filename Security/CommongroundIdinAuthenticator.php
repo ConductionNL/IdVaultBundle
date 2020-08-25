@@ -27,7 +27,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
+class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;
@@ -54,8 +54,9 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return 'app_user_idink' === $request->attributes->get('_route')
-            && $request->isMethod('POST');
+
+        return 'app_user_idin' === $request->attributes->get('_route')
+            && $request->isMethod('GET') && $request->query->get('code');
     }
 
     /**
@@ -64,7 +65,9 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        $code = $request->request->get('code');
+
+
+        $code = $request->query->get('code');
 
         $body = [
             'client_id' => 'demo-preprod-basic',
