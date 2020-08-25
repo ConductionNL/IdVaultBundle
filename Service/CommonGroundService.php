@@ -176,7 +176,7 @@ class CommonGroundService
                 $component['accept'] = $url['accept'];
             }
         } else {
-            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
@@ -302,7 +302,7 @@ class CommonGroundService
                 $component['accept'] = $url['accept'];
             }
         } else {
-            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
@@ -404,7 +404,7 @@ class CommonGroundService
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
@@ -507,9 +507,15 @@ class CommonGroundService
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
@@ -597,7 +603,7 @@ class CommonGroundService
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            if (!is_array($url) && $componentUrl = $this->isCommonGround($url)) {
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
