@@ -66,11 +66,14 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     {
         $code = $request->query->get('code');
 
+        $redirect = $request->getUri();
+        $redirect = substr($redirect, 0, strpos($redirect, "?"));
+
         $body = [
             'client_id'    => 'demo-preprod-basic',
             'grant_type'   => 'authorization_code',
             'code'         => $code,
-            'redirect_uri' => $request->getUri(),
+            'redirect_uri' => $redirect,
         ];
 
         $client = new Client([
