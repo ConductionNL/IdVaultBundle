@@ -70,7 +70,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             'client_id'    => 'demo-preprod-basic',
             'grant_type'   => 'authorization_code',
             'code'         => $code,
-            'redirect_uri' => 'https://checkin.dev.zuid-drecht.nl/idin',
+            'redirect_uri' => $request->getUri(),
         ];
 
         $client = new Client([
