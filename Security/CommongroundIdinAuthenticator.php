@@ -73,7 +73,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             'client_id' => 'demo-preprod-basic',
             'grant_type' => 'authorization_code',
             'code' => $code,
-            'redirect_uri' => $request->getUri(),
+            'redirect_uri' => 'https://checkin.dev.zuid-drecht.nl/idin',
         ];
 
         $client = new Client([
@@ -85,8 +85,14 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $response = $client->request('POST', '/oidc/token', [
             'auth' => ['demo-preprod-basic', 'KmcxXfuttfBGnn86DlW8Tg3_dYu6khWafkn5uVo7fGg'],
-            'body' => $body
+            'form_params' => $body
         ]);
+
+
+        $token = json_decode($response->getBody()->getContents(), true);
+
+        var_dump($token['access_token']);
+        die;
 
         $credentials = [
             'username'   => $request->request->get('code'),
