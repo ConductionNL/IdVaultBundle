@@ -1101,22 +1101,18 @@ class CommonGroundService
         // Lets actually do a health check
         $headers = $this->headers;
 
+        $component = $this->getComponent($component);
+        if(key_exists('accept',$component)){
+            $headers['Accept'] = $component['accept']
+        }else{
+            $headers['Accept'] = 'application/health+json';
+        }
         // Component specific congiguration
-        $headers['Accept'] = 'application/health+json';
 
         try {
             $response = $this->client->request('GET', $url, ['headers' => $headers, 'http_errors' => false]);
             if ($response->getStatusCode() == 200) {
                 $item->set(true);
-            } elseif($response->getStatusCode() == 406){
-                $headers['Accept'] = 'application/json';
-                $response = $this->client->request('GET', $url, ['headers' => $headers, 'http_errors' => false]);
-                if($response->getStatusCode() == 200){
-                    $item->set(true);
-                }
-                else{
-                    $item->set(false);
-                }
             } else {
                 $item->set(false);
             }
