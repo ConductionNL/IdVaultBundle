@@ -714,41 +714,19 @@ class CommonGroundService
             if ($this->updateResource($resource, null, false, $autowire, $events)) {
                 // Lets renew the resource
                 $resource = $this->getResource($resource['@id'], [], false, false, $autowire, $events);
-                if (array_key_exists('name', $resource)) {
-                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('saved'));
-                } elseif (array_key_exists('reference', $resource)) {
-                    $this->flash->add('success', $resource['reference'].' '.$this->translator->trans('saved'));
-                } elseif (array_key_exists('id', $resource)) {
-                    $this->flash->add('success', $resource['id'].' '.$this->translator->trans('saved'));
-                } else {
-                    $this->flash->add('success', $this->translator->trans('saved'));
-                }
+                $this->throwMessage('success', $resource, 'saved');
             } else {
                 if (array_key_exists('name', $resource)) {
-                    $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be saved'));
-                } elseif (array_key_exists('reference', $resource)) {
-                    $this->flash->add('error', $resource['reference'].' '.$this->translator->trans('could not be saved'));
-                } elseif (array_key_exists('id', $resource)) {
-                    $this->flash->add('error', $resource['id'].' '.$this->translator->trans('could not be saved'));
-                } else {
-                    $this->flash->add('error', $this->translator->trans('could not be saved'));
+                    $this->throwMessage('error', $resource, 'could not be saved');
                 }
             }
         } else {
             if ($createdResource = $this->createResource($resource, $endpoint, false, $autowire)) {
                 // Lets renew the resource
                 $resource = $this->getResource($createdResource['@id'], [], false, false, $autowire);
-                $this->flash->add('success', $resource['name'].' '.$this->translator->trans('created'));
+                $this->throwMessage('success', $resource, 'created');
             } else {
-                if (array_key_exists('name', $resource)) {
-                    $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be created'));
-                } elseif (array_key_exists('reference', $resource)) {
-                    $this->flash->add('error', $resource['reference'].' '.$this->translator->trans('could not be created'));
-                } elseif (array_key_exists('id', $resource)) {
-                    $this->flash->add('error', $resource['id'].' '.$this->translator->trans('could not be created'));
-                } else {
-                    $this->flash->add('error', $this->translator->trans('could not be created'));
-                }
+                $this->throwMessage('error', $resource, 'could not be created');
             }
         }
 
@@ -763,6 +741,43 @@ class CommonGroundService
 
         return $resource;
     }
+
+
+    public function throwMessage($type = 'succes', $resource = [], $message)
+    {
+        $text = '';
+
+        /* @todo deze willen we eigenlijk translaten */
+        if(array_key_exists('@type', $resource)){
+            $resourceType = $resource['@type'];
+            $resourceType = strtolower($resourceType);
+
+            // The @type might be a schema org reference s
+            if(filter_var($resourceType, FILTER_VALIDATE_URL)){
+                $resourceType = $this->getUuidFromUrl($resourceType);
+            }
+
+            $text = $text.$this->translator->trans($resourceType);
+        }
+
+        // Lets try to name the object
+        if (array_key_exists('reference', $resource)) {
+            $text = $text.' '.$resource['reference'];
+        } elseif (array_key_exists('name', $resource)) {
+            $text = $text.' '.$resource['name'];
+        } elseif (array_key_exists('id', $resource)) {
+            $text = $text.' '.$resource['id'];
+        } else {
+            /// do nothing
+        }
+
+        // set the message
+        $text = $text.' '.$this->translator->trans($message);
+
+        // Throw te actual flash
+        $this->flash->add($type, $text);
+    }
+
 
     public function isResource($url)
     {
