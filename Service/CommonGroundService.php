@@ -742,18 +742,17 @@ class CommonGroundService
         return $resource;
     }
 
-
     public function throwMessage($type = 'succes', $resource = [], $message)
     {
         $text = '';
 
         /* @todo deze willen we eigenlijk translaten */
-        if(array_key_exists('@type', $resource)){
+        if (array_key_exists('@type', $resource)) {
             $resourceType = $resource['@type'];
             $resourceType = strtolower($resourceType);
 
             // The @type might be a schema org reference s
-            if(filter_var($resourceType, FILTER_VALIDATE_URL)){
+            if (filter_var($resourceType, FILTER_VALIDATE_URL)) {
                 $resourceType = $this->getUuidFromUrl($resourceType);
             }
 
@@ -777,7 +776,6 @@ class CommonGroundService
         // Throw te actual flash
         $this->flash->add($type, $text);
     }
-
 
     public function isResource($url)
     {
@@ -1102,9 +1100,9 @@ class CommonGroundService
         $headers = $this->headers;
 
         $component = $this->getComponent($component);
-        if(key_exists('accept',$component)){
+        if (key_exists('accept', $component)) {
             $headers['Accept'] = $component['accept'];
-        }else{
+        } else {
             $headers['Accept'] = 'application/health+json';
         }
         // Component specific congiguration
