@@ -1093,6 +1093,15 @@ class CommonGroundService
             $response = $this->client->request('GET', $url, ['headers' => $headers, 'http_errors' => false]);
             if ($response->getStatusCode() == 200) {
                 $item->set(true);
+            } elseif($response->getStatusCode() == 406){
+                $headers['Accept'] = 'application/json';
+                $response = $this->client->request('GET', $url, ['headers' => $headers, 'http_errors' => false]);
+                if($response->getStatusCode() == 200){
+                    $item->set(true);
+                }
+                else{
+                    $item->set(false);
+                }
             } else {
                 $item->set(false);
             }
