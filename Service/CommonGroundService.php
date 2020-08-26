@@ -1100,7 +1100,7 @@ class CommonGroundService
         $headers = $this->headers;
 
         $component = $this->getComponent($component);
-        if (key_exists('accept', $component)) {
+        if ($component && key_exists('accept',$component)){
             $headers['Accept'] = $component['accept'];
         } else {
             $headers['Accept'] = 'application/health+json';
