@@ -193,7 +193,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], $user['organization'], 'idin');
+        return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], null, 'idin');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -212,12 +212,12 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->router->generate('app_default_index'));
+        return new RedirectResponse($this->router->generate('app_chin_checkin'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        return new RedirectResponse($this->router->generate('app_user_eherkenning', ['response' => $request->request->get('back_url'), 'back_url' => $request->request->get('back_url')]));
+        return new RedirectResponse($this->router->generate('app_user_idin'));
     }
 
     /**
