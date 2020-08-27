@@ -193,7 +193,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], $user['organization'], 'idin');
+        return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], null, 'idin');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
