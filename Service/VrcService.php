@@ -46,34 +46,37 @@ class VrcService
     }
 
     /**
-     * Creates an assent for a request
-     * @param array $value
-     * @param array $requestType
-     * @param array $typeProperty
-     * @param array $request
+     * Creates an assent for a request.
+     *
+     * @param array      $value
+     * @param array      $requestType
+     * @param array      $typeProperty
+     * @param array      $request
      * @param array|null $processType
+     *
      * @return array|bool
      */
-    public function createAssent(array $value, array $requestType, array $typeProperty, array $request, array $processType = null){
+    public function createAssent(array $value, array $requestType, array $typeProperty, array $request, array $processType = null)
+    {
         $assent = [];
         $contact = [];
-        if(key_exists('person', $value)){
+        if (key_exists('person', $value)) {
             $contact['givenName'] = $value['person']['givenName'];
             $contact['familyName'] = $value['person']['familyName'];
         }
-        if(key_exists('email', $value)){
+        if (key_exists('email', $value)) {
             $email['name'] = 'e-mail';
             $email['email'] = $value['email'];
             $contact['emails'][] = $email;
         }
-        if(key_exists('telephone', $value)){
+        if (key_exists('telephone', $value)) {
             $phone['name'] = 'phone number';
             $phone['telephone'] = $value['telephone'];
             $contact['telephones'][] = $phone;
         }
         $assent['contact'] = $this->commonGroundService->createResource($contact, ['component'=>'cc', 'type'=>'people'])['@id'];
 
-        if($processType){
+        if ($processType) {
             $name = $processType['name'];
         } else {
             $name = $requestType['name'];
@@ -81,10 +84,11 @@ class VrcService
 
         $assent['name'] = "Instemmingsverzoek voor $name";
         $assent['description'] = "U hebt een instemmingsverzoek ontvangen als {$typeProperty['name']} voor een $name van X";
-        if(key_exists('@id', $request)){
+        if (key_exists('@id', $request)) {
             $assent['request'] = $request['@id'];
         }
         $assent['requester'] = $request['organization'];
+
         return $this->commonGroundService->createResource($assent, ['component'=>'irc', 'type'=>'assents']);
     }
 
@@ -96,7 +100,7 @@ class VrcService
      */
     public function onSave(?array $resource)
     {
-        if(!key_exists('@id', $resource) || !$this->commonGroundService->isCommonGround($resource['@id'])['type'] == 'requests'){
+        if (!key_exists('@id', $resource) || !$this->commonGroundService->isCommonGround($resource['@id'])['type'] == 'requests') {
             return $resource;
         }
         // Lets get the request type
@@ -107,7 +111,7 @@ class VrcService
         // Lets get the process type
         if (array_key_exists('processType', $resource)) {
             $processType = $this->commonGroundService->getResource($resource['processType']);
-        }else{
+        } else {
             $processType = null;
         }
         // Lets see if we need to create assents for the submitters
@@ -120,25 +124,26 @@ class VrcService
         if (array_key_exists('properties', $resource)) {
             $properties = $resource['properties'];
             $typeProperties = $requestType['properties'];
-            foreach($typeProperties as $typeProperty ){
-                if(
+            foreach ($typeProperties as $typeProperty) {
+                if (
                     $typeProperty['iri'] == 'irc/assent' &&
                     key_exists($typeProperty['name'], $properties) &&
                     ($property = $properties[$typeProperty['name']])
-                ){
-                    if($typeProperty['maxItems'] > 1) {
+                ) {
+                    if ($typeProperty['maxItems'] > 1) {
                         foreach ($property as $key => $value) {
-                            if(is_array($value)){
-                                $properties[$typeProperty['name']][$key]= $this->createAssent($value, $requestType, $typeProperty, $resource, $processType)['@id'];
+                            if (is_array($value)) {
+                                $properties[$typeProperty['name']][$key] = $this->createAssent($value, $requestType, $typeProperty, $resource, $processType)['@id'];
                             }
                         }
-                    }elseif(is_array($property)){
-                        $properties[$typeProperty['name']]= $this->createAssent($property, $requestType, $typeProperty, $resource, $processType)['@id'];
+                    } elseif (is_array($property)) {
+                        $properties[$typeProperty['name']] = $this->createAssent($property, $requestType, $typeProperty, $resource, $processType)['@id'];
                     }
                 }
             }
             $resource['properties'] = $properties;
         }
+
         return $resource;
     }
 
@@ -542,7 +547,7 @@ class VrcService
                         $event = $events[0];
                         $event['startDate'] = $startDate;
                         $event['endDate'] = $endDate;
-                        //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+                    //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
                     } else {
                         $event = [];
                         $event['name'] = $request['reference'];
@@ -571,7 +576,7 @@ class VrcService
                     $event = $events[0];
                     $event['startDate'] = $startDate;
                     $event['endDate'] = $endDate;
-                    //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+                //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
                 } else {
                     $event = [];
                     $event['name'] = $request['reference'];
