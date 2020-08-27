@@ -378,7 +378,6 @@ class VrcService
                 foreach ($dependencies as $dependency) {
                     if (!array_key_exists($dependency, $request['properties'])) {
                         unset($request['properties'][$key]);
-                        $this->flash->add('failure', 'Property is leeggehaald omdat deze een afhankelijkheid een verwijderd property');
                     }
                 }
             }
