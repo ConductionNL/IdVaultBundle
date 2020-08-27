@@ -102,7 +102,7 @@ class CommongroundProvider implements UserProviderInterface
             case 'user':
                 return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'user');
             case 'idin':
-                return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], $user['organization'], 'idin');
+                return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], null, 'idin');
             default:
                 throw new UsernameNotFoundException(
                     sprintf('User "%s" does not exist.', $username)
