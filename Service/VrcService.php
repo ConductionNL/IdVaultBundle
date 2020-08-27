@@ -538,8 +538,6 @@ class VrcService
                 $post = ['url'=>$request['order']];
                 $invoice = $this->commonGroundService->saveResource($post, ['component' => 'bc', 'type' => 'order']);
             }
-
-            var_dump($invoice);
         }
 
         // Making orders
