@@ -100,7 +100,7 @@ class CommongroundProvider implements UserProviderInterface
             if (!isset($user['roles'])) {
                 $user['roles'] = [];
             }
-            array_push($user['roles'], 'scope.vrc.requests.read');
+            array_push($user['roles'], 'scope.chin.checkins.read');
         }
 
         if (!isset($user['roles'])) {
