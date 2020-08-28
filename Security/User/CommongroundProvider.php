@@ -97,6 +97,10 @@ class CommongroundProvider implements UserProviderInterface
             $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
             $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $username, 'provider.name' => $provider[0]['name']])['hydra:member'];
             $user = $this->commonGroundService->getResource($token[0]['user']['@id']);
+            if (!isset($user['roles'])) {
+                $user['roles'] = [];
+            }
+            array_push($user['roles'], 'scope.vrc.requests.read');
         }
 
         if (!isset($user['roles'])) {
