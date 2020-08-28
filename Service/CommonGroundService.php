@@ -703,6 +703,7 @@ class CommonGroundService
                 $event,
                 CommonGroundEvents::SAVE
             );
+            $resource = $event->getResource();
         }
         // determine the endpoint
         $endpoint = $this->cleanUrl($endpoint, $resource, $autowire);

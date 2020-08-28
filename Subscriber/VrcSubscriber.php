@@ -52,6 +52,12 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function save(CommongroundUpdateEvent $event)
     {
+        // Lets make sure we only triger on requests resources
+        $resource = $event->getResource();
+
+        $resource = $this->vrcService->onSave($resource);
+        $event->setResource($resource);
+
         return $event;
     }
 
