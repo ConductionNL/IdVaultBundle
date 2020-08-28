@@ -175,18 +175,6 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             $user['organization'] = $application['organization']['@id'];
             $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
 
-            //set user to idin group
-            $group = $this->commonGroundService->getResource(['component' => 'uc', 'type' => 'groups', 'id' => '3ae959d7-01e2-4939-8442-0be4ca8e2898']);
-            $newArray = [];
-            if (count($group['users']) >= 1) {
-                foreach ($group['users'] as $person) {
-                    array_push($newArray, $person['@id']);
-                }
-            }
-            array_push($newArray, $user['@id']);
-            $group['users'] = $newArray;
-            $group = $this->commonGroundService->updateResource($group);
-
             //create token
             $token = [];
             $token['token'] = $credentials['username'];
