@@ -178,7 +178,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             //set user to idin group
             $group = $this->commonGroundService->getResource(['component' => 'uc', 'type' => 'groups', 'id' => '3ae959d7-01e2-4939-8442-0be4ca8e2898']);
             $newArray = [];
-            if(count($group['users']) >=1){
+            if (count($group['users']) >= 1) {
                 foreach ($group['users'] as $person) {
                     array_push($newArray, $person['@id']);
                 }
