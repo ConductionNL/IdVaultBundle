@@ -192,7 +192,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
-        array_push($user['roles'], 'scope.vrc.requests.read');
+        array_push($user['roles'], 'scope.chin.checkins.read');
 
         return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], null, 'idin');
     }
