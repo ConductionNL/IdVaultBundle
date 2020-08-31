@@ -123,25 +123,27 @@ class VrcService
         // We need to loop trough the properties, and see if items need to be created
         if (array_key_exists('properties', $resource)) {
             $properties = $resource['properties'];
-            $typeProperties = $requestType['properties'];
-            foreach ($typeProperties as $typeProperty) {
-                if (
-                    $typeProperty['iri'] == 'irc/assent' &&
-                    key_exists($typeProperty['name'], $properties) &&
-                    ($property = $properties[$typeProperty['name']])
-                ) {
-                    if ($typeProperty['maxItems'] > 1) {
-                        foreach ($property as $key => $value) {
-                            if (is_array($value)) {
-                                $properties[$typeProperty['name']][$key] = $this->createAssent($value, $requestType, $typeProperty, $resource, $processType)['@id'];
+            if(isset($requestType)){
+                $typeProperties = $requestType['properties'];
+                foreach ($typeProperties as $typeProperty) {
+                    if (
+                        $typeProperty['iri'] == 'irc/assent' &&
+                        key_exists($typeProperty['name'], $properties) &&
+                        ($property = $properties[$typeProperty['name']])
+                    ) {
+                        if ($typeProperty['maxItems'] > 1) {
+                            foreach ($property as $key => $value) {
+                                if (is_array($value)) {
+                                    $properties[$typeProperty['name']][$key] = $this->createAssent($value, $requestType, $typeProperty, $resource, $processType)['@id'];
+                                }
                             }
+                        } elseif (is_array($property)) {
+                            $properties[$typeProperty['name']] = $this->createAssent($property, $requestType, $typeProperty, $resource, $processType)['@id'];
                         }
-                    } elseif (is_array($property)) {
-                        $properties[$typeProperty['name']] = $this->createAssent($property, $requestType, $typeProperty, $resource, $processType)['@id'];
                     }
                 }
+                $resource['properties'] = $properties;
             }
-            $resource['properties'] = $properties;
         }
 
         return $resource;
