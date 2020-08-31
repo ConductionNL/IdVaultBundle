@@ -130,4 +130,66 @@ class PtcService
     {
         return $this->extendProcess($resource);
     }
+
+    /*
+     * Get al the properties associatied with an specific procces
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function getProperties($proces)
+    {
+        // If we get an string instead of an array we need to turn it into a commonground object
+        if(is_string($proces)){
+            $proces = $this->commonGroundService->getResource($proces);
+        }
+
+        // lets setup the array
+        $properties = [];
+
+        // By now the procces should be an array
+        if(!is_array($proces)) return $properties;
+
+        // Lets make sure that we have the data we need
+        if(!in_array('stages',$proces)) return $properties;
+
+        // Lets turn the properties into a indexed array by name
+        foreach ($proces['stages'] as $stage) {
+
+            if(!in_array('sections',$stage)) continue;
+
+            foreach ($stage['sections'] as $section){
+
+                if(!in_array('properties',$section)) continue;
+
+                foreach ($section['properties'] as $property){
+                    $property = $this->commonGroundService->getResource($property);
+                    $properties[$property['name']] = $property;
+                }
+            }
+        }
+
+        return $properties ;
+    }
+
+
+    /*
+     * get a single property on name for a procces
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function getProperty($proces, string $name)
+    {
+        $properties = $this->operties($proces);
+
+        // Lets check if the property exists
+        if(!array_key_exists($name, $properties)){
+            return false;
+        }
+
+        return $properties[$name];
+    }
+
+
 }
