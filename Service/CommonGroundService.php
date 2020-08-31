@@ -447,8 +447,9 @@ class CommonGroundService
 
         $resource = $this->cleanResource($resource);
 
+        //Unset properties without values. To force empty, set an empty array ([])
         foreach ($resource as $key=>$value) {
-            if ($value == null || (is_array($value && empty($value)))) {
+            if ($value == null) {
                 unset($resource[$key]);
             }
         }
