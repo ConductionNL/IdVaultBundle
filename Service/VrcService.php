@@ -978,14 +978,17 @@ class VrcService
 
     public function createCgResource($properties, $requestType)
     {
-        foreach($properties as $value){
-            var_dump($value);
-            die;
+        $property = null;
+        $value = null;
+
+        foreach($properties as $propertyValue){
             foreach($requestType['properties'] as $requestProperty){
-                if($value == $requestProperty['name']){
+                if($propertyValue == $requestProperty['name']){
                     $property = $requestProperty;
+                    $value = $propertyValue;
                 }
             }
+
             if(is_array($value) && array_key_exists('iri', $property) && $property['type'] == 'string' && $property['format'] == 'url' && $component = explode('/', $property['iri']) && count($component) == 2){
                 // hebben we een cg resource
                 $properties[$value] = $this->commonGroundService->saveResource($value, ['component' => component[0], 'type' => component[1]]);
