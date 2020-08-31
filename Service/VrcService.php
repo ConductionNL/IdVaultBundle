@@ -975,4 +975,23 @@ class VrcService
 
         return $procces;
     }
+
+    public function createCgResource($properties, $requestType)
+    {
+        foreach($properties as $value){
+            var_dump($value);
+            die;
+            foreach($requestType['properties'] as $requestProperty){
+                if($value == $requestProperty['name']){
+                    $property = $requestProperty;
+                }
+            }
+            if(is_array($value) && array_key_exists('iri', $property) && $property['type'] == 'string' && $property['format'] == 'url' && $component = explode('/', $property['iri']) && count($component) == 2){
+                // hebben we een cg resource
+                $properties[$value] = $this->commonGroundService->saveResource($value, ['component' => component[0], 'type' => component[1]]);
+            }
+        }
+
+        return $properties;
+    }
 }
