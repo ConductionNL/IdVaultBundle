@@ -172,7 +172,6 @@ class PtcService
         return $properties ;
     }
 
-
     /*
      * get a single property on name for a procces
      *
@@ -181,7 +180,7 @@ class PtcService
      */
     public function getProperty($proces, string $name)
     {
-        $properties = $this->operties($proces);
+        $properties = $this->getProperties($proces);
 
         // Lets check if the property exists
         if(!array_key_exists($name, $properties)){
@@ -190,6 +189,77 @@ class PtcService
 
         return $properties[$name];
     }
+
+    /*
+     * This function fills a procces with all the requered data in order to render it
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+    public function extendProcess(?array $procces)
+    {
+        $procces['valid'] = false;
+        foreach ($procces['stages'] as $stageKey => $stage) {
+            foreach ($stage['sections'] as $sectionKey => $section) {
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
+                foreach ($section['properties'] as $propertyKey => $property) {
+                    $property = $this->commonGroundService->getResource($property);
+                    $property['value'] = null;
+                    $property['valid'] = false;
+                    $property['message'] = null;
+                    unset($property['requestType']);
+                    $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'][$property['@id']] = $property;
+                }
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+            }
+            $procces['stages'][$stageKey]['valid'] = false;
+        }
+
+        return $procces;
+    }
+
+    /*
+     * Aditional logic triggerd afther a Request has been newly created
+     *
+     * @param array $resource The resource before enrichment
+     * @param array The resource afther enrichment
+     */
+        public function fillProcess(?array $procces, array $request = null)
+        {
+            $procces = $this->extendProcess($procces);
+
+            foreach ($procces['stages'] as $stageKey => $stage) {
+                $procces['stages'][$stageKey]['valid'] = true;
+                foreach ($stage['sections'] as $sectionKey => $section) {
+                    $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
+                    $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
+
+                    // Lets validate the indivual property forms
+                    foreach ($section['propertiesForms'] as $propertyKey => $property) {
+                        // Lets validate
+                        $result = $this->checkProperty($request, $property);
+                        // Set the results
+                        $property['value'] = $result['value'];
+                        $property['valid'] = $result['valid'];
+                        $property['messages'] = $result['messages'];
+                        $property['messages'] = $result['messages'];
+                        // Store results to the current procces
+                        if (!$property['valid']) {
+                            $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+                        }
+                    }
+
+                    if (!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']) {
+                        $procces['stages'][$stageKey]['valid'] = false;
+                    }
+                }
+                if (!$procces['stages'][$stageKey]['valid']) {
+                    $procces['valid'] = false;
+                }
+            }
+
+            return $procces;
+        }
 
 
 }

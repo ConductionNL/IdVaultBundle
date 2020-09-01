@@ -45,53 +45,6 @@ class VrcService
         return $resource;
     }
 
-    /**
-     * Creates an assent for a request.
-     *
-     * @param array      $value
-     * @param array      $requestType
-     * @param array      $typeProperty
-     * @param array      $request
-     * @param array|null $processType
-     *
-     * @return array|bool
-     */
-    public function createAssent(array $value, array $requestType, array $typeProperty, array $request, array $processType = null)
-    {
-        $assent = [];
-        $contact = [];
-        if (key_exists('person', $value)) {
-            $contact['givenName'] = $value['person']['givenName'];
-            $contact['familyName'] = $value['person']['familyName'];
-        }
-        if (key_exists('email', $value)) {
-            $email['name'] = 'e-mail';
-            $email['email'] = $value['email'];
-            $contact['emails'][] = $email;
-        }
-        if (key_exists('telephone', $value)) {
-            $phone['name'] = 'phone number';
-            $phone['telephone'] = $value['telephone'];
-            $contact['telephones'][] = $phone;
-        }
-        $assent['contact'] = $this->commonGroundService->createResource($contact, ['component'=>'cc', 'type'=>'people'])['@id'];
-
-        if ($processType) {
-            $name = $processType['name'];
-        } else {
-            $name = $requestType['name'];
-        }
-
-        $assent['name'] = "Instemmingsverzoek voor $name";
-        $assent['description'] = "U hebt een instemmingsverzoek ontvangen als {$typeProperty['name']} voor een $name van X";
-        if (key_exists('@id', $request)) {
-            $assent['request'] = $request['@id'];
-        }
-        $assent['requester'] = $request['organization'];
-
-        return $this->commonGroundService->createResource($assent, ['component'=>'irc', 'type'=>'assents']);
-    }
-
     /*
      * Validates a resource with optional commonground and component specific logic
      *
@@ -393,6 +346,53 @@ class VrcService
         return $resource;
     }
 
+    /**
+     * Creates an assent for a request.
+     *
+     * @param array      $value
+     * @param array      $requestType
+     * @param array      $typeProperty
+     * @param array      $request
+     * @param array|null $processType
+     *
+     * @return array|bool
+     */
+    public function createAssent(array $value, array $requestType, array $typeProperty, array $request, array $processType = null)
+    {
+        $assent = [];
+        $contact = [];
+        if (key_exists('person', $value)) {
+            $contact['givenName'] = $value['person']['givenName'];
+            $contact['familyName'] = $value['person']['familyName'];
+        }
+        if (key_exists('email', $value)) {
+            $email['name'] = 'e-mail';
+            $email['email'] = $value['email'];
+            $contact['emails'][] = $email;
+        }
+        if (key_exists('telephone', $value)) {
+            $phone['name'] = 'phone number';
+            $phone['telephone'] = $value['telephone'];
+            $contact['telephones'][] = $phone;
+        }
+        $assent['contact'] = $this->commonGroundService->createResource($contact, ['component'=>'cc', 'type'=>'people'])['@id'];
+
+        if ($processType) {
+            $name = $processType['name'];
+        } else {
+            $name = $requestType['name'];
+        }
+
+        $assent['name'] = "Instemmingsverzoek voor $name";
+        $assent['description'] = "U hebt een instemmingsverzoek ontvangen als {$typeProperty['name']} voor een $name van X";
+        if (key_exists('@id', $request)) {
+            $assent['request'] = $request['@id'];
+        }
+        $assent['requester'] = $request['organization'];
+
+        return $this->commonGroundService->createResource($assent, ['component'=>'irc', 'type'=>'assents']);
+    }
+
     /*
      * Get Camunda tasks for a given request
      *
@@ -458,7 +458,7 @@ class VrcService
     }
 
     /*
-     * Gets a form for a given task
+     * Gets a form for a given task CAMUNDA
      *
      * @param string $taskId The task uuid
      * @return string The xhtml form
@@ -728,6 +728,7 @@ class VrcService
         }
 
         foreach ($request['properties'] as $property) {
+
         }
 
         return $request;
@@ -905,77 +906,6 @@ class VrcService
          */
 
         return $result;
-    }
-
-    /*
-     * This function fills a procces with all the requered data in order to render it
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function extendProcess(?array $procces)
-    {
-        $procces['valid'] = false;
-        foreach ($procces['stages'] as $stageKey => $stage) {
-            foreach ($stage['sections'] as $sectionKey => $section) {
-                $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
-                foreach ($section['properties'] as $propertyKey => $property) {
-                    $property = $this->commonGroundService->getResource($property);
-                    $property['value'] = null;
-                    $property['valid'] = false;
-                    $property['message'] = null;
-                    unset($property['requestType']);
-                    $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'][$property['id']] = $property;
-                }
-                $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
-            }
-            $procces['stages'][$stageKey]['valid'] = false;
-        }
-
-        return $procces;
-    }
-
-    /*
-     * Aditional logic triggerd afther a Request has been newly created
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function fillProcess(?array $procces, array $request = null)
-    {
-        $procces = $this->extendProcess($procces);
-
-        foreach ($procces['stages'] as $stageKey => $stage) {
-            $procces['stages'][$stageKey]['valid'] = true;
-            foreach ($stage['sections'] as $sectionKey => $section) {
-                $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
-                $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
-
-                // Lets validate the indivual property forms
-                foreach ($section['propertiesForms'] as $propertyKey => $property) {
-                    // Lets validate
-                    $result = $this->checkProperty($request, $property);
-                    // Set the results
-                    $property['value'] = $result['value'];
-                    $property['valid'] = $result['valid'];
-                    $property['messages'] = $result['messages'];
-                    $property['messages'] = $result['messages'];
-                    // Store results to the current procces
-                    if (!$property['valid']) {
-                        $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
-                    }
-                }
-
-                if (!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']) {
-                    $procces['stages'][$stageKey]['valid'] = false;
-                }
-            }
-            if (!$procces['stages'][$stageKey]['valid']) {
-                $procces['valid'] = false;
-            }
-        }
-
-        return $procces;
     }
 
     public function createCgResource($properties, $requestType)
