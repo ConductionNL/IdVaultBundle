@@ -127,7 +127,7 @@ class PtcService
                     // Lets validate the indivual property forms
                     foreach ($section['propertiesForms'] as $propertyKey => $property) {
                         // Lets validate
-                        $result = $this->checkProperty($request, $property);
+                        $result = $this->vrcService->checkProperty($request, $property);
                         // Set the results
                         $property['value'] = $result['value'];
                         $property['valid'] = $result['valid'];
