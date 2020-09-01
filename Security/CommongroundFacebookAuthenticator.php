@@ -66,7 +66,6 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
     {
         $code = $request->query->get('code');
 
-
         $redirect = $request->getUri();
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
@@ -83,12 +82,11 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $response = $client->request('GET', '/me?&fields=id,name,email&access_token='.$accessToken['access_token']);
         $user = json_decode($response->getBody()->getContents(), true);
 
-
         $credentials = [
             'username'  => $user['email'],
             'email'     => $user['email'],
             'name'      => $user['name'],
-            'id'        => $user['id']
+            'id'        => $user['id'],
         ];
 
         $request->getSession()->set(
