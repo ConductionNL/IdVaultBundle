@@ -27,7 +27,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
+class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;
@@ -54,7 +54,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return 'app_user_idin' === $request->attributes->get('_route')
+        return 'app_user_facebook' === $request->attributes->get('_route')
             && $request->isMethod('GET') && $request->query->get('code');
     }
 
@@ -69,56 +69,25 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         $redirect = $request->getUri();
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
-        $body = [
-            'client_id'    => 'demo-preprod-basic',
-            'grant_type'   => 'authorization_code',
-            'code'         => $code,
-            'redirect_uri' => $redirect,
-        ];
-
         $client = new Client([
             // Base URI is used with relative requests
-            'base_uri' => 'https://eu01.preprod.signicat.com',
+            'base_uri' => 'https://graph.facebook.com',
             // You can set any number of default request options.
             'timeout'  => 2.0,
         ]);
 
-        $response = $client->request('POST', '/oidc/token', [
-            'auth'        => ['demo-preprod-basic', 'KmcxXfuttfBGnn86DlW8Tg3_dYu6khWafkn5uVo7fGg'],
-            'form_params' => $body,
-        ]);
+        $response = $client->request('GET', '/v8.0/oauth/access_token?client_id=2712725532283785&redirect_uri='.$redirect.'&client_secret=8948d4ecc73edf7fdf81a929761d9c7e&code='.$code);
+        $accessToken = json_decode($response->getBody()->getContents(), true);
 
-        $token = json_decode($response->getBody()->getContents(), true);
-
-        $headers = [
-            'Authorization' => 'Bearer '.$token['access_token'],
-            'Accept'        => 'application/json',
-        ];
-
-        $response = $client->request('GET', '/oidc/userinfo', [
-            'headers' => $headers,
-        ]);
-
+        $response = $client->request('GET', '/me?&fields=id,name,email&access_token='.$accessToken['access_token']);
         $user = json_decode($response->getBody()->getContents(), true);
 
         $credentials = [
-            'username'    => $user['consumer.bin'],
-            'firstName'   => $user['consumer.partnerlastname'],
-            'lastName'    => $user['consumer.legallastname'],
-            'postalCode'  => $user['consumer.postalcode'],
-            'streetName'  => $user['consumer.street'],
-            'houseNumber' => $user['consumer.houseno'],
-            'country'     => $user['consumer.country'],
-            'city'        => $user['consumer.city'],
+            'username'  => $user['email'],
+            'email'     => $user['email'],
+            'name'      => $user['name'],
+            'id'        => $user['id'],
         ];
-
-        if (isset($user['consumer.email'])) {
-            $credentials['email'] = $user['consumer.email'];
-        }
-
-        if (isset($user['consumer.telephone'])) {
-            $credentials['telephone'] = $user['consumer.telephone'];
-        }
 
         $request->getSession()->set(
             Security::LAST_USERNAME,
@@ -130,8 +99,8 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
-        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
-        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $provider[0]['name']])['hydra:member'];
+        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
+        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
         if (!$token || count($token) < 1) {
@@ -141,62 +110,42 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             $email['email'] = $credentials['email'];
             $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
 
-            //create phoneNumber
-            $telephone = [];
-            $telephone['name'] = $credentials['telephone'];
-            $telephone['telephone'] = $credentials['telephone'];
-            $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
-
-            //create address
-            $address = [];
-            $address['name'] = $credentials['firstName'];
-            $address['street'] = $credentials['streetName'];
-            $address['houseNumber'] = $credentials['houseNumber'];
-            $address['postalCode'] = $credentials['postalCode'];
-            $address['country'] = $credentials['country'];
-            $address['region'] = $credentials['city'];
-            $address = $this->commonGroundService->createResource($address, ['component' => 'cc', 'type' => 'addresses']);
-
             //create person
+            $names = explode(' ', $credentials['name']);
             $person = [];
-            $person['name'] = $credentials['firstName'];
-            $person['givenName'] = $credentials['firstName'];
-            $person['familyName'] = $credentials['lastName'];
+            $person['givenName'] = $names[0];
+            $person['familyName'] = end($names);
             $person['emails'] = [$email['@id']];
-            $person['telephones'] = [$telephone['@id']];
-            $person['addresses'] = [$address['@id']];
             $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
 
             //create user
             $user = [];
             $user['username'] = $credentials['username'];
-            $user['password'] = $credentials['username'];
+            $user['password'] = $credentials['id'];
             $user['person'] = $person['@id'];
             $user['organization'] = $application['organization']['@id'];
             $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
 
             //create token
             $token = [];
-            $token['token'] = $credentials['username'];
+            $token['token'] = $credentials['id'];
             $token['user'] = $user['@id'];
             $token['provider'] = $provider[0]['@id'];
             $token = $this->commonGroundService->createResource($token, ['component' => 'uc', 'type' => 'tokens']);
 
-            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $provider[0]['name']])['hydra:member'];
+            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
         }
 
         $token = $token[0];
 
         $user = $this->commonGroundService->getResource($token['user']['@id']);
 
-        $person = $this->commonGroundService->getResource($user['person']);
-
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
         array_push($user['roles'], 'scope.chin.checkins.read');
 
-        return new CommongroundUser($user['username'], $user['username'], $person['name'], $user['roles'], $user['person'], null, 'idin');
+        return new CommongroundUser($user['username'], $credentials['id'], $credentials['name'], null, $user['roles'], $user['person'], null, 'facebook');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -220,7 +169,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        return new RedirectResponse($this->router->generate('app_user_idin'));
+        return new RedirectResponse($this->router->generate('app_user_facebook'));
     }
 
     /**

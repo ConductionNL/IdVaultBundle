@@ -15,6 +15,9 @@ class CommongroundUser implements UserInterface, EquatableInterface
     /* Provide UUID instead of normal password */
     private $password;
 
+    /* The name of the user */
+    private $name;
+
     /* Leave empty! */
     private $salt;
 
@@ -36,10 +39,11 @@ class CommongroundUser implements UserInterface, EquatableInterface
     /* Either true or false if a user is a resident */
     private $resident;
 
-    public function __construct(string $username = '', string $password = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false)
+    public function __construct(string $username = '', string $password = '', string $name = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false)
     {
         $this->username = $username;
         $this->password = $password;
+        $this->name = $name;
         $this->salt = $salt;
         $this->roles = $roles;
         $this->person = $person;
@@ -47,6 +51,11 @@ class CommongroundUser implements UserInterface, EquatableInterface
         $this->isActive = true;
         $this->type = $type;
         $this->resident = $resident;
+    }
+
+    public function __toString()
+    {
+        return $this->name;
     }
 
     public function getRoles()
@@ -89,9 +98,9 @@ class CommongroundUser implements UserInterface, EquatableInterface
         return $this->resident;
     }
 
-    public function __toString()
+    public function getName()
     {
-        return $this->getUsername();
+        return $this->name;
     }
 
     public function isEnabled()
