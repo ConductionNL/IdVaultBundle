@@ -52,12 +52,6 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function save(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        $resource = $event->getResource();
-
-        $resource = $this->vrcService->onSave($resource);
-        $event->setResource($resource);
-
         return $event;
     }
 
@@ -82,6 +76,10 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function update(CommongroundUpdateEvent $event)
     {
+
+
+        //$resource = $this->vrcService->createCommongroundResources($event->getResource());
+        // $event->setResource($resource);
         return $event;
     }
 
@@ -94,8 +92,9 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $resource = $this->vrcService->checkOrders($event->getResource());
-        $resource = $this->vrcService->clearDependencies($event->getResource());
+        $resource = $this->vrcService->createCommongroundResources($resource);
+        $resource = $this->vrcService->checkEvents($resource);
+        $resource = $this->vrcService->checkOffers($resource);
         $event->setResource($resource);
 
         return $event;
@@ -104,6 +103,11 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function create(CommongroundUpdateEvent $event)
     {
+        // Lets make sure we only triger on requests resources
+
+
+        //$resource = $this->vrcService->createCommongroundResources($event->getResource());
+        //$event->setResource($resource);
         return $event;
     }
 
@@ -115,8 +119,10 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $resource = $this->vrcService->checkOrders($event->getResource());
-        $resource = $this->vrcService->clearDependencies($event->getResource());
+        $resource = $this->vrcService->createCommongroundResources($resource);
+        $resource = $this->vrcService->checkEvents($resource);
+        $resource = $this->vrcService->checkOffers($resource);
+
         $event->setResource($resource);
 
         return $event;
