@@ -16,18 +16,15 @@ class VrcService
     private $commonGroundService;
     private $flash;
     private $camundaService;
-    private $ptcService;
 
     public function __construct(
         CommonGroundService $commonGroundService,
         FlashBagInterface $flash,
-        CamundaService $camundaService,
-        PtcService $ptcService)
+        CamundaService $camundaService
     {
         $this->commonGroundService = $commonGroundService;
         $this->flash = $flash;
         $this->camundaService = $camundaService;
-        $this->ptcService = $ptcService;
     }
 
     /*
