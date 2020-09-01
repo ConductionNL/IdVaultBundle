@@ -8,7 +8,7 @@ use Conduction\CommonGroundBundle\Service\VsbeService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-class VsbeSubscriberSubscriber implements EventSubscriberInterface
+class VsbeSubscriber implements EventSubscriberInterface
 {
     private $vsbeService;
 

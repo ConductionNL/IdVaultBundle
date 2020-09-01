@@ -94,7 +94,8 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $resource = $this->vrcService->onUpdated($event->getResource());
+        $resource = $this->vrcService->checkOrders($event->getResource());
+        $resource = $this->vrcService->clearDependencies($event->getResource());
         $event->setResource($resource);
 
         return $event;
@@ -114,7 +115,8 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $resource = $this->vrcService->onCreated($event->getResource());
+        $resource = $this->vrcService->checkOrders($event->getResource());
+        $resource = $this->vrcService->clearDependencies($event->getResource());
         $event->setResource($resource);
 
         return $event;
