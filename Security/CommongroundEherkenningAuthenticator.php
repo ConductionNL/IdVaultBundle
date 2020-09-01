@@ -111,7 +111,14 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], $kvk['tradeNames']['businessName'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization');
+        array_push($user['roles'], 'scope.vrc.requests.read');
+        array_push($user['roles'], 'scope.orc.orders.read');
+        array_push($user['roles'], 'scope.cmc.messages.read');
+        array_push($user['roles'], 'scope.bc.invoices.read');
+        array_push($user['roles'], 'scope.arc.events.read');
+        array_push($user['roles'], 'scope.irc.assents.read');
+
+        return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
