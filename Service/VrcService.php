@@ -119,7 +119,8 @@ class VrcService
     {
 
         // Let see if we need to create an order
-        $resource = $this->checkOrder($resource);
+        $resource = $this->checkOrders($resource);
+        //$resource = $this->checkEvents($resource);
 
         return $resource;
     }
@@ -165,7 +166,8 @@ class VrcService
          */
     public function onUpdated(?array $resource)
     {
-        $this->checkOrder($resource);
+        $this->checkOrders($resource);
+        //$this->checkEvents($resource);
         $resource = $this->clearDefaults($resource);
 
         return $resource;
@@ -313,35 +315,6 @@ class VrcService
         return $this->commonGroundService->createResource($assent, ['component'=>'irc', 'type'=>'assents']);
     }
 
-    /*
-     * Get Camunda tasks for a given request
-     *
-     * @param array $resource The resource before enrichment
-     * @return array The resource afther enrichment
-     */
-    public function getTasks(?array $resource)
-    {
-        $tasks = [];
-
-        // Lets see if we have procceses tied to this request
-        if (!array_key_exists('processes', $resource) || !is_array($resource['processes'])) {
-            return $tasks;
-        }
-
-        // Lets get the tasks for each procces atached to this request
-        foreach ($resource['processes'] as $process) {
-            //$processTasks = $this->commonGroundService->getResourceList(['component'=>'be','type'=>'task'],['processInstanceId'=> $this->commonGroundService->getUuidFromUrl($process)]);
-            $processTasks = $this->commonGroundService->getResourceList(['component'=>'be', 'type'=>'task'], ['processInstanceId'=> '0a3d56dd-9345-11ea-ae32-0e13a3f6559d']);
-            // Lets get the form elements
-            foreach ($processTasks as $key=>$value) {
-                $processTasks[$key]['form'] = $this->getTaskForm($value['id']);
-            }
-            $tasks = array_merge($tasks, $processTasks);
-        }
-
-        return $tasks;
-    }
-
     public function clearDefaults(?array $request)
     {
         // We want to ignore the cache here
@@ -378,14 +351,103 @@ class VrcService
     }
 
     /*
-     * Gets a form for a given task CAMUNDA
+     * This function tests if a order should be created
      *
-     * @param string $taskId The task uuid
-     * @return string The xhtml form
+     * @param array $request The request before stage completion checks
+     * @return array The resourceType afther stage completion checks
      */
-    public function getTaskForm(?string $taskId)
+    public function checkEvents(?array $request)
     {
-        return $this->commonGroundService->getResource(['component'=>'be', 'type'=>'task', 'id'=> $taskId.'/rendered-form', 'accept'=>'application/xhtml+xml']);
+        // Let make a list of al the calanders that need an event
+        $requestCalendars = [];
+
+        // Lets create a start date  for  this request
+        // Oke we need to try to figure out  a date for this request
+        if (array_key_exists('datum', $request['properties'])) {
+            $startDate = (new \DateTime($request['properties']['datum']))->format('Y-m-d H:i:s');
+        } elseif (array_key_exists('datum', $request['properties'])) {
+            $startDate = (new \DateTime($request['properties']['date']))->format('Y-m-d H:i:s');
+        } else {
+            $startDate = (new \DateTime())->format('Y-m-d H:i:s');
+        }
+
+        // Lets default the startdate to the enddate
+        $endDate = $startDate;
+
+        // Lets walk trough al te properties and see if any has a calendar or duration
+        foreach ($request['properties'] as $key => $value) {
+            $property = $this->commonGroundService->getResource($key);
+            if(is_array($value) && array_key_exists('iri', $property)  && $property['format'] == 'url' && $component = explode('/', $property['iri']) && count($component) == 2){
+                // Lets support arrays of iri's
+                if($property['type'] == 'array'){
+                    foreach($value as $iri){
+                        if(array_key_exists('duration')) $endDate->add(new DateInterval($value['duration']));
+                        if(array_key_exists('calendar')) $requestCalendars[] = $value['calendar'];
+                    }
+                }
+                else{
+                    if(array_key_exists('duration')) $endDate->add(new DateInterval($value['duration']));
+                    if(array_key_exists('calendar')) $requestCalendars[] = $value['calendar'];
+                }
+            }
+        }
+
+        // If there are no offers do not nothing
+        if(empty($requestCalendars)){
+            return $requestCalendars;
+        }
+
+        /*
+         * If we have submitters we want to create a calanders for the submitters (if they dont have one already)
+         */
+        foreach ($request['submitter'] as $submitter){
+            // We only create calenders for validated submitters
+            if (!array_key_exists('brp', $submitter)) {
+                continue;
+            }
+
+            $calendars = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'calendars'], ['resource' => $submitter['brp']])['hydra:member'];
+            if (count($calendars) > 0) {
+                $calendar = $calendars[0];
+            } else {
+                // Make a user calendar
+                $calendar = [];
+                $calendar['resource'] = $submitter['brp'];
+                $calendar['name'] = $this->commonGroundService->getResource($submitter['brp'])['burgerservicenummer']; /* @todo nope nope nope dit moet een naam zijn */
+                $calendar['organization'] = $request['organization'];
+                $calendar['timeZone'] = 'CET';
+                $calendar = $this->commonGroundService->saveResource($calendar, ['component' => 'arc', 'type' => 'calendars']);
+            }
+            $requestCalendars[] = $calendar['@id'];
+        }
+
+        /*
+         * Lets loop trough al the calendars and create or update the nececery events
+         */
+        foreach ($requestCalendars as $calendar){
+            // create or update  event
+            $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' =>$calendar, 'resource' => $request['@id']])['hydra:member'];
+
+            if (count($events) > 0) {
+                $event = $events[0];
+                $event['startDate'] = $startDate;
+                $event['endDate'] = $endDate;
+                $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+            } else {
+                $event = [];
+                $event['name'] = $request['reference'];
+                $event['description'] = $request['name'];
+                $event['organization'] = $request['organization'];
+                $event['resource'] = $request['@id'];
+                $event['calendar'] = $calendar;
+                $event['startDate'] = $startDate;
+                $event['endDate'] = $endDate;
+                $event['priority'] = 1;
+                $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
+            }
+        }
+
+        return $request;
     }
 
     /*
@@ -394,123 +456,104 @@ class VrcService
      * @param array $request The request before stage completion checks
      * @return array The resourceType afther stage completion checks
      */
-    public function checkOrder(?array $request)
+    public function checkOffers(?array $request)
     {
-        // We want to ignore the cache here
+        // Let make a list of al the calanders that need an event
+        $requestOffers = [];
 
-        $request = $this->commonGroundService->getResource(['component' => 'vrc', 'type' => 'requests', 'id'=>$request['id']], [], true);
-
-        // Lets first see if we can grap an requested type and if it has stages
-        if (!$requestType = $this->commonGroundService->getResource($request['requestType'])) {
-            return $request;
-        }
-
-        // Let transform the request properties in something we can search
-        $requestTypeOffers = [];
-        $requestTypeCemeteries = []; /* @todo  abstraheren!*/
-
-        foreach ($requestType['properties'] as $property) {
-            if (array_key_exists('iri', $property) && $property['iri'] == 'pdc/offer') {
-                $requestTypeOffers[$property['name']] = $property;
-            }
-            if (array_key_exists('iri', $property) && $property['iri'] == 'grc/cemetery') {
-                $requestTypeCemeteries[$property['name']] = $property;
-            }
-        }
-
-        // Lets skip all other things if this request type isn't supposed to contain products
-        if (count($requestTypeOffers) == 0 && count($requestTypeCemeteries) == 0) {
-            return $request;
-        }
-
-        if (count($requestTypeCemeteries) > 0) {
-
-            // Oke we need to try to figure out  a date for this request
-            if (array_key_exists('datum', $requestType['properties'])) {
-                $startDate = (new \DateTime($requestType['properties']['datum']))->format('Y-m-d H:i:s');
-            } elseif (array_key_exists('datum', $requestType['properties'])) {
-                $startDate = (new \DateTime($requestType['properties']['date']))->format('Y-m-d H:i:s');
-            } else {
-                $startDate = (new \DateTime())->format('Y-m-d H:i:s');
-            }
-
-            // Lets dermine an end date
-            /* @todo this should be calculated */
-            $endDate = (new \DateTime())->format('Y-m-d H:i:s');
-
-            foreach ($requestTypeCemeteries as $key => $requestTypeCemetery) {
-
-                // Lets create events for submitters of requests
-                foreach ($request['submitters'] as $submitter) {
-
-                    // We only create calenders for validated submitters
-                    if (!array_key_exists('brp', $submitter)) {
-                        continue;
-                    }
-
-                    $calendars = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'calendars'], ['resource' => $submitter['brp']])['hydra:member'];
-                    if (count($calendars) > 0) {
-                        $calendar = $calendars[0];
-                    } else {
-                        // Make a user calendar
-                        $calendar = [];
-                        $calendar['resource'] = $submitter['brp'];
-                        $calendar['name'] = $this->commonGroundService->getResource($submitter['brp'])['burgerservicenummer']; /* @todo nope nope nope dit moet een naam zijn */
-                        $calendar['organization'] = $request['organization'];
-                        $calendar['timeZone'] = 'CET';
-                        $calendar = $this->commonGroundService->saveResource($calendar, ['component' => 'arc', 'type' => 'calendars']);
-                    }
-
-                    // create submitter events
-                    $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' => $calendar['id'], 'resource' => $request['@id']])['hydra:member'];
-
-                    if (count($events) > 0) {
-                        $event = $events[0];
-                        $event['startDate'] = $startDate;
-                        $event['endDate'] = $endDate;
-                    //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
-                    } else {
-                        $event = [];
-                        $event['name'] = $request['reference'];
-                        $event['description'] = $requestType['name'];
-                        $event['organization'] = $request['organization'];
-                        $event['resource'] = $request['@id'];
-                        $event['calendar'] = $calendar['@id'];
-                        $event['startDate'] = $startDate;
-                        $event['endDate'] = $endDate;
-                        $event['priority'] = 1;
-                        $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
-                    }
+        // Lets walk trough al te properties and see if any has a calendar or duration
+        foreach ($request['properties'] as $key => $value) {
+            $property = $this->commonGroundService->getResource($key);
+            if(is_array($value) && array_key_exists('iri', $property) && $property['format'] == 'url' && $component = explode('/', $property['iri']) && count($component) == 2){
+                // Lets support arrays of iri's
+                if($property['type'] == 'array'){
+                    $requestOffers[] = array_merge($requestOffers, $value);
                 }
+                else{
+                    $requestOffers[] = $value;
+                }
+            }
+        }
 
-                // $property =
-                if (array_key_exists($requestTypeCemetery['name'], $request['properties'])) {
-                    $cemetery = $this->commonGroundService->getResource($request['properties'][$requestTypeCemetery['name']]);
-                    $calendar = $this->commonGroundService->getResource($cemetery['calendar']);
+        // If there are no offers do not nothing
+        if(empty($requestOffers)){
+            return $request;
+        }
+
+
+        /*
+         * Lets see if the request already has an associated order
+         */
+        if(!array_key_exists('order', $request)){
+            $order = [];
+
+            $order['name'] = $request['reference'];
+            $order['description'] = $request['reference'];
+            $order['organization'] = $request['organization'];
+            $order['resources'] = [$request['@id']];
+
+            // Determining the custommer
+            if (array_key_exists('submitters', $request) && !empty($request['submitters'])) {
+                // Lets go trought the options here
+                if (array_key_exists('brp', $request['submitters'][0])) {
+                    $order['customer'] = $request['submitters'][0]['brp'];
                 } else {
+                    $order['customer'] = $request['submitters'][0]['person'];
+                }
+            } else {
+                /* @todo use the user */
+                //$order['customer'] = $request['submmiters'];
+            }
+
+            $request['order'] = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders']);
+        }
+
+
+        /*
+         * Lets loop trough al the calendars and create or update the nececery events
+         */
+
+        $requestItems = [];
+
+        foreach($requestOffers as $offer){
+            $offer = $this->commonGroundService->getResource($offer);
+            // or in the mean time just replace the whole offer array
+            $orderItem = [];
+            $orderItem['offer'] = $product['@id'];
+            if (array_key_exists('name', $product)) {
+                $orderItem['name'] = $product['name'];
+            }
+            if (array_key_exists('description', $product)) {
+                $orderItem['description'] = $product['description'];
+            }
+            $orderItem['price'] = (string) $product['price'];
+            $orderItem['priceCurrency'] = $product['priceCurrency'];
+            $orderItem['quantity'] = 1;
+            $orderItem['order'] =  $request['order']['@id'];
+            $requestItems[$product['@id']] = $orderItem;
+        }
+
+        // Lets see if the offers is already in the order
+        if (array_key_exists('items', $request['order'])) {
+            foreach ($request['order']['items'] as $orderItem) {
+                // Needs to be deleted
+                if (!array_key_exists($orderItem['offer'], $requestItems)) {
+                    $this->commonGroundService->deleteResource($orderItem);
                     continue;
                 }
-
-                $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' => $calendar['id'], 'resource' => $request['@id']])['hydra:member'];
-
-                if (count($events) > 0) {
-                    $event = $events[0];
-                    $event['startDate'] = $startDate;
-                    $event['endDate'] = $endDate;
-                //$event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
-                } else {
-                    $event = [];
-                    $event['name'] = $request['reference'];
-                    $event['description'] = $requestType['name'];
-                    $event['organization'] = $cemetery['organization'];
-                    $event['resource'] = $request['@id'];
-                    $event['calendar'] = $calendar['@id'];
-                    $event['startDate'] = $startDate;
-                    $event['endDate'] = $endDate;
-                    $event['priority'] = 1;
-                    $event = $this->commonGroundService->saveResource($event, ['component' => 'arc', 'type' => 'events']);
-                }
+                // Als we need to keep it
+                $orderItems[$orderItem['offer']] = $orderItem;
             }
+        }
+
+        // else add it
+        foreach ($requestItems as $requestItemId => $requestItem) {
+            //let see if we already have it
+            if (array_key_exists($requestItemId, $orderItems)) {
+                continue;
+            }
+            // We need to add it
+            $orderItem = $this->commonGroundService->saveResource($requestItem, ['component' => 'orc', 'type' => 'order_items']);
         }
 
         // Lets see if we need to make an invoice
@@ -528,107 +571,6 @@ class VrcService
                 $post = ['url'=>$request['order']];
                 $invoice = $this->commonGroundService->saveResource($post, ['component' => 'bc', 'type' => 'order']);
             }
-        }
-
-        // Making orders
-        if (count($requestTypeOffers) > 0) {
-            // Let check the property
-            $products = [];
-            foreach ($request['properties'] as $name => $value) {
-                // Lets see if the property is part of the request type
-                if (!array_key_exists($name, $requestTypeOffers)) {
-                    // property is not part of the provide request type
-                    continue;
-                }
-
-                // Lets handle possible array values
-                if (is_array($value)) {
-                    $products = array_merge($products, $value);
-                } else {
-                    $products[] = $value;
-                }
-            }
-
-            // Lets skip all other things if we do not have products
-            if (count($products) == 0) {
-                return $request;
-            }
-
-            $requestItems = [];
-            foreach ($products as $product) {
-                $product = $this->commonGroundService->getResource($product);
-                $orderItem = [];
-                $orderItem['offer'] = $product['@id'];
-                if (array_key_exists('name', $product)) {
-                    $orderItem['name'] = $product['name'];
-                }
-                if (array_key_exists('description', $product)) {
-                    $orderItem['description'] = $product['description'];
-                }
-                $orderItem['price'] = (string) $product['price'];
-                $orderItem['priceCurrency'] = $product['priceCurrency'];
-                $orderItem['quantity'] = 1;
-                $requestItems[$product['@id']] = $orderItem;
-            }
-
-            // Lets make sure that the request has an order
-            if (!array_key_exists('order', $request) || !$request['order']) {
-                $order = [];
-
-                $order['name'] = $request['reference'];
-                $order['description'] = $request['reference'];
-                $order['organization'] = $request['organization'];
-                $order['resources'] = [$request['@id']];
-
-                // Determining the custommer
-                if (array_key_exists('submitters', $request) && !empty($request['submitters'])) {
-                    // Lets go trought the options here
-                    if (array_key_exists('brp', $request['submitters'][0])) {
-                        $order['customer'] = $request['submitters'][0]['brp'];
-                    } else {
-                        $order['customer'] = $request['submitters'][0]['person'];
-                    }
-                } else {
-                    /* @todo use the user */
-                    //$order['customer'] = $request['submmiters'];
-                }
-
-                $order = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders']);
-                $request['order'] = $order['@id'];
-            } else {
-                $order = $this->commonGroundService->getResource($request['order'], [], true);
-            }
-
-            $orderItems = [];
-            if (array_key_exists('items', $order)) {
-                foreach ($order['items'] as $orderItem) {
-                    // Needs to be deleted
-                    if (!array_key_exists($orderItem['offer'], $requestItems)) {
-                        $this->commonGroundService->deleteResource($orderItem);
-                        continue;
-                    }
-                    // Als we need to keep it
-                    $orderItems[$orderItem['offer']] = $orderItem;
-                }
-            }
-
-            foreach ($requestItems as $requestItemId => $requestItem) {
-                //let see if we already have it
-                if (array_key_exists($requestItemId, $orderItems)) {
-                    continue;
-                }
-                // We need to add it
-                $requestItem['order'] = $request['order'];
-                $orderItem = $this->commonGroundService->saveResource($requestItem, ['component' => 'orc', 'type' => 'order_items']);
-            }
-
-            // Lets reload the recalculated order
-            $order = $this->commonGroundService->getResource($request['order'], [], true);
-            $request['order'] = $order['@id'];
-
-            unset($request['submitters']);
-            unset($request['roles']);
-            $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'request'], true, false);
         }
 
         return $request;
