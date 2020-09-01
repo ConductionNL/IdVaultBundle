@@ -145,44 +145,50 @@ class PtcService
             $property = explode('.', $condition['property']);
             $value = $this->recursiveGetValue($property, $object);
 
+            if(substr($condition->getValue(),0,14) != 'resourceValue:'){
+                $targetValue = $condition['value'];
+            } else {
+                $targetValue = $this->recursiveGetValue(explode('.', substr($condition['value'], 14)),$object);
+            }
+
             switch ($condition->getOperation()) {
                 case '<=':
-                    if ($value <= $condition['value']) {
+                    if ($value <= $targetValue) {
                         $results[] = true;
                     } else {
                         $results[] = false;
                     }
                     break;
                 case '>=':
-                    if ($value >= $condition['value']) {
+                    if ($value >= $targetValue) {
                         $results[] = true;
                     } else {
                         $results[] = false;
                     }
                     break;
                 case '<':
-                    if ($value < $condition['value']) {
+                    if ($value < $targetValue) {
                         $results[] = true;
                     } else {
                         $results[] = false;
                     }
                     break;
                 case '>':
-                    if ($value > $condition['value']) {
+                    if ($value > $targetValue) {
                         $results[] = true;
                     } else {
                         $results[] = false;
                     }
                     break;
                 case '<>':
-                    if ($value <> $condition['value']) {
+                    if ($value <> $targetValue) {
                         $results[] = true;
                     } else {
                         $results[] = false;
                     }
                     break;
                 case '!=':
-                    if ($value != $condition['value']) {
+                    if ($value != $targetValue) {
                         $results[] = true;
                     } else {
                         $results[] = false;
@@ -196,7 +202,7 @@ class PtcService
                     }
                     break;
                 default:
-                    if ($value == $condition['value']) {
+                    if ($value == $targetValue) {
                         $results[] = true;
                     } else {
                         $results[] = false;
