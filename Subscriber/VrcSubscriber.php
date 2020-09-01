@@ -115,6 +115,7 @@ class VrcSubscriber implements EventSubscriberInterface
     public function created(CommongroundUpdateEvent $event)
     {
         $resource = $event->getResource();
+
         if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
             return;
         }
