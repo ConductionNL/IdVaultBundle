@@ -12,7 +12,7 @@ class NotificationSubscriber implements EventSubscriberInterface
 {
     private $notificationService;
 
-    public function __construct(notificationService $notificationService)
+    public function __construct(NotificationService $notificationService)
     {
         $this->notificationService = $notificationService;
     }
