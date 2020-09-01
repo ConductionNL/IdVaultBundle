@@ -141,7 +141,7 @@ class VsbeService
         if ($this->commonGroundService->getComponentHealth('vsbe')) {
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
-            $vsbeResource['action'] = 'UPDATE';
+            $vsbeResource['action'] = 'CREATE';
 
             $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
         }

@@ -30,6 +30,7 @@ class NotificationSubscriber implements EventSubscriberInterface
     public function deleted(CommongroundUpdateEvent $event)
     {
         $this->notificationService->notify($event->getResource(), 'deleted');
+
         return $event;
     }
     // Our resource might reqoure aditional resources to be created, so lets look into that
