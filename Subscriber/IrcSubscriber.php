@@ -3,6 +3,7 @@
 namespace Conduction\CommonGroundBundle\Subscriber;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
+use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
 use Conduction\CommonGroundBundle\Service\IrcService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -23,10 +24,11 @@ class IrcSubscriber implements EventSubscriberInterface
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
-    public function saved(CommonGroundEvents $event)
+    public function saved(CommongroundUpdateEvent $event)
     {
         // Lets make sure that we are dealing with a Request resource from the vrc
-        if ($event->getComponent() != 'irc' || $event->getType() != 'assents') {
+        $resource = $event->getResource();
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Assent') {
             return;
         }
 

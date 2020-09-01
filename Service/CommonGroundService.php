@@ -7,6 +7,7 @@ namespace Conduction\CommonGroundBundle\Service;
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
 use GuzzleHttp\Client;
+use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
@@ -86,8 +87,10 @@ class CommonGroundService
             'Content-Crs'  => 'EPSG:4326',
         ];
 
-        if ($session->get('user')) {
+        if ($session->get('user') && is_array($session->get('user')) && array_key_exists('@id', $session->get('user'))) {
             $headers['X-NLX-Request-User-Id'] = $session->get('user')['@id'];
+        } elseif ($session->get('user')) {
+            $headers['X-NLX-Request-User-Id'] = $session->get('user');
         }
 
         if ($session->get('process')) {
@@ -103,16 +106,69 @@ class CommonGroundService
             'timeout'  => 4000.0,
             // To work with NLX we need a couple of default headers
             'headers' => $this->headers,
+            // Do not check certificates
+            'verify' => false,
         ];
 
         // Lets start up a default client
         $this->client = new Client($this->guzzleConfig);
     }
 
+    public function isCommonGround(string $url)
+    {
+        $parsedUrl = parse_url($url);
+        $returnUrl = [];
+
+        if (!key_exists('scheme', $parsedUrl) || !key_exists('host', $parsedUrl)) {
+            exit;
+
+            return false;
+        }
+
+        $path = explode('/', $parsedUrl['path']);
+        $host = explode('.', $parsedUrl['host']);
+
+        /**@TODO: Dit moet echt nog even wat dynamischer*/
+        if (in_array('api', $path) && count($path) > 3) {
+            $componentPath = implode('/', array_slice($path, 0, 4));
+
+            $path = array_splice($path, 4);
+
+            $returnUrl['id'] = implode('/', array_splice($path, 1));
+            $returnUrl['type'] = implode('', $path);
+        } else {
+            $componentPath = '';
+
+            $returnUrl['id'] = implode('/', array_splice($path, 2));
+            $returnUrl['type'] = implode('', $path);
+        }
+
+        $componentUrl = "{$parsedUrl['scheme']}://{$parsedUrl['host']}{$componentPath}";
+        $components = $this->params->get('common_ground.components');
+        foreach ($components as $code=>$component) {
+            if ($component['location'] == $componentUrl || strpos($component['location'], $componentUrl, ) !== false) {
+                $returnUrl['component'] = $code;
+
+                return $returnUrl;
+            }
+        }
+        if (count($path) > 1 && $this->getComponentHealth($path[1])) {
+            $returnUrl['component'] = end($path);
+
+            return $returnUrl;
+        } elseif ($this->getComponentHealth($host[0])) {
+            $returnUrl['component'] = $host[0];
+
+            return $returnUrl;
+        }
+
+        return false;
+    }
+
     /*
      * Get a single resource from a common ground componant
      */
-    public function getResourceList($url, $query = [], $force = false, $async = false, $autowire = true)
+    public function getResourceList($url, $query = [], $force = false, $async = false, $autowire = true, $events = true)
     {
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
@@ -120,9 +176,15 @@ class CommonGroundService
                 $component['accept'] = $url['accept'];
             }
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         $url = $this->cleanUrl($url, false, $autowire);
@@ -218,13 +280,13 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
-        $event = new CommongroundUpdateEvent($response, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::LIST
-        );
-        */
+        if ($events) {
+            $event = new CommongroundUpdateEvent($response, $component);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::LIST
+            );
+        }
 
         return $response;
     }
@@ -232,7 +294,7 @@ class CommonGroundService
     /*
      * Get a single resource from a common ground componant
      */
-    public function getResource($url, $query = [], $force = false, $async = false, $autowire = true)
+    public function getResource($url, $query = [], $force = false, $async = false, $autowire = true, $events = true)
     {
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
@@ -240,9 +302,15 @@ class CommonGroundService
                 $component['accept'] = $url['accept'];
             }
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         $url = $this->cleanUrl($url, false, $autowire);
@@ -316,14 +384,14 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
-        $event = new CommongroundUpdateEvent($response, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::RESOURCE
-        );
-        $response = $event->getResource();
-        */
+        if ($events) {
+            $event = new CommongroundUpdateEvent($response, $component);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::RESOURCE
+            );
+            $response = $event->getResource();
+        }
 
         return $response;
     }
@@ -331,22 +399,30 @@ class CommonGroundService
     /*
      * Get a single resource from a common ground componant
      */
-    public function updateResource($resource, $url = null, $async = false, $autowire = true)
+    public function updateResource($resource, $url = null, $async = false, $autowire = true, $events = true)
     {
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
-        $event = new CommongroundUpdateEvent($resource, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::UPDATE
-        );
+        if ($events) {
+            $event = new CommongroundUpdateEvent($resource, $component);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::UPDATE
+            );
+        }
 
         $url = $this->cleanUrl($url, $resource, $autowire);
 
@@ -371,8 +447,9 @@ class CommonGroundService
 
         $resource = $this->cleanResource($resource);
 
+        //Unset properties without values. To force empty, set an empty array ([])
         foreach ($resource as $key=>$value) {
-            if ($value == null || (is_array($value && empty($value)))) {
+            if ($value === null) {
                 unset($resource[$key]);
             }
         }
@@ -412,33 +489,44 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        $event = new CommongroundUpdateEvent($resource, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::UPDATE
-        );
+        if ($events) {
+            $event = new CommongroundUpdateEvent($response);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::UPDATED
+            );
+        }
+
         return $response;
     }
 
     /*
      * Create a sresource on a common ground component
      */
-    public function createResource($resource, $url = null, $async = false, $autowire = true)
+    public function createResource($resource, $url = null, $async = false, $autowire = true, $events = true)
     {
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
-        $event = new CommongroundUpdateEvent($resource, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::CREATE
-        );
+        if ($events) {
+            $event = new CommongroundUpdateEvent($resource, $component);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::CREATE
+            );
+        }
 
         $url = $this->cleanUrl($url, $resource, $autowire);
 
@@ -497,11 +585,13 @@ class CommonGroundService
         $this->cache->save($item);
 
         // creates the ResourceUpdateEvent and dispatches it
-        $event = new CommongroundUpdateEvent($resource, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::CREATED
-        );
+        if ($events) {
+            $event = new CommongroundUpdateEvent($response);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::CREATED
+            );
+        }
 
         return $response;
     }
@@ -509,24 +599,30 @@ class CommonGroundService
     /*
      * Delete a single resource from a common ground component
      */
-    public function deleteResource($resource, $url = null, $async = false, $autowire = true)
+    public function deleteResource($resource, $url = null, $async = false, $autowire = true, $events = true)
     {
         if (is_array($url) && array_key_exists('component', $url)) {
             $component = $this->getComponent($url['component']);
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($url) && $url != null && $componentUrl = $this->isCommonGround($url)) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
-        $event = new CommongroundUpdateEvent($resource, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::DELETE
-        );
-        */
+        if ($events) {
+            $event = new CommongroundUpdateEvent($resource, $component);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::DELETE
+            );
+        }
         $url = $this->cleanUrl($url, $resource, $autowire);
 
         // Set headers
@@ -571,20 +667,21 @@ class CommonGroundService
         $this->cache->delete('commonground_'.md5($url));
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
-        $event = new CommongroundUpdateEvent($resource, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::DELETED
-        );
-        */
+        if ($events) {
+            $event = new CommongroundUpdateEvent($resource, $component);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::DELETED
+            );
+        }
+
         return true;
     }
 
     /*
      * The save fucntion should only be used by applications that can render flashes
      */
-    public function saveResource($resource, $endpoint = false, $autowire = true)
+    public function saveResource($resource, $endpoint = false, $autowire = true, $events = true)
     {
         // We dont require an endpoint if a resource is self explanatory
         if (!$endpoint && array_key_exists('@id', $resource)) {
@@ -601,13 +698,14 @@ class CommonGroundService
         }
 
         // creates the ResourceUpdateEvent and dispatches it
-        /*
-        $event = new CommongroundUpdateEvent($resource, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::SAVE
-        );
-        */
+        if ($events) {
+            $event = new CommongroundUpdateEvent($resource, $component);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::SAVE
+            );
+            $resource = $event->getResource();
+        }
         // determine the endpoint
         $endpoint = $this->cleanUrl($endpoint, $resource, $autowire);
 
@@ -615,69 +713,75 @@ class CommonGroundService
 
         // If the resource exists we are going to update it, if not we are going to create it
         if (array_key_exists('@id', $resource) && $resource['@id']) {
-            if ($resource = $this->updateResource($resource, null, false, $autowire)) {
+            if ($this->updateResource($resource, null, false, $autowire, $events)) {
                 // Lets renew the resource
-                if (array_key_exists('reference', $resource)) {
-                    $this->flash->add('success', $resource['reference'].' '.$this->translator->trans('saved'));
-                } elseif (array_key_exists('name', $resource)) {
-                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('saved'));
-                } elseif (array_key_exists('id', $resource))  {
-                    $this->flash->add('success', $resource['id'].' '.$this->translator->trans('saved'));
-                } else {
-                    $this->flash->add('success', $this->translator->trans('saved'));
-                }
+                $resource = $this->getResource($resource['@id'], [], false, false, $autowire, $events);
+                $this->throwMessage('success', $resource, 'saved');
             } else {
-                if (array_key_exists('reference', $resource)) {
-                    $this->flash->add('error', $resource['reference'].' '.$this->translator->trans('could not be saved'));
-                } elseif (array_key_exists('name', $resource)) {
-                    $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be saved'));
-                } elseif (array_key_exists('id', $resource)) {
-                    $this->flash->add('error', $resource['id'].' '.$this->translator->trans('could not be saved'));
-                } else {
-                    $this->flash->add('error', $this->translator->trans('could not be saved'));
+                if (array_key_exists('name', $resource)) {
+                    $this->throwMessage('error', $resource, 'could not be saved');
                 }
             }
         } else {
-            if ($resource = $this->createResource($resource, $endpoint, false, $autowire)) {
+            if ($createdResource = $this->createResource($resource, $endpoint, false, $autowire)) {
                 // Lets renew the resource
-                if (array_key_exists('reference', $resource)) {
-                    $this->flash->add('success', $resource['reference'].' '.$this->translator->trans('created'));
-                } elseif (array_key_exists('name', $resource)) {
-                    $this->flash->add('success', $resource['name'].' '.$this->translator->trans('created'));
-                } elseif (array_key_exists('id', $resource))  {
-                    $this->flash->add('success', $resource['id'].' '.$this->translator->trans('created'));
-                } else{
-                    $this->flash->add('success', $this->translator->trans('saved'));
-                }
+                $resource = $this->getResource($createdResource['@id'], [], false, false, $autowire);
+                $this->throwMessage('success', $resource, 'created');
             } else {
-                if (array_key_exists('name', $resource)) {
-                    $this->flash->add('error', $resource['name'].' '.$this->translator->trans('could not be created'));
-                } elseif (array_key_exists('reference', $resource)) {
-                    $this->flash->add('error', $resource['reference'].' '.$this->translator->trans('could not be created'));
-                } elseif (array_key_exists('id', $resource)) {
-                    $this->flash->add('error', $resource['id'].' '.$this->translator->trans('could not be created'));
-                } else {
-                    $this->flash->add('error', $this->translator->trans('could not be created'));
-                }
+                $this->throwMessage('error', $resource, 'could not be created');
             }
         }
 
         // creates the ResourceSavedEvent and dispatches it
-        /*
-        $event = new CommongroundUpdateEvent($resource, $component);
-        $this->eventDispatcher->dispatch(
-            $event,
-            CommonGroundEvents::SAVED
-        );
-        */
+        if ($events) {
+            $event = new CommongroundUpdateEvent($resource, $component);
+            $this->eventDispatcher->dispatch(
+                $event,
+                CommonGroundEvents::SAVED
+            );
+        }
+
         return $resource;
     }
 
-    public function isResource($url){
-        if(!is_array($url) && !parse_url($url)){
-            return false;
+    public function throwMessage($type = 'succes', $resource = [], $message)
+    {
+        $text = '';
+
+        /* @todo deze willen we eigenlijk translaten */
+        if (array_key_exists('@type', $resource)) {
+            $resourceType = $resource['@type'];
+            $resourceType = strtolower($resourceType);
+
+            // The @type might be a schema org reference s
+            if (filter_var($resourceType, FILTER_VALIDATE_URL)) {
+                $resourceType = $this->getUuidFromUrl($resourceType);
+            }
+
+            $text = $text.$this->translator->trans($resourceType);
         }
-        try{
+
+        // Lets try to name the object
+        if (array_key_exists('reference', $resource)) {
+            $text = $text.' '.$resource['reference'];
+        } elseif (array_key_exists('name', $resource)) {
+            $text = $text.' '.$resource['name'];
+        } elseif (array_key_exists('id', $resource)) {
+            $text = $text.' '.$resource['id'];
+        } else {
+            /// do nothing
+        }
+
+        // set the message
+        $text = $text.' '.$this->translator->trans($message);
+
+        // Throw te actual flash
+        $this->flash->add($type, $text);
+    }
+
+    public function isResource($url)
+    {
+        try {
             return $this->getResource($url);
         } catch (HttpException $e) {
             return false;
@@ -689,7 +793,7 @@ class CommonGroundService
      */
     public function getApplication($force = false, $async = false)
     {
-        $application = $this->getResource(['component'=>'wrc','type'=>'applications','id'=>$this->params->get('common_ground.app.id')]);
+        $application = $this->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('common_ground.app.id')]);
 
         return $application;
     }
@@ -875,7 +979,7 @@ class CommonGroundService
     public function cleanUrl($url = false, $resource = false, $autowire = true)
     {
         // The Url might be an array of component information
-        if (is_array($url) && array_key_exists('component', $url) && $component = $this->getComponent($url['component'])) {
+        if (is_array($url) && array_key_exists('component', $url)) {
             $route = '';
             if (array_key_exists('type', $url)) {
                 $route = $route.'/'.$url['type'];
@@ -884,11 +988,22 @@ class CommonGroundService
                 $route = $route.'/'.$url['id'];
             }
 
-            $url = $component['location'].$route;
+            // If the component is defined we get the config values
+            if ($component = $this->getComponent($url['component'])) {
+                $url = $component['location'].$route;
 
-            // Components may overule the autowire
-            if (array_key_exists('autowire', $component)) {
-                $autowire = $component['autowire'];
+                // Components may overule the autowire
+                if (array_key_exists('autowire', $component)) {
+                    $autowire = $component['autowire'];
+                }
+            }
+            // If it is not we "gues" the endpoint (this is where we could force nlx)
+            elseif ($this->params->get('app_internal') == 'true') {
+                $url = 'http://'.$url['component'].'.'.$this->params->get('app_env').'.svc.cluster.local'.$route;
+            } elseif ($this->params->get('app_env') == 'prod') {
+                $url = 'https://'.$url['component'].'.'.$this->params->get('app_domain').$route;
+            } else {
+                $url = 'https://'.$url['component'].'.'.$this->params->get('app_env').'.'.$this->params->get('app_domain').$route;
             }
         }
 
@@ -900,7 +1015,7 @@ class CommonGroundService
         $parsedUrl = parse_url($url);
 
         // We only do this on non-production enviroments
-        if ($this->params->get('app_env') != 'prod' && $autowire) {
+        if ($this->params->get('app_env') != 'prod' && $autowire && strpos($url, '.'.$this->params->get('app_env')) == false) {
 
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
@@ -972,70 +1087,43 @@ class CommonGroundService
     }
 
     /*
-     * Get a list of available commonground components
-     */
-    public function getComponentList()
-    {
-        $components = [
-            'cc'  => ['href'=>'http://cc.zaakonline.nl',  'authorization'=>''],
-            'lc'  => ['href'=>'http://lc.zaakonline.nl',  'authorization'=>''],
-            'ltc' => ['href'=>'http://ltc.zaakonline.nl', 'authorization'=>''],
-            'brp' => ['href'=>'http://brp.zaakonline.nl', 'authorization'=>''],
-            'irc' => ['href'=>'http://irc.zaakonline.nl', 'authorization'=>''],
-            'ptc' => ['href'=>'http://ptc.zaakonline.nl', 'authorization'=>''],
-            'mrc' => ['href'=>'http://mrc.zaakonline.nl', 'authorization'=>''],
-            'arc' => ['href'=>'http://arc.zaakonline.nl', 'authorization'=>''],
-            'vtc' => ['href'=>'http://vtc.zaakonline.nl', 'authorization'=>''],
-            'vrc' => ['href'=>'http://vrc.zaakonline.nl', 'authorization'=>''],
-            'pdc' => ['href'=>'http://pdc.zaakonline.nl', 'authorization'=>''],
-            'wrc' => ['href'=>'http://wrc.zaakonline.nl', 'authorization'=>''],
-            'orc' => ['href'=>'http://orc.zaakonline.nl', 'authorization'=>''],
-            'bc'  => ['href'=>'http://orc.zaakonline.nl', 'authorization'=>''],
-        ];
-
-        return $components;
-    }
-
-    /*
      * Get the health of a commonground componant
      */
     public function getComponentHealth(string $component, $force = false)
     {
-        $componentList = $this->getComponentList();
+        $url = $this->cleanUrl(['component'=>$component]);
 
         $item = $this->cache->getItem('componentHealth_'.md5($component));
         if ($item->isHit() && !$force) {
-            //return $item->get();
+            return $item->get();
         }
 
-        //@todo trhow symfony error
-        if (!array_key_exists($component, $componentList)) {
-            return false;
+        // Lets actually do a health check
+        $headers = $this->headers;
+
+        $component = $this->getComponent($component);
+        if ($component && key_exists('accept', $component)) {
+            $headers['Accept'] = $component['accept'];
         } else {
-            // Lets swap the component for a
-
-            // Then we like to know al the component endpoints
-            $component = $this->getComponentResources($component);
+            $headers['Accept'] = 'application/health+json';
         }
+        // Component specific congiguration
 
-        // Lets loop trough the endoints and get health (the self endpoint is included)
-        foreach ($component['endpoints'] as $key=>$endpoint) {
-
-            //var_dump($component['endpoints']);
-            //var_dump($endpoint);
-
-            $response = $this->client->request('GET', $component['href'].$endpoint['href'], ['Headers' =>['Authorization' => $component['authorization'], 'Accept' => 'application/health+json']]);
+        try {
+            $response = $this->client->request('GET', $url, ['headers' => $headers, 'http_errors' => false]);
             if ($response->getStatusCode() == 200) {
-                //$component['endpoints'][$key]['health'] = json_decode($response->getBody(), true);
-                $component['endpoints'][$key]['health'] = false;
+                $item->set(true);
+            } else {
+                $item->set(false);
             }
+        } catch (\Exception $e) {
+            $item->set(false);
         }
 
-        $item->set($component);
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
 
-        return $component;
+        return $item->get();
     }
 
     /*
@@ -1043,39 +1131,6 @@ class CommonGroundService
      */
     public function getComponentResources(string $component, $force = false)
     {
-        $componentList = $this->getComponentList();
-
-        $item = $this->cache->getItem('componentResources_'.md5($component));
-        if ($item->isHit() && !$force) {
-            //return $item->get();
-        }
-
-        //@todo trhow symfony error
-        if (!array_key_exists($component, $componentList)) {
-            return false;
-        } else {
-            // Lets swap the component for a version that has an endpoint and authorization
-            $component = $componentList[$component];
-        }
-
-        $response = $this->client->request('GET', $component['href'], ['Headers' =>['Authorization' => $component['authorization'], 'Accept' => 'application/ld+json']]);
-
-        $component['status'] = $response->getStatusCode();
-        if ($response->getStatusCode() == 200) {
-            $component['endpoints'] = json_decode($response->getBody(), true);
-            // Lets pull any json-ld values
-            if (array_key_exists('_links', $component['endpoints'])) {
-                $component['endpoints'] = $component['endpoints']['_links'];
-            }
-        } else {
-            $component['endpoints'] = [];
-        }
-
-        $item->set($component);
-        $item->expiresAt(new \DateTime('tomorrow'));
-        $this->cache->save($item);
-
-        return $component;
     }
 
     /*
