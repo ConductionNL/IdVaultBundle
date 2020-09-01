@@ -80,7 +80,13 @@ class VrcService
     public function createCommongroundResources($request)
     {
         foreach ($request['properties'] as $key => $value) {
-            $property = $this->commonGroundService->getResource($key);
+
+            // We currently support both name and uuid based keying of properties
+            if (filter_var($key, FILTER_VALIDATE_URL)) {
+                $property = $this->commonGroundService->getResource($key);
+            } else {
+                $property = $this->commonGroundService->getPropertyByName($key, $request);
+            }
 
             // lets check if the component is a commonground resource
             if(is_array($value) && array_key_exists('iri', $property)  && $property['format'] == 'url' && $component = explode('/', $property['iri']) && count($component) == 2){
@@ -123,7 +129,14 @@ class VrcService
 
         // Lets walk trough al te properties and see if any has a calendar or duration
         foreach ($request['properties'] as $key => $value) {
-            $property = $this->commonGroundService->getResource($key);
+
+            // We currently support both name and uuid based keying of properties
+            if (filter_var($key, FILTER_VALIDATE_URL)) {
+                $property = $this->commonGroundService->getResource($key);
+            } else {
+                $property = $this->commonGroundService->getPropertyByName($key, $request);
+            }
+
             if(is_array($value) && array_key_exists('iri', $property)  && $property['format'] == 'url' && $component = explode('/', $property['iri']) && count($component) == 2){
                 // Lets support arrays of iri's
                 if($property['type'] == 'array'){
@@ -210,7 +223,14 @@ class VrcService
 
         // Lets walk trough al te properties and see if any has a calendar or duration
         foreach ($request['properties'] as $key => $value) {
-            $property = $this->commonGroundService->getResource($key);
+
+            // We currently support both name and uuid based keying of properties
+            if (filter_var($key, FILTER_VALIDATE_URL)) {
+                $property = $this->commonGroundService->getResource($key);
+            } else {
+                $property = $this->commonGroundService->getPropertyByName($key, $request);
+            }
+
             if(is_array($value) && array_key_exists('iri', $property) && $property['format'] == 'url' && $component = explode('/', $property['iri']) && count($component) == 2){
                 // Lets support arrays of iri's
                 if($property['type'] == 'array'){
@@ -318,26 +338,6 @@ class VrcService
                 $post = ['url'=>$request['order']];
                 $invoice = $this->commonGroundService->saveResource($post, ['component' => 'bc', 'type' => 'order']);
             }
-        }
-
-        return $request;
-    }
-
-    /*
-     * Gets a requestType from a request and validates stage completion
-     *
-     * @param array $request The request before stage completion checks
-     * @return array The resourceType afther stage completion checks
-     */
-    public function checkProperties(?array $request)
-    {
-        // Lets first see if we can grap an requested type and if it has stages
-        if (!$requestType = $this->commonGroundService->getResource($request['requestType']) || !array_key_exists('stages', $requestType)) {
-            return $request;
-        }
-
-        foreach ($request['properties'] as $property) {
-
         }
 
         return $request;
@@ -517,5 +517,37 @@ class VrcService
         return $result;
     }
 
+    /*
+     * This functions supports backwards compatibilty by getting a property on a by name basis
+     *
+     * @param string $property The name of the property to get
+     * @param array $request The request to wichs the property belongs
+     * @return array The requested property
+     */
+    public function getPropertyByName(?string $name, ?array $request)
+    {
+        /* @tod would we like to support requests as strings here? */
 
+        // Lets first see if we can grap an requested type
+        if (!array_key_exists('requestType', $request) || !$requestType = $this->commonGroundService->getResource($request['requestType'])) {
+            /* @to error handling */
+            return false;
+        }
+
+        $properties = [];
+
+        // lets then index the request type properties by name
+        foreach ($requestType['properties'] as $property) {
+            $properties[$property['name']] = $property;
+        }
+
+        // Lets then see if we can grap the property by name
+        if(array_key_exists($name,$properties)){
+            return $properties[$name];
+        }
+
+        // Lets default to false
+        return false;
+
+    }
 }
