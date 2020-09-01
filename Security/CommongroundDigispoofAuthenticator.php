@@ -90,7 +90,7 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['naam']['voornamen'], $user['id'], null, $user['roles'], $user['@id'], null, 'person', false);
+        return new CommongroundUser($user['naam']['voornamen'], $user['id'], $user['naam']['voornamen'], null, $user['roles'], $user['@id'], null, 'person', false);
     }
 
     public function checkCredentials($credentials, UserInterface $user)

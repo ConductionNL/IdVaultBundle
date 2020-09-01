@@ -62,6 +62,6 @@ class CommongroundUserProvider implements UserProviderInterface
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization']);
+        return new CommongroundUser($user['username'], $user['id'], $user['username'], null, $user['roles'], $user['person'], $user['organization']);
     }
 }

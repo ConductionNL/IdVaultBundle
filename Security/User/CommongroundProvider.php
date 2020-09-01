@@ -40,11 +40,12 @@ class CommongroundProvider implements UserProviderInterface
         }
 
         $username = $user->getUsername();
+        $password = $user->getPassword();
         $organization = $user->getOrganization();
         $type = $user->getType();
         $person = $user->getPerson();
 
-        return $this->fetchUser($username, $organization, $type, $person);
+        return $this->fetchUser($username, $password, $organization, $type, $person);
     }
 
     public function supportsClass($class)
@@ -52,7 +53,7 @@ class CommongroundProvider implements UserProviderInterface
         return CommongroundUser::class === $class;
     }
 
-    private function fetchUser($username, $organization, $type, $person)
+    private function fetchUser($username, $password, $organization, $type, $person)
     {
         //only trigger if type of user is organization
         if ($type == 'organization') {
@@ -69,8 +70,26 @@ class CommongroundProvider implements UserProviderInterface
             }
             $kvk = $companies['data']['items'][0];
             $user = $this->commonGroundService->getResource($person);
+            if (!isset($user['roles'])) {
+                $user['roles'] = [];
+            }
+            array_push($user['roles'], 'scope.vrc.requests.read');
+            array_push($user['roles'], 'scope.orc.orders.read');
+            array_push($user['roles'], 'scope.cmc.messages.read');
+            array_push($user['roles'], 'scope.bc.invoices.read');
+            array_push($user['roles'], 'scope.arc.events.read');
+            array_push($user['roles'], 'scope.irc.assents.read');
         } elseif ($type == 'person') {
             $user = $this->commonGroundService->getResource($person);
+            if (!isset($user['roles'])) {
+                $user['roles'] = [];
+            }
+            array_push($user['roles'], 'scope.vrc.requests.read');
+            array_push($user['roles'], 'scope.orc.orders.read');
+            array_push($user['roles'], 'scope.cmc.messages.read');
+            array_push($user['roles'], 'scope.bc.invoices.read');
+            array_push($user['roles'], 'scope.arc.events.read');
+            array_push($user['roles'], 'scope.irc.assents.read');
         } elseif ($type == 'user') {
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $username], true);
             $users = $users['hydra:member'];
@@ -79,6 +98,18 @@ class CommongroundProvider implements UserProviderInterface
             $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
             $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $username, 'provider.name' => $provider[0]['name']])['hydra:member'];
             $user = $this->commonGroundService->getResource($token[0]['user']['@id']);
+            if (!isset($user['roles'])) {
+                $user['roles'] = [];
+            }
+            array_push($user['roles'], 'scope.chin.checkins.read');
+        } elseif ($type == 'facebook') {
+            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
+            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $password, 'provider.name' => $provider[0]['name']])['hydra:member'];
+            $user = $this->commonGroundService->getResource($token[0]['user']['@id']);
+            if (!isset($user['roles'])) {
+                $user['roles'] = [];
+            }
+            array_push($user['roles'], 'scope.chin.checkins.read');
         }
 
         if (!isset($user['roles'])) {
@@ -94,15 +125,23 @@ class CommongroundProvider implements UserProviderInterface
             case 'person':
                 $resident = $this->checkResidence('person', $user, null);
 
-                return new CommongroundUser($user['naam']['voornamen'].' '.$user['naam']['geslachtsnaam'], $user['id'], null, $user['roles'], $user['@id'], null, 'person', $resident);
+                return new CommongroundUser($user['naam']['voornamen'].' '.$user['naam']['geslachtsnaam'], $user['id'], $user['naam']['voornamen'].' '.$user['naam']['geslachtsnaam'], null, $user['roles'], $user['@id'], null, 'person', $resident);
             case 'organization':
                 $resident = $this->checkResidence('organization', $user, $kvk);
 
-                return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization', $resident);
+                return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], $kvk['tradeNames']['businessName'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization', $resident);
             case 'user':
-                return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization'], 'user');
+                $person = $this->commonGroundService->getResource($user['person']);
+
+                return new CommongroundUser($user['username'], $user['id'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'user');
             case 'idin':
-                return new CommongroundUser($user['username'], $user['username'], null, $user['roles'], $user['person'], null, 'idin');
+                $person = $this->commonGroundService->getResource($user['person']);
+
+                return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'idin');
+            case 'facebook':
+                $person = $this->commonGroundService->getResource($user['person']);
+
+                return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'idin');
             default:
                 throw new UsernameNotFoundException(
                     sprintf('User "%s" does not exist.', $username)
