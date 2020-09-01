@@ -91,9 +91,16 @@ class PtcService
         $procces['valid'] = false;
         foreach ($procces['stages'] as $stageKey => $stage) {
             $procces['stages'][$stageKey]['valid'] = true;
+            if(key_exists('conditions',$stage)){
+                $procces['stages'][$stageKey]['show'] = $this->checkConditions($stage['conditions'], $request);
+            }
+
             foreach ($stage['sections'] as $sectionKey => $section) {
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
+                if(key_exists('conditions', $section)){
+                    $procces['stages'][$stageKey]['sections'][$sectionKey]['show'] = $this->checkConditions($section['conditions'], $request);
+                }
 
                 foreach ($section['properties'] as $propertyKey => $property) {
                     $property = $this->commonGroundService->getResource($property);
@@ -130,5 +137,94 @@ class PtcService
         }
 
         return $procces;
+    }
+    public function checkConditions($conditions, array $object): bool
+    {
+        $results = [];
+        foreach ($conditions as $condition) {
+            $property = explode('.', $condition['property']);
+            $value = $this->recursiveGetValue($property, $object);
+
+            switch ($condition->getOperation()) {
+                case '<=':
+                    if ($value <= $condition['value']) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '>=':
+                    if ($value >= $condition['value']) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '<':
+                    if ($value < $condition['value']) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '>':
+                    if ($value > $condition['value']) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '<>':
+                    if ($value <> $condition['value']) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '!=':
+                    if ($value != $condition['value']) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case 'exists':
+                    if ($value) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                default:
+                    if ($value == $condition['value']) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+            }
+        }
+        foreach ($results as $result) {
+            if (!$result) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+    public function recursiveGetValue(array $property, array $resource)
+    {
+        $sub = array_shift($property);
+        $value = null;
+        if (
+            key_exists($sub, $resource) &&
+            is_array($resource[$sub])
+        ) {
+            $value = $this->recursiveGetValue($property, $resource[$sub]);
+        } elseif (key_exists($sub, $resource)) {
+            $value = $resource[$sub];
+        }
+
+        return $value;
     }
 }
