@@ -20,7 +20,7 @@ class VrcService
     public function __construct(
         CommonGroundService $commonGroundService,
         FlashBagInterface $flash,
-        CamundaService $camundaService
+        CamundaService $camundaService)
     {
         $this->commonGroundService = $commonGroundService;
         $this->flash = $flash;
