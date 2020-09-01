@@ -6,6 +6,7 @@ namespace Conduction\CommonGroundBundle\Service;
 
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
+
 /*
  * The VRC Service handels logic reqoured to properly connect with the vrc component
  *
@@ -15,12 +16,18 @@ class VrcService
     private $commonGroundService;
     private $flash;
     private $camundaService;
+    private $ptcService;
 
-    public function __construct(CommonGroundService $commonGroundService, FlashBagInterface $flash, CamundaService $camundaService)
+    public function __construct(
+        CommonGroundService $commonGroundService,
+        FlashBagInterface $flash,
+        CamundaService $camundaService,
+        PtcService $ptcService)
     {
         $this->commonGroundService = $commonGroundService;
         $this->flash = $flash;
         $this->camundaService = $camundaService;
+        $this->ptcService = $ptcService;
     }
 
     /*
