@@ -13,9 +13,10 @@
         <service id="Conduction\CommonGroundBundle\Service\IrcService" />
         <service id="Conduction\CommonGroundBundle\Service\MessageService" />
         <service id="Conduction\CommonGroundBundle\Service\NLXLogService" />
-        <service id="Conduction\CommonGroundBundle\Service\PtdService" />
+        <service id="Conduction\CommonGroundBundle\Service\PtcService" />
         <service id="Conduction\CommonGroundBundle\Service\RequestService" />
         <service id="Conduction\CommonGroundBundle\Service\VrcService" />
+        <service id="Conduction\CommonGroundBundle\Service\VsbeService" />
 
         <!--External Services-->
         <service id="Symfony\Component\EventDispatcher\EventDispatcher" />
@@ -63,6 +64,9 @@
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="vrc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\VrcSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="vrc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\VsbeSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
 

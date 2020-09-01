@@ -165,47 +165,6 @@ class VrcService
          */
     public function onUpdated(?array $resource)
     {
-        // Lets first see if we can grap an requested type
-        if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
-            return;
-        }
-        // Run the request through the very small business engine
-        if ($this->commonGroundService->getComponentHealth('vsbe')) {
-            $vsbeResource = [];
-            $vsbeResource['object'] = $resource['@id'];
-            $vsbeResource['action'] = 'UPDATE';
-
-            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
-        }
-
-        // Let run al the tasks
-        if (array_key_exists('tasks', $requestType)) {
-            // Loop trough the tasks atached to this resource and add them to the stack
-            foreach ($requestType['tasks'] as $trigger) {
-                if (!$trigger['event'] || $trigger['event'] == 'update') {
-                    // Lets preparte the task for the que
-                    unset($trigger['id']);
-                    unset($trigger['@id']);
-                    unset($trigger['@type']);
-                    unset($trigger['dateCreated']);
-                    unset($trigger['dateModified']);
-                    unset($trigger['requestBody']);
-
-                    // Lets hook the task to the propper resource
-                    $trigger['resource'] = $resource['@id'];
-                    $trigger['type'] = strtoupper($trigger['type']);
-
-                    // Lets set the time to trigger
-                    $dateToTrigger = new \DateTime();
-                    $dateToTrigger->add(new \DateInterval($trigger['timeInterval']));
-                    $trigger['dateToTrigger'] = $dateToTrigger->format('Y-m-d H:i:s');
-
-                    // Lets add the task to the que
-                    $trigger = $this->commonGroundService->createResource($trigger, ['component'=>'qc', 'type'=>'tasks']);
-                }
-            }
-        }
-
         $this->checkOrder($resource);
         $resource = $this->clearDefaults($resource);
 
@@ -233,52 +192,6 @@ class VrcService
      */
     public function onCreated(?array $resource)
     {
-        if (!$requestType = $this->commonGroundService->getResource($resource['requestType'])) {
-            return;
-        }
-
-        // Run the request through the very small business engine
-        if ($this->commonGroundService->getComponentHealth('vsbe')) {
-            $vsbeResource = [];
-            $vsbeResource['object'] = $resource['@id'];
-            $vsbeResource['action'] = 'CREATE';
-
-            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
-        }
-
-        // If the request has Zaak properties we need to trigger those
-        if (array_key_exists('caseType', $requestType) && !array_key_exists('cases', $resource)) {
-            /* @todo create a case */
-        }
-
-        // Let run al the tasks
-        if (array_key_exists('tasks', $requestType)) {
-            // Loop trough the tasks atached to this resource and add them to the stack
-            foreach ($requestType['tasks'] as $trigger) {
-                if (!$trigger['event'] || $trigger['event'] == 'create') {
-                    // Lets preparte the task for the que
-                    unset($trigger['id']);
-                    unset($trigger['@id']);
-                    unset($trigger['@type']);
-                    unset($trigger['dateCreated']);
-                    unset($trigger['dateModified']);
-                    unset($trigger['requestBody']);
-
-                    // Lets hook the task to the propper resource
-                    $trigger['resource'] = $resource['@id'];
-                    $trigger['type'] = strtoupper($trigger['type']);
-
-                    // Lets set the time to trigger
-                    $dateToTrigger = new \DateTime();
-                    $dateToTrigger->add(new \DateInterval($trigger['timeInterval']));
-                    $trigger['dateToTrigger'] = $dateToTrigger->format('Y-m-d H:i:s');
-
-                    // Lets add the task to the que
-                    $trigger = $this->commonGroundService->createResource($trigger, ['component'=>'qc', 'type'=>'tasks']);
-                }
-            }
-        }
-
         // Lets see if this request should have an order
         $this->checkOrder($resource);
 
