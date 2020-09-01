@@ -4,7 +4,7 @@ namespace Conduction\CommonGroundBundle\Subscriber;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
-use Conduction\CommonGroundBundle\Service\VsbeService;
+use Conduction\CommonGroundBundle\Service\NotificationService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
