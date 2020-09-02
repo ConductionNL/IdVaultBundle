@@ -82,8 +82,6 @@ class IncompleteDate
 
     public function __serialize()
     {
-        return ['year'=>$this->getYear(),'month'=>$this->getMonth(),'day'=>$this->getDay()];
+        return ['year'=>$this->getYear(), 'month'=>$this->getMonth(), 'day'=>$this->getDay()];
     }
-
-
 }

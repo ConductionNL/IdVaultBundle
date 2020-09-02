@@ -6,7 +6,6 @@ use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
 use Conduction\CommonGroundBundle\Service\NotificationService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\KernelEvents;
 
 class NotificationSubscriber implements EventSubscriberInterface
 {
@@ -33,6 +32,7 @@ class NotificationSubscriber implements EventSubscriberInterface
 
         return $event;
     }
+
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function updated(CommongroundUpdateEvent $event)
     {
