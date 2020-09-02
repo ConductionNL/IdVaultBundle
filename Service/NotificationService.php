@@ -13,7 +13,8 @@ class NotificationService
     private $commonGroundService;
 
     public function __construct(
-        CommonGroundService $commonGroundService)
+        CommonGroundService $commonGroundService
+    )
     {
         $this->commonGroundService = $commonGroundService;
     }

@@ -89,7 +89,6 @@ class CamundaService
         return $this->commonGroundService->getResource(['component'=>'be', 'type'=>'task', 'id'=> $taskId.'/rendered-form', 'accept'=>'application/xhtml+xml']);
     }
 
-
     /*
      * Start a Cammunda procces from e resource
      *
