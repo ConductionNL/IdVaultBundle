@@ -88,7 +88,7 @@ class PtcService
      */
     public function extendProcess(?array $procces, array $request = null)
     {
-        $procces['valid'] = false;
+        $procces['valid'] = true;
         foreach ($procces['stages'] as $stageKey => $stage) {
             $procces['stages'][$stageKey]['valid'] = true;
             if(key_exists('conditions',$stage)){
@@ -126,14 +126,21 @@ class PtcService
                     }
                     unset($property['requestType']);
                     $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'][$property['@id']] = $property;
-                }
 
+                    // Set section on invalid if a single section is invallid
+                    if (!$property['valid']) {
+                        $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+                    }
+                }
                 // Set stage on invalid if a single section is invallid
                 if (!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']) {
                     $procces['stages'][$stageKey]['valid'] = false;
                 }
             }
-            $procces['stages'][$stageKey]['valid'] = false;
+            // Set procces on invalid if a single section is invallid
+            if (!$procces['stages'][$stageKey]['valid']) {
+                $procces['valid'] = false;
+            }
         }
 
         return $procces;

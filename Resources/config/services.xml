@@ -33,6 +33,7 @@
         <service id="Conduction\CommonGroundBundle\Security\CommongroundDigispoofAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundEherkenningAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundIdinAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundFacebookAuthenticator" />
 
         <!--CommonGround Repositories-->
         <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
