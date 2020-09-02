@@ -77,9 +77,15 @@ class VrcSubscriber implements EventSubscriberInterface
     public function update(CommongroundUpdateEvent $event)
     {
 
+        $resource = $event->getResource();
 
-        //$resource = $this->vrcService->createCommongroundResources($event->getResource());
-        // $event->setResource($resource);
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
+            return;
+        }
+
+        $this->vrcService->clearDependencies($resource);
+        $event->setResource($resource);
+
         return $event;
     }
 
@@ -92,9 +98,9 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $resource = $this->vrcService->createCommongroundResources($resource);
-        $resource = $this->vrcService->checkEvents($resource);
-        $resource = $this->vrcService->checkOffers($resource);
+        $this->vrcService->createCommongroundResources($resource);
+        $this->vrcService->checkEvents($resource);
+        $this->vrcService->checkOffers($resource);
         $event->setResource($resource);
 
         return $event;
@@ -104,10 +110,15 @@ class VrcSubscriber implements EventSubscriberInterface
     public function create(CommongroundUpdateEvent $event)
     {
         // Lets make sure we only triger on requests resources
+        $resource = $event->getResource();
 
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
+            return;
+        }
 
-        //$resource = $this->vrcService->createCommongroundResources($event->getResource());
-        //$event->setResource($resource);
+        $this->vrcService->clearDependencies($resource);
+        $event->setResource($resource);
+
         return $event;
     }
 
@@ -120,9 +131,9 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $resource = $this->vrcService->createCommongroundResources($resource);
-        $resource = $this->vrcService->checkEvents($resource);
-        $resource = $this->vrcService->checkOffers($resource);
+        $this->vrcService->createCommongroundResources($resource);
+        $this->vrcService->checkEvents($resource);
+        $this->vrcService->checkOffers($resource);
 
         $event->setResource($resource);
 
