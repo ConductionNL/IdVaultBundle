@@ -70,4 +70,16 @@ class IncompleteDate
     {
         return sprintf('%04u-%02u-%02u', $this->getYear(), $this->getMonth(), $this->getDay());
     }
+
+    public function __toString()
+    {
+        return sprintf('%04u-%02u-%02u', $this->getYear(), $this->getMonth(), $this->getDay());
+    }
+
+    public function __serialize()
+    {
+        return ['year'=>$this->getYear(),'month'=>$this->getMonth(),'day'=>$this->getDay()];
+    }
+
+
 }
