@@ -22,116 +22,6 @@ class PtcService
     }
 
     /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onResource(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onList(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onSave(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onSaved(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onDelete(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onDeleted(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onUpdate(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onUpdated(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onCreate(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Aditional logic triggerd afther a Request has been newly created
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onCreated(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
      * Get al the properties associatied with an specific procces
      *
      * @param array $resource The resource before enrichment
@@ -196,70 +86,49 @@ class PtcService
      * @param array $resource The resource before enrichment
      * @param array The resource afther enrichment
      */
-    public function extendProcess(?array $procces)
+    public function extendProcess(?array $procces, array $request = null)
     {
         $procces['valid'] = false;
         foreach ($procces['stages'] as $stageKey => $stage) {
+            $procces['stages'][$stageKey]['valid'] = true;
             foreach ($stage['sections'] as $sectionKey => $section) {
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
+
                 foreach ($section['properties'] as $propertyKey => $property) {
                     $property = $this->commonGroundService->getResource($property);
-                    $property['value'] = null;
-                    $property['valid'] = false;
-                    $property['message'] = null;
+
+                    // Idf a request has ben suplied
+                    if($request){
+                        // Lets validate
+                        $result = $this->vrcService->checkProperty($request, $property);
+                        // Set the results
+                        $property['value'] = $result['value'];
+                        $property['valid'] = $result['valid'];
+                        $property['messages'] = $result['messages'];
+
+                        // Set section on invalid if a single property is invalid
+                        if (!$property['valid']) {
+                            $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+                        }
+                    }
+                    else{
+                        $property['value'] = null;
+                        $property['valid'] = false;
+                        $property['message'] = null;
+                    }
                     unset($property['requestType']);
                     $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'][$property['@id']] = $property;
                 }
-                $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+
+                // Set stage on invalid if a single section is invallid
+                if (!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']) {
+                    $procces['stages'][$stageKey]['valid'] = false;
+                }
             }
             $procces['stages'][$stageKey]['valid'] = false;
         }
 
         return $procces;
     }
-
-    /*
-     * Aditional logic triggerd afther a Request has been newly created
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-        public function fillProcess(?array $procces, array $request = null)
-        {
-            $procces = $this->extendProcess($procces);
-
-            foreach ($procces['stages'] as $stageKey => $stage) {
-                $procces['stages'][$stageKey]['valid'] = true;
-                foreach ($stage['sections'] as $sectionKey => $section) {
-                    $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
-                    $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
-
-                    // Lets validate the indivual property forms
-                    foreach ($section['propertiesForms'] as $propertyKey => $property) {
-                        // Lets validate
-                        $result = $this->checkProperty($request, $property);
-                        // Set the results
-                        $property['value'] = $result['value'];
-                        $property['valid'] = $result['valid'];
-                        $property['messages'] = $result['messages'];
-                        $property['messages'] = $result['messages'];
-                        // Store results to the current procces
-                        if (!$property['valid']) {
-                            $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
-                        }
-                    }
-
-                    if (!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']) {
-                        $procces['stages'][$stageKey]['valid'] = false;
-                    }
-                }
-                if (!$procces['stages'][$stageKey]['valid']) {
-                    $procces['valid'] = false;
-                }
-            }
-
-            return $procces;
-        }
-
-
 }

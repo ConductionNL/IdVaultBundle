@@ -196,7 +196,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         }
         array_push($user['roles'], 'scope.chin.checkins.read');
 
-        return new CommongroundUser($user['username'], $user['username'], $person['name'], $user['roles'], $user['person'], null, 'idin');
+        return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'idin');
     }
 
     public function checkCredentials($credentials, UserInterface $user)

@@ -42,11 +42,11 @@ class PtcSubscriber implements EventSubscriberInterface
     {
         // Lets make sure we only triger on requests resources
         /* @todo lets also check for a vrc component */
-        if ($event->getResource()['@type'] != 'Request') {
+        if ($event->getResource()['@type'] != 'ProcessType') {
             return;
         }
 
-        $resource = $this->ptcService->onResource($event->getResource());
+        $resource = $this->ptcService->extendProcess($event->getResource());
         $event->setResource($resource);
 
         return $event;
@@ -55,96 +55,36 @@ class PtcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function list(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
-            return;
-        }
-
-        $resource = $this->ptcService->onList($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function save(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
-            return;
-        }
-
-        $resource = $this->ptcService->onSave($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function saved(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
-            return;
-        }
-
-        $resource = $this->ptcService->onSaved($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function delete(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
-            return;
-        }
-
-        $resource = $this->ptcService->onDelete($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function deleted(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
-            return;
-        }
-
-        $resource = $this->ptcService->onDeleted($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function update(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
-            return;
-        }
-
-        $resource = $this->ptcService->onUpdate($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
@@ -158,7 +98,8 @@ class PtcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $resource = $this->ptcService->onUpdated($event->getResource());
+
+        $resource = $this->ptcService->extendProcess($event->getResource());
         $event->setResource($resource);
 
         return $event;
@@ -167,16 +108,6 @@ class PtcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function create(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
-            return;
-        }
-
-        $resource = $this->ptcService->onCreate($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
@@ -188,7 +119,7 @@ class PtcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $resource = $this->ptcService->onCreated($event->getResource());
+        $resource = $this->ptcService->extendProcess($event->getResource());
         $event->setResource($resource);
 
         return $event;
