@@ -12,6 +12,10 @@ namespace Conduction\CommonGroundBundle\ValueObject;
 
 class IncompleteDate
 {
+    public $day;
+    public $month;
+    public $year;
+
     /**
      * @param int $day
      * @param int $month
