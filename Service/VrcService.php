@@ -6,7 +6,6 @@ namespace Conduction\CommonGroundBundle\Service;
 
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 
-
 /*
  * The VRC Service handels logic reqoured to properly connect with the vrc component
  *
@@ -20,7 +19,8 @@ class VrcService
     public function __construct(
         CommonGroundService $commonGroundService,
         FlashBagInterface $flash,
-        CamundaService $camundaService)
+        CamundaService $camundaService
+    )
     {
         $this->commonGroundService = $commonGroundService;
         $this->flash = $flash;
@@ -86,16 +86,15 @@ class VrcService
             }
 
             // lets check if the component is a commonground resource
-            if(is_array($value) && array_key_exists('iri', $property)  && $property['format'] == 'url' && $component = explode('/', $property['iri'])){
+            if (is_array($value) && array_key_exists('iri', $property) && $property['format'] == 'url' && $component = explode('/', $property['iri'])) {
                 //&& count($component) == 2
 
                 // Lets support arrays
-                if($property['type'] == 'array'){
-                    foreach ($value as $propertyKey => $propertyValue ){
+                if ($property['type'] == 'array') {
+                    foreach ($value as $propertyKey => $propertyValue) {
                         $request['properties'][$key][$propertyKey] = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
                     }
-                }
-                else{
+                } else {
                     $request['properties'][$key] = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]]);
                 }
             }
@@ -168,12 +167,14 @@ class VrcService
                     $propertyArray[] = $value;
                 }
 
-
                 foreach ($propertyArray as $propertyValue) {
                     $propertyValue = $this->commonGroundService->getResource($propertyValue);
-                    if (array_key_exists('duration', $propertyValue) && $propertyValue['duration']) $endDate->add(new \DateInterval($propertyValue['duration']));
-                    if (array_key_exists('calendar', $propertyValue) && $propertyValue['calendar']) $requestCalendars[] = $propertyValue['calendar'];
-
+                    if (array_key_exists('duration', $propertyValue) && $propertyValue['duration']) {
+                        $endDate->add(new \DateInterval($propertyValue['duration']));
+                    }
+                    if (array_key_exists('calendar', $propertyValue) && $propertyValue['calendar']) {
+                        $requestCalendars[] = $propertyValue['calendar'];
+                    }
                 }
             }
         }
@@ -186,7 +187,7 @@ class VrcService
         /*
          * If we have submitters we want to create a calanders for the submitters (if they dont have one already)
          */
-        if (array_key_exists('submitters', $request)){
+        if (array_key_exists('submitters', $request)) {
             foreach ($request['submitters'] as $submitter) {
                 // We only create calenders for validated submitters
                 if (!array_key_exists('brp', $submitter)) {
@@ -213,7 +214,7 @@ class VrcService
         /*
          * Lets loop trough al the calendars and create or update the nececery events
          */
-        foreach ($requestCalendars as $calendar){
+        foreach ($requestCalendars as $calendar) {
             // create or update  event
             $events = $this->commonGroundService->getResourceList(['component' => 'arc', 'type' => 'events'], ['calendar.id' =>$calendar, 'resource' => $request['@id']])['hydra:member'];
 
@@ -249,7 +250,7 @@ class VrcService
      */
     public function checkOffers(array $request)
     {
-        if(!array_key_exists('properties',$request)){
+        if (!array_key_exists('properties', $request)) {
             return $request;
         }
 
@@ -266,31 +267,30 @@ class VrcService
                 $property = $this->getPropertyByName($key, $request);
             }
 
-            if(
+            if (
                 array_key_exists('iri', $property) &&
                 $property['format'] == 'uri' &&
                 $property['iri'] == 'pdc/offer' &&
                 $component = explode('/', $property['iri'])
-            ){ //count($component) == 2
+            ) { //count($component) == 2
                 // Lets support arrays of iri's
-                if($property['type'] == 'array'){
+                if ($property['type'] == 'array') {
                     $requestOffers = array_merge($requestOffers, $value);
-                }
-                else{
+                } else {
                     $requestOffers[] = $value;
                 }
             }
         }
 
         // If there are no offers do not nothing
-        if(empty($requestOffers)){
+        if (empty($requestOffers)) {
             return $request;
         }
 
         /*
          * Lets see if the request already has an associated order
          */
-        if(!array_key_exists('order', $request) || !$request['order']){
+        if (!array_key_exists('order', $request) || !$request['order']) {
             $order = [];
 
             $order['name'] = $request['reference'];
@@ -314,16 +314,14 @@ class VrcService
             $order = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders']);
 
             // We have a new order so will need to write the order to the request
-            $request['order']  = $order['@id'];
+            $request['order'] = $order['@id'];
             unset($request['submitters']);
             unset($request['children']);
             unset($request['parent']);
             $request = $this->commonGroundService->saveResource($request, ['component' => 'vrc', 'type' => 'requests'], true, false);
+        } else {
+            $order = $this->commonGroundService->getResource($request['order'], [], true);
         }
-        else{
-            $order = $this->commonGroundService->getResource($request['order'], [] ,true);
-        }
-
 
         /*
          * Lets loop trough al the calendars and create or update the nececery events
@@ -331,19 +329,27 @@ class VrcService
 
         $requestItems = [];
 
-        foreach($requestOffers as $offer){
+        foreach ($requestOffers as $offer) {
             $offer = $this->commonGroundService->getResource($offer);
             // or in the mean time just replace the whole offer array
             $orderItem = [];
             $orderItem['offer'] = $offer['@id'];
 
-            if (array_key_exists('name', $offer))           $orderItem['name'] = $offer['name'];
-            if (array_key_exists('description', $offer))    $orderItem['description'] = $offer['description'];
-            if (array_key_exists('price', $offer))          $orderItem['price'] = (string) $offer['price'];
-            if (array_key_exists('priceCurrency', $offer))  $orderItem['priceCurrency'] = $offer['priceCurrency'];
+            if (array_key_exists('name', $offer)) {
+                $orderItem['name'] = $offer['name'];
+            }
+            if (array_key_exists('description', $offer)) {
+                $orderItem['description'] = $offer['description'];
+            }
+            if (array_key_exists('price', $offer)) {
+                $orderItem['price'] = (string) $offer['price'];
+            }
+            if (array_key_exists('priceCurrency', $offer)) {
+                $orderItem['priceCurrency'] = $offer['priceCurrency'];
+            }
 
             $orderItem['quantity'] = 1;
-            $orderItem['order'] =  $request['order'];
+            $orderItem['order'] = $request['order'];
             $requestItems[$offer['@id']] = $orderItem;
         }
 
@@ -390,7 +396,7 @@ class VrcService
 
         // We have changed some stuff about the order and its value so lets force a cache reload
 
-        $order = $this->commonGroundService->getResource($request['order'], [] ,true);
+        $order = $this->commonGroundService->getResource($request['order'], [], true);
         //$this->commonGroundService->clearFromsCash($order);
 
         return $request;
@@ -595,12 +601,11 @@ class VrcService
         }
 
         // Lets then see if we can grap the property by name
-        if(array_key_exists($name,$properties)){
+        if (array_key_exists($name, $properties)) {
             return $properties[$name];
         }
 
         // Lets default to false
         return false;
-
     }
 }
