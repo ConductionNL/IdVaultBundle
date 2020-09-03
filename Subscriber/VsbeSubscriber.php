@@ -4,17 +4,17 @@ namespace Conduction\CommonGroundBundle\Subscriber;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
-use Conduction\CommonGroundBundle\Service\PtcService;
+use Conduction\CommonGroundBundle\Service\VsbeService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-class PtcSubscriber implements EventSubscriberInterface
+class VsbeSubscriber implements EventSubscriberInterface
 {
-    private $vrcService;
+    private $vsbeService;
 
-    public function __construct(PtcService $ptcService)
+    public function __construct(VsbeService $vsbeService)
     {
-        $this->ptcService = $ptcService;
+        $this->vsbeService = $vsbeService;
     }
 
     public static function getSubscribedEvents()
@@ -40,15 +40,6 @@ class PtcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function resource(CommongroundUpdateEvent $event)
     {
-        // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
-        if ($event->getResource()['@type'] != 'ProcessType') {
-            return;
-        }
-
-        $resource = $this->ptcService->extendProcess($event->getResource());
-        $event->setResource($resource);
-
         return $event;
     }
 
@@ -92,13 +83,12 @@ class PtcSubscriber implements EventSubscriberInterface
     public function updated(CommongroundUpdateEvent $event)
     {
         // Lets make sure we only triger on requests resources
-        /* @todo lets also check for a vrc component */
         $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
             return;
         }
 
-        $resource = $this->ptcService->extendProcess($event->getResource());
+        $resource = $this->vsbeService->onUpdated($event->getResource());
         $event->setResource($resource);
 
         return $event;
@@ -107,18 +97,25 @@ class PtcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function create(CommongroundUpdateEvent $event)
     {
+        // Lets make sure we only triger on requests resources
+        $resource = $event->getResource();
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
+            return;
+        }
+
         return $event;
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function created(CommongroundUpdateEvent $event)
     {
+        // Lets make sure we only triger on requests resources
         $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'ProcessType') {
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
             return;
         }
 
-        $resource = $this->ptcService->extendProcess($event->getResource());
+        $resource = $this->vsbeService->onCreated($event->getResource());
         $event->setResource($resource);
 
         return $event;

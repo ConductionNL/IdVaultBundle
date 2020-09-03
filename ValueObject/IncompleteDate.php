@@ -12,6 +12,10 @@ namespace Conduction\CommonGroundBundle\ValueObject;
 
 class IncompleteDate
 {
+    public $day;
+    public $month;
+    public $year;
+
     /**
      * @param int $day
      * @param int $month
@@ -69,5 +73,15 @@ class IncompleteDate
     public function getDate()
     {
         return sprintf('%04u-%02u-%02u', $this->getYear(), $this->getMonth(), $this->getDay());
+    }
+
+    public function __toString()
+    {
+        return sprintf('%04u-%02u-%02u', $this->getYear(), $this->getMonth(), $this->getDay());
+    }
+
+    public function __serialize()
+    {
+        return ['year'=>$this->getYear(), 'month'=>$this->getMonth(), 'day'=>$this->getDay()];
     }
 }

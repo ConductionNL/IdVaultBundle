@@ -22,112 +22,229 @@ class PtcService
     }
 
     /*
-     * Validates a resource with optional commonground and component specific logic
+     * Get al the properties associatied with an specific procces
      *
      * @param array $resource The resource before enrichment
      * @param array The resource afther enrichment
      */
-    public function onResource(?array $resource)
+    public function getProperties($proces)
     {
-        return $this->extendProcess($resource);
+        // If we get an string instead of an array we need to turn it into a commonground object
+        if (is_string($proces)) {
+            $proces = $this->commonGroundService->getResource($proces);
+        }
+
+        // lets setup the array
+        $properties = [];
+
+        // By now the procces should be an array
+        if (!is_array($proces)) {
+            return $properties;
+        }
+
+        // Lets make sure that we have the data we need
+        if (!in_array('stages', $proces)) {
+            return $properties;
+        }
+
+        // Lets turn the properties into a indexed array by name
+        foreach ($proces['stages'] as $stage) {
+            if (!in_array('sections', $stage)) {
+                continue;
+            }
+
+            foreach ($stage['sections'] as $section) {
+                if (!in_array('properties', $section)) {
+                    continue;
+                }
+
+                foreach ($section['properties'] as $property) {
+                    $property = $this->commonGroundService->getResource($property);
+                    $properties[$property['name']] = $property;
+                }
+            }
+        }
+
+        return $properties;
     }
 
     /*
-     * Validates a resource with optional commonground and component specific logic
+     * get a single property on name for a procces
      *
      * @param array $resource The resource before enrichment
      * @param array The resource afther enrichment
      */
-    public function onList(?array $resource)
+    public function getProperty($proces, string $name)
     {
-        return $this->extendProcess($resource);
+        $properties = $this->getProperties($proces);
+
+        // Lets check if the property exists
+        if (!array_key_exists($name, $properties)) {
+            return false;
+        }
+
+        return $properties[$name];
     }
 
     /*
-     * Validates a resource with optional commonground and component specific logic
+     * This function fills a procces with all the requered data in order to render it
      *
      * @param array $resource The resource before enrichment
      * @param array The resource afther enrichment
      */
-    public function onSave(?array $resource)
+    public function extendProcess(?array $procces, array $request = null)
     {
-        return $this->extendProcess($resource);
+        $procces['valid'] = true;
+        foreach ($procces['stages'] as $stageKey => $stage) {
+            $procces['stages'][$stageKey]['valid'] = true;
+            if (key_exists('conditions', $stage)) {
+                $procces['stages'][$stageKey]['show'] = $this->checkConditions($stage['conditions'], $request);
+            }
+
+            foreach ($stage['sections'] as $sectionKey => $section) {
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
+                if (key_exists('conditions', $section)) {
+                    $procces['stages'][$stageKey]['sections'][$sectionKey]['show'] = $this->checkConditions($section['conditions'], $request);
+                }
+
+                foreach ($section['properties'] as $propertyKey => $property) {
+                    $property = $this->commonGroundService->getResource($property);
+
+                    // Idf a request has ben suplied
+                    if ($request) {
+                        // Lets validate
+                        $result = $this->vrcService->checkProperty($request, $property);
+                        // Set the results
+                        $property['value'] = $result['value'];
+                        $property['valid'] = $result['valid'];
+                        $property['messages'] = $result['messages'];
+
+                        // Set section on invalid if a single property is invalid
+                        if (!$property['valid']) {
+                            $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+                        }
+                    } else {
+                        $property['value'] = null;
+                        $property['valid'] = false;
+                        $property['message'] = null;
+                    }
+                    unset($property['requestType']);
+                    $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'][$property['@id']] = $property;
+
+                    // Set section on invalid if a single section is invallid
+                    if (!$property['valid']) {
+                        $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = false;
+                    }
+                }
+                // Set stage on invalid if a single section is invallid
+                if (!$procces['stages'][$stageKey]['sections'][$sectionKey]['valid']) {
+                    $procces['stages'][$stageKey]['valid'] = false;
+                }
+            }
+            // Set procces on invalid if a single section is invallid
+            if (!$procces['stages'][$stageKey]['valid']) {
+                $procces['valid'] = false;
+            }
+        }
+
+        return $procces;
     }
 
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onSaved(?array $resource)
+    public function checkConditions($conditions, array $object): bool
     {
-        return $this->extendProcess($resource);
+        $results = [];
+        foreach ($conditions as $condition) {
+            $property = explode('.', $condition['property']);
+            $value = $this->recursiveGetValue($property, $object);
+
+            if (substr($condition->getValue(), 0, 14) != 'resourceValue:') {
+                $targetValue = $condition['value'];
+            } else {
+                $targetValue = $this->recursiveGetValue(explode('.', substr($condition['value'], 14)), $object);
+            }
+
+            switch ($condition->getOperation()) {
+                case '<=':
+                    if ($value <= $targetValue) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '>=':
+                    if ($value >= $targetValue) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '<':
+                    if ($value < $targetValue) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '>':
+                    if ($value > $targetValue) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '<>':
+                    if ($value != $targetValue) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case '!=':
+                    if ($value != $targetValue) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                case 'exists':
+                    if ($value) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+                default:
+                    if ($value == $targetValue) {
+                        $results[] = true;
+                    } else {
+                        $results[] = false;
+                    }
+                    break;
+            }
+        }
+        foreach ($results as $result) {
+            if (!$result) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onDelete(?array $resource)
+    public function recursiveGetValue(array $property, array $resource)
     {
-        return $this->extendProcess($resource);
-    }
+        $sub = array_shift($property);
+        $value = null;
+        if (
+            key_exists($sub, $resource) &&
+            is_array($resource[$sub])
+        ) {
+            $value = $this->recursiveGetValue($property, $resource[$sub]);
+        } elseif (key_exists($sub, $resource)) {
+            $value = $resource[$sub];
+        }
 
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onDeleted(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onUpdate(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onUpdated(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Validates a resource with optional commonground and component specific logic
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onCreate(?array $resource)
-    {
-        return $this->extendProcess($resource);
-    }
-
-    /*
-     * Aditional logic triggerd afther a Request has been newly created
-     *
-     * @param array $resource The resource before enrichment
-     * @param array The resource afther enrichment
-     */
-    public function onCreated(?array $resource)
-    {
-        return $this->extendProcess($resource);
+        return $value;
     }
 }
