@@ -269,7 +269,9 @@ class VrcService
 
             if (
                 array_key_exists('iri', $property) &&
-                $property['format'] == 'uri' &&
+                (
+                    $property['format'] == 'uri' ||
+                    $property['format'] == 'url') &&
                 $property['iri'] == 'pdc/offer' &&
                 $component = explode('/', $property['iri'])
             ) { //count($component) == 2
