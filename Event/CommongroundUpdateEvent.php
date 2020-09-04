@@ -14,10 +14,12 @@ class CommongroundUpdateEvent extends Event
     public const NAME = 'commonground.update';
 
     protected $resource;
+    protected $component;
 
-    public function __construct(?array $resource)
+    public function __construct(?array $resource, $component = false)
     {
         $this->resource = $resource;
+        $this->component = $component;
     }
 
     public function setResource(?array $resource)
@@ -30,5 +32,17 @@ class CommongroundUpdateEvent extends Event
     public function getResource()
     {
         return $this->resource;
+    }
+
+    public function setComponent(?array $component)
+    {
+        $this->component = $component;
+
+        return $this;
+    }
+
+    public function getComponent()
+    {
+        return $this->component;
     }
 }
