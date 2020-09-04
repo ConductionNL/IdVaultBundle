@@ -82,6 +82,7 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
+        $this->vrcService->createCommongroundResources($resource);
         $this->vrcService->clearDependencies($resource);
         $event->setResource($resource);
 
@@ -97,7 +98,6 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->vrcService->createCommongroundResources($resource);
         $this->vrcService->checkEvents($resource);
         $this->vrcService->checkOffers($resource);
         $event->setResource($resource);
@@ -116,6 +116,7 @@ class VrcSubscriber implements EventSubscriberInterface
         }
 
         $this->vrcService->clearDependencies($resource);
+        $this->vrcService->createCommongroundResources($resource);
         $event->setResource($resource);
 
         return $event;
@@ -124,13 +125,13 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function created(CommongroundUpdateEvent $event)
     {
+
         $resource = $event->getResource();
 
         if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
             return;
         }
 
-        $this->vrcService->createCommongroundResources($resource);
         $this->vrcService->checkEvents($resource);
         $this->vrcService->checkOffers($resource);
 

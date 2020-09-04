@@ -43,6 +43,12 @@ class IrcSubscriber implements EventSubscriberInterface
     public function create(CommongroundUpdateEvent $event){
         $resource = $event->getResource();
 
+        if($event->getComponent() != 'irc'){
+            false;
+        }
+
+        $event->setResource($this->ircService->scanResource($resource));
+
         return $event;
     }
 }
