@@ -88,17 +88,17 @@ class VrcService
             // lets check if the component is a commonground resource
             if (is_array($value) && array_key_exists('iri', $property) && $property['format'] == 'url' && $component = explode('/', $property['iri'])) {
                 //&& count($component) == 2
-
                 // Lets support arrays
                 if ($property['type'] == 'array') {
                     foreach ($value as $propertyKey => $propertyValue) {
-                        $request['properties'][$key][$propertyKey] = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
+                        $request['properties'][$key][$propertyKey] = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]])['@id'];
                     }
                 } else {
-                    $request['properties'][$key] = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]]);
+                    $request['properties'][$key] = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]])['@id'];
                 }
             }
         }
+        return $request;
     }
 
     /*
