@@ -91,10 +91,16 @@ class VrcService
                 // Lets support arrays
                 if ($property['type'] == 'array') {
                     foreach ($value as $propertyKey => $propertyValue) {
-                        $request['properties'][$key][$propertyKey] = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]])['@id'];
+                        $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
+                        if(is_array($createdResource) && key_exists('@id', $createdResource)){
+                            $request['properties'][$key][$propertyKey] = $createdResource['@id'];
+                        }
                     }
                 } else {
-                    $request['properties'][$key] = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]])['@id'];
+                    $createdResource = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]])['@id'];
+                    if(is_array($createdResource) && key_exists('@id', $createdResource)){
+                        $request['properties'][$key] = $createdResource['@id'];
+                    }
                 }
             }
         }
