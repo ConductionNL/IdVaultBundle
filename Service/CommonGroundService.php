@@ -410,7 +410,7 @@ class CommonGroundService
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
-            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])){
+            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
@@ -521,7 +521,7 @@ class CommonGroundService
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
-            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])){
+            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
@@ -624,7 +624,7 @@ class CommonGroundService
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
-            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])){
+            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
                 $url = $componentUrl;
                 $component = $this->getComponent($url['component']);
                 if (array_key_exists('accept', $url)) {
