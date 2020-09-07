@@ -104,7 +104,7 @@ class PtcService
             foreach ($stage['sections'] as $sectionKey => $section) {
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
-                if (key_exists('conditions', $section)) {
+                if (key_exists('conditions', $section) && is_array($request)) {
                     $procces['stages'][$stageKey]['sections'][$sectionKey]['show'] = $this->checkConditions($section['conditions'], $request);
                 }
 
