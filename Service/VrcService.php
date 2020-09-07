@@ -20,8 +20,7 @@ class VrcService
         CommonGroundService $commonGroundService,
         FlashBagInterface $flash,
         CamundaService $camundaService
-    )
-    {
+    ) {
         $this->commonGroundService = $commonGroundService;
         $this->flash = $flash;
         $this->camundaService = $camundaService;
@@ -68,6 +67,32 @@ class VrcService
         return $request;
     }
 
+    /**
+     * This function checks if a subresource only contains empty values.
+     *
+     * @param $value mixed The subresource to be checked
+     *
+     * @return bool If the subresource contains values
+     */
+    public function checkIfEmpty($value)
+    {
+        if (is_array($value)) {
+            $booleans = [];
+            foreach ($value as $sub) {
+                $booleans[] = $this->checkIfEmpty($sub);
+            }
+            if (in_array(false, $booleans)) {
+                return false;
+            } else {
+                return true;
+            }
+        } elseif ($value !== null && $value !== '') {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     /*
      * This function translates nested objects on a request to commonground resources
      *
@@ -86,19 +111,35 @@ class VrcService
             }
 
             // lets check if the component is a commonground resource
-            if (is_array($value) && array_key_exists('iri', $property) && $property['format'] == 'url' && $component = explode('/', $property['iri'])) {
+            if (is_array($value) && array_key_exists('iri', $property) && ($property['format'] == 'url' || $property['format'] == 'uri') && $component = explode('/', $property['iri'])) {
                 //&& count($component) == 2
 
                 // Lets support arrays
                 if ($property['type'] == 'array') {
                     foreach ($value as $propertyKey => $propertyValue) {
-                        $request['properties'][$key][$propertyKey] = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
+                        if ($this->checkIfEmpty($propertyValue)) {
+                            unset($request['properties'][$key][$propertyKey]);
+                            break;
+                        }
+                        $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
+                        if (is_array($createdResource) && key_exists('@id', $createdResource)) {
+                            $request['properties'][$key][$propertyKey] = $createdResource['@id'];
+                        }
                     }
                 } else {
-                    $request['properties'][$key] = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]]);
+                    if ($this->checkIfEmpty($value)) {
+                        unset($request['properties'][$key]);
+                    } else {
+                        $createdResource = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]]);
+                        if (is_array($createdResource) && key_exists('@id', $createdResource)) {
+                            $request['properties'][$key] = $createdResource['@id'];
+                        }
+                    }
                 }
             }
         }
+
+        return $request;
     }
 
     /*
@@ -271,7 +312,8 @@ class VrcService
                 array_key_exists('iri', $property) &&
                 (
                     $property['format'] == 'uri' ||
-                    $property['format'] == 'url') &&
+                    $property['format'] == 'url'
+                ) &&
                 $property['iri'] == 'pdc/offer' &&
                 $component = explode('/', $property['iri'])
             ) { //count($component) == 2

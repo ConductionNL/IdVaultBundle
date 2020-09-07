@@ -14,8 +14,7 @@ class NotificationService
 
     public function __construct(
         CommonGroundService $commonGroundService
-    )
-    {
+    ) {
         $this->commonGroundService = $commonGroundService;
     }
 

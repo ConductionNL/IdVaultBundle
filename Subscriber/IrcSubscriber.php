@@ -29,7 +29,8 @@ class IrcSubscriber implements EventSubscriberInterface
     {
         // Lets make sure that we are dealing with a Request resource from the vrc
         $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Assent') {
+        $url = $event->getUrl();
+        if (!$url || !is_array($url) || $url['component'] != 'irc' || $url['type'] != 'assents') {
             return;
         }
 
@@ -40,8 +41,16 @@ class IrcSubscriber implements EventSubscriberInterface
 
         return $event;
     }
-    public function create(CommongroundUpdateEvent $event){
+
+    public function create(CommongroundUpdateEvent $event)
+    {
         $resource = $event->getResource();
+        $url = $event->getUrl();
+        if (!$url || !is_array($url) || $url['component'] != 'irc' || $url['type'] != 'assents') {
+            return false;
+        }
+
+        $event->setResource($this->ircService->scanResource($resource));
 
         return $event;
     }
