@@ -27,6 +27,7 @@ class IrcService
             $resource['contact'] = $contact['@id'];
         }
 
+
         // Lets see if we need to create a contact for the requester
 
         if (array_key_exists('requester', $resource) && is_array($resource['requester']) && !array_key_exists('@id', $resource['requester'])) {

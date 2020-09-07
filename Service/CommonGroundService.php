@@ -428,6 +428,7 @@ class CommonGroundService
                 $event,
                 CommonGroundEvents::UPDATE
             );
+            $resource = $event->getResource();
         }
 
         $url = $this->cleanUrl($url, $resource, $autowire);
@@ -538,6 +539,7 @@ class CommonGroundService
                 $event,
                 CommonGroundEvents::CREATE
             );
+            $resource = $event->getResource();
         }
 
         $url = $this->cleanUrl($url, $resource, $autowire);
