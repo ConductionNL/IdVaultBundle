@@ -24,20 +24,20 @@ class IrcService
         // Lets see if we need to create a contact for the contact
         if (array_key_exists('contact', $resource) && !array_key_exists('@id', $resource['contact'])) {
             $contact = $this->commonGroundService->saveResource($resource['contact'], ['component'=>'cc', 'type'=>'people']);
-            if(is_array($contact) && key_exists('@id', $contact)){
+            if (is_array($contact) && key_exists('@id', $contact)) {
                 $resource['contact'] = $contact['@id'];
             }
         }
-
 
         // Lets see if we need to create a contact for the requester
 
         if (array_key_exists('requester', $resource) && is_array($resource['requester']) && !array_key_exists('@id', $resource['requester'])) {
             $contact = $this->commonGroundService->saveResource($resource['requester'], ['component'=>'cc', 'type'=>'people']);
-            if(is_array($contact) && key_exists('@id', $contact)){
+            if (is_array($contact) && key_exists('@id', $contact)) {
                 $resource['requester'] = $contact['@id'];
             }
         }
+
         return $resource;
     }
 }

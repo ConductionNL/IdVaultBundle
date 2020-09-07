@@ -41,10 +41,12 @@ class IrcSubscriber implements EventSubscriberInterface
 
         return $event;
     }
-    public function create(CommongroundUpdateEvent $event){
+
+    public function create(CommongroundUpdateEvent $event)
+    {
         $resource = $event->getResource();
         $url = $event->getUrl();
-        if(!$url || !is_array($url) || $url['component'] != 'irc' || $url['type'] != 'assents'){
+        if (!$url || !is_array($url) || $url['component'] != 'irc' || $url['type'] != 'assents') {
             return false;
         }
 

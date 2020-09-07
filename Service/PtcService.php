@@ -194,7 +194,7 @@ class PtcService
                     }
                     break;
                 case '<>':
-                    if ($value <> $targetValue) {
+                    if ($value != $targetValue) {
                         $results[] = true;
                     } else {
                         $results[] = false;
