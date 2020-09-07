@@ -68,6 +68,29 @@ class VrcService
         return $request;
     }
 
+    /**
+     * This function checks if a subresource only contains empty values
+     * @param $value mixed The subresource to be checked
+     * @return bool If the subresource contains values
+     */
+    public function checkIfEmpty($value){
+        if(is_array($value)){
+            $booleans = [];
+            foreach($value as $sub){
+                $booleans[] = $this->checkIfEmpty($sub);
+            }
+            if(in_array(false, $booleans)){
+                return false;
+            } else {
+                return true;
+            }
+        } elseif($value !== null && $value !== ""){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
     /*
      * This function translates nested objects on a request to commonground resources
      *
@@ -88,19 +111,30 @@ class VrcService
             // lets check if the component is a commonground resource
             if (is_array($value) && array_key_exists('iri', $property) && ($property['format'] == 'url' || $property['format'] == 'uri') && $component = explode('/', $property['iri'])) {
                 //&& count($component) == 2
+
                 // Lets support arrays
                 if ($property['type'] == 'array') {
                     foreach ($value as $propertyKey => $propertyValue) {
+
+                        if($this->checkIfEmpty($propertyValue)){
+                            unset($request['properties'][$key][$propertyKey]);
+                            break;
+                        }
                         $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
                         if(is_array($createdResource) && key_exists('@id', $createdResource)){
                             $request['properties'][$key][$propertyKey] = $createdResource['@id'];
                         }
                     }
                 } else {
-                    $createdResource = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]])['@id'];
-                    if(is_array($createdResource) && key_exists('@id', $createdResource)){
-                        $request['properties'][$key] = $createdResource['@id'];
+                    if($this->checkIfEmpty($value)){
+                        unset($request['properties'][$key]);
+                    }else{
+                        $createdResource = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]]);
+                        if(is_array($createdResource) && key_exists('@id', $createdResource)){
+                            $request['properties'][$key] = $createdResource['@id'];
+                        }
                     }
+
                 }
             }
         }

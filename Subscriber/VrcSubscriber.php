@@ -80,8 +80,6 @@ class VrcSubscriber implements EventSubscriberInterface
         $url = $event->getUrl();
 
         if(!$url || !is_array($url) || $url['component'] != 'vrc' || $url['type'] != 'requests'){
-            var_dump($resource);
-            var_dump($url);
             return;
         }
 
