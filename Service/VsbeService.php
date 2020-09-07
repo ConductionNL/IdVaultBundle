@@ -14,8 +14,7 @@ class VsbeService
 
     public function __construct(
         CommonGroundService $commonGroundService
-    )
-    {
+    ) {
         $this->commonGroundService = $commonGroundService;
     }
 
