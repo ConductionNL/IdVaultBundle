@@ -19,16 +19,18 @@ class IrcSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            CommonGroundEvents::SAVED => 'saved',
+            CommonGroundEvents::UPDATE => 'update',
+            CommonGroundEvents::CREATE => 'create',
         ];
     }
 
     // Our resource might reqoure aditional resources to be created, so lets look into that
-    public function saved(CommongroundUpdateEvent $event)
+    public function update(CommongroundUpdateEvent $event)
     {
         // Lets make sure that we are dealing with a Request resource from the vrc
         $resource = $event->getResource();
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Assent') {
+        $url = $event->getUrl();
+        if (!$url || !is_array($url) || $url['component'] != 'irc' || $url['type'] != 'assents') {
             return;
         }
 
@@ -36,6 +38,19 @@ class IrcSubscriber implements EventSubscriberInterface
         $resource = $event->getResource();
         $resource = $this->ircService->scanResource($resource);
         $event->setResource($resource);
+
+        return $event;
+    }
+
+    public function create(CommongroundUpdateEvent $event)
+    {
+        $resource = $event->getResource();
+        $url = $event->getUrl();
+        if (!$url || !is_array($url) || $url['component'] != 'irc' || $url['type'] != 'assents') {
+            return false;
+        }
+
+        $event->setResource($this->ircService->scanResource($resource));
 
         return $event;
     }

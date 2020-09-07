@@ -410,6 +410,12 @@ class CommonGroundService
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
+            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
             } else {
                 $component = [];
             }
@@ -417,11 +423,12 @@ class CommonGroundService
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
-            $event = new CommongroundUpdateEvent($resource, $component);
+            $event = new CommongroundUpdateEvent($resource, $component, $url);
             $this->eventDispatcher->dispatch(
                 $event,
                 CommonGroundEvents::UPDATE
             );
+            $resource = $event->getResource();
         }
 
         $url = $this->cleanUrl($url, $resource, $autowire);
@@ -490,7 +497,7 @@ class CommonGroundService
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
-            $event = new CommongroundUpdateEvent($response);
+            $event = new CommongroundUpdateEvent($response, $component);
             $this->eventDispatcher->dispatch(
                 $event,
                 CommonGroundEvents::UPDATED
@@ -514,6 +521,12 @@ class CommonGroundService
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
+            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
             } else {
                 $component = [];
             }
@@ -521,11 +534,12 @@ class CommonGroundService
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
-            $event = new CommongroundUpdateEvent($resource, $component);
+            $event = new CommongroundUpdateEvent($resource, $component, $url);
             $this->eventDispatcher->dispatch(
                 $event,
                 CommonGroundEvents::CREATE
             );
+            $resource = $event->getResource();
         }
 
         $url = $this->cleanUrl($url, $resource, $autowire);
@@ -586,7 +600,7 @@ class CommonGroundService
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
-            $event = new CommongroundUpdateEvent($response);
+            $event = new CommongroundUpdateEvent($response, $component);
             $this->eventDispatcher->dispatch(
                 $event,
                 CommonGroundEvents::CREATED
@@ -610,6 +624,12 @@ class CommonGroundService
                 if (array_key_exists('accept', $url)) {
                     $component['accept'] = $url['accept'];
                 }
+            } elseif ($url == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
+                $url = $componentUrl;
+                $component = $this->getComponent($url['component']);
+                if (array_key_exists('accept', $url)) {
+                    $component['accept'] = $url['accept'];
+                }
             } else {
                 $component = [];
             }
@@ -617,7 +637,7 @@ class CommonGroundService
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
-            $event = new CommongroundUpdateEvent($resource, $component);
+            $event = new CommongroundUpdateEvent($resource, $component, $url);
             $this->eventDispatcher->dispatch(
                 $event,
                 CommonGroundEvents::DELETE

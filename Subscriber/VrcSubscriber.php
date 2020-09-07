@@ -77,12 +77,14 @@ class VrcSubscriber implements EventSubscriberInterface
     public function update(CommongroundUpdateEvent $event)
     {
         $resource = $event->getResource();
+        $url = $event->getUrl();
 
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
+        if (!$url || !is_array($url) || $url['component'] != 'vrc' || $url['type'] != 'requests') {
             return;
         }
 
-        $this->vrcService->clearDependencies($resource);
+        $resource = $this->vrcService->createCommongroundResources($resource);
+//        $this->vrcService->clearDependencies($resource);
         $event->setResource($resource);
 
         return $event;
@@ -97,7 +99,6 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->vrcService->createCommongroundResources($resource);
         $this->vrcService->checkEvents($resource);
         $this->vrcService->checkOffers($resource);
         $event->setResource($resource);
@@ -110,12 +111,13 @@ class VrcSubscriber implements EventSubscriberInterface
     {
         // Lets make sure we only triger on requests resources
         $resource = $event->getResource();
-
-        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
+        $url = $event->getUrl();
+        if (!$url || !is_array($url) || $url['component'] != 'vrc' || $url['type'] != 'requests') {
             return;
         }
 
-        $this->vrcService->clearDependencies($resource);
+//        $this->vrcService->clearDependencies($resource);
+        $this->vrcService->createCommongroundResources($resource);
         $event->setResource($resource);
 
         return $event;
@@ -130,7 +132,6 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->vrcService->createCommongroundResources($resource);
         $this->vrcService->checkEvents($resource);
         $this->vrcService->checkOffers($resource);
 
