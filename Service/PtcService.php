@@ -166,7 +166,7 @@ class PtcService
                 $targetValue = $this->recursiveGetValue(explode('.', substr($condition['value'], 14)), $object);
             }
 
-            switch ($condition->getOperation()) {
+            switch ($condition['operation']) {
                 case '<=':
                     if ($value <= $targetValue) {
                         $results[] = true;
