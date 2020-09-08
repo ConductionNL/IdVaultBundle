@@ -110,6 +110,14 @@ class CommongroundProvider implements UserProviderInterface
                 $user['roles'] = [];
             }
             array_push($user['roles'], 'scope.chin.checkins.read');
+        } elseif ($type == 'gmail') {
+            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'gmail'])['hydra:member'];
+            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $password, 'provider.name' => $provider[0]['name']])['hydra:member'];
+            $user = $this->commonGroundService->getResource($token[0]['user']['@id']);
+            if (!isset($user['roles'])) {
+                $user['roles'] = [];
+            }
+            array_push($user['roles'], 'scope.chin.checkins.read');
         }
 
         if (!isset($user['roles'])) {
@@ -141,7 +149,11 @@ class CommongroundProvider implements UserProviderInterface
             case 'facebook':
                 $person = $this->commonGroundService->getResource($user['person']);
 
-                return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'idin');
+                return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'facebook');
+            case 'gmail':
+                $person = $this->commonGroundService->getResource($user['person']);
+
+                return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'gmail');
             default:
                 throw new UsernameNotFoundException(
                     sprintf('User "%s" does not exist.', $username)
