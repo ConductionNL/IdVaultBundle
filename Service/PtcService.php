@@ -100,6 +100,7 @@ class PtcService
             if (key_exists('conditions', $stage) && is_array($request)) {
                 $procces['stages'][$stageKey]['show'] = $this->checkConditions($stage['conditions'], $request);
             }
+            $procces['stages'][$stageKey]['show'] = true;
 
             foreach ($stage['sections'] as $sectionKey => $section) {
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
@@ -107,6 +108,7 @@ class PtcService
                 if (key_exists('conditions', $section) && is_array($request)) {
                     $procces['stages'][$stageKey]['sections'][$sectionKey]['show'] = $this->checkConditions($section['conditions'], $request);
                 }
+                $procces['stages'][$stageKey]['sections'][$sectionKey]['show'] = true;
 
                 foreach ($section['properties'] as $propertyKey => $property) {
                     $property = $this->commonGroundService->getResource($property);
@@ -158,7 +160,7 @@ class PtcService
             $property = explode('.', $condition['property']);
             $value = $this->recursiveGetValue($property, $object);
 
-            if (substr($condition->getValue(), 0, 14) != 'resourceValue:') {
+            if (substr($condition['value'], 0, 14) != 'resourceValue:') {
                 $targetValue = $condition['value'];
             } else {
                 $targetValue = $this->recursiveGetValue(explode('.', substr($condition['value'], 14)), $object);
