@@ -99,16 +99,18 @@ class PtcService
             $procces['stages'][$stageKey]['valid'] = true;
             if (key_exists('conditions', $stage) && is_array($request)) {
                 $procces['stages'][$stageKey]['show'] = $this->checkConditions($stage['conditions'], $request);
+            } else {
+                $procces['stages'][$stageKey]['show'] = true;
             }
-            $procces['stages'][$stageKey]['show'] = true;
 
             foreach ($stage['sections'] as $sectionKey => $section) {
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['propertiesForms'] = [];
                 $procces['stages'][$stageKey]['sections'][$sectionKey]['valid'] = true;
                 if (key_exists('conditions', $section) && is_array($request)) {
                     $procces['stages'][$stageKey]['sections'][$sectionKey]['show'] = $this->checkConditions($section['conditions'], $request);
+                } else {
+                    $procces['stages'][$stageKey]['sections'][$sectionKey]['show'] = true;
                 }
-                $procces['stages'][$stageKey]['sections'][$sectionKey]['show'] = true;
 
                 foreach ($section['properties'] as $propertyKey => $property) {
                     $property = $this->commonGroundService->getResource($property);
@@ -217,6 +219,7 @@ class PtcService
                     }
                     break;
                 default:
+                    var_dump($value == $targetValue);
                     if ($value == $targetValue) {
                         $results[] = true;
                     } else {
