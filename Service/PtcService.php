@@ -219,7 +219,6 @@ class PtcService
                     }
                     break;
                 default:
-                    var_dump($value == $targetValue);
                     if ($value == $targetValue) {
                         $results[] = true;
                     } else {
