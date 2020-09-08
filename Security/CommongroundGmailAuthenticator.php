@@ -76,7 +76,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
             'client_secret'     => $provider['configuration']['secret'],
             'redirect_uri'      => $redirect,
             'code'              => $code,
-            'grant_type'        => 'authorization_code'
+            'grant_type'        => 'authorization_code',
         ];
 
         $client = new Client([
@@ -87,13 +87,13 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         ]);
 
         $response = $client->request('POST', '/token', [
-            'form_params' => $body,
-            'content_type' => 'application/x-www-form-urlencoded'
+            'form_params'  => $body,
+            'content_type' => 'application/x-www-form-urlencoded',
         ]);
 
         $accessToken = json_decode($response->getBody()->getContents(), true);
 
-        $json = base64_decode(explode('.',$accessToken['id_token'])[1]);
+        $json = base64_decode(explode('.', $accessToken['id_token'])[1]);
         $json = json_decode($json, true);
 
         $credentials = [
@@ -103,7 +103,6 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
             'familyName'    => $json['family_name'],
             'id'            => $json['sub'],
         ];
-
 
         if (isset($json['phoneNumber']['value'])) {
             $credentials['telephone'] = $json['phoneNumber']['value'];
@@ -130,7 +129,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
             $email['email'] = $credentials['email'];
             $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
 
-            if(isset($credentials['telephone'])){
+            if (isset($credentials['telephone'])) {
                 $telephone = [];
                 $telephone['name'] = $credentials['telephone'];
                 $telephone['telephone'] = $credentials['telephone'];
@@ -143,7 +142,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
             $person['givenName'] = $credentials['givenName'];
             $person['familyName'] = $credentials['familyName'];
             $person['emails'] = [$email['@id']];
-            if(isset($credentials['telephone'])){
+            if (isset($credentials['telephone'])) {
                 $person['telephones'] = [$telephone['@id']];
             }
             $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
