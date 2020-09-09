@@ -871,11 +871,16 @@ class CommonGroundService
         // Hydra Support
         elseif (array_key_exists('@type', $response) && $response['@type'] == 'ConstraintViolationList') {
             foreach ($response['violations'] as $violation) {
-                $this->flash->add('error', $violation['propertyPath'].' '.$this->translator->trans($violation['message']));
+                $this->flash->add('error', $violation['propertyPath'] . ' ' . $this->translator->trans($violation['message']));
             }
 
             return false;
-        } else {
+        }
+        elseif (array_key_exists('hydra:description', $response) ) {
+            $this->flash->add('error', $this->translator->trans($response['hydra:description']));
+            return false;
+        }
+        else {
             throw new HttpException($statusCode, $url.' returned: '.json_encode($response));
         }
 
