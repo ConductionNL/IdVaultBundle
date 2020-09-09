@@ -119,17 +119,17 @@ class VrcService
                     foreach ($value as $propertyKey => $propertyValue) {
                         if ($this->checkIfEmpty($propertyValue)) {
                             unset($request['properties'][$key][$propertyKey]);
-                            break;
-                        }
-                        $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
-                        if (is_array($createdResource) && key_exists('@id', $createdResource)) {
-                            $request['properties'][$key][$propertyKey] = $createdResource['@id'];
+                        } elseif(!$this->commonGroundService->isResource($propertyValue)){
+                            $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
+                            if (is_array($createdResource) && key_exists('@id', $createdResource)) {
+                                $request['properties'][$key][$propertyKey] = $createdResource['@id'];
+                            }
                         }
                     }
                 } else {
                     if ($this->checkIfEmpty($value)) {
                         unset($request['properties'][$key]);
-                    } else {
+                    } elseif(!$this->commonGroundService->isResource($value)) {
                         $createdResource = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]]);
                         if (is_array($createdResource) && key_exists('@id', $createdResource)) {
                             $request['properties'][$key] = $createdResource['@id'];
