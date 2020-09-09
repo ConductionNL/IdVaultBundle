@@ -160,9 +160,9 @@ class VrcService
         // Lets create a start date  for  this request
         // Oke we need to try to figure out  a date for this request
         if (array_key_exists('datum', $request['properties'])) {
-            $startDate = (new \DateTime(strtotime($request['properties']['datum'])));
+            $startDate = (new \DateTime($request['properties']['datum']));
         } elseif (array_key_exists('date', $request['properties'])) {
-            $startDate = (new \DateTime(strtotime($request['properties']['date'])));
+            $startDate = (new \DateTime($request['properties']['date']));
         } else {
             $startDate = new \DateTime();
         }
