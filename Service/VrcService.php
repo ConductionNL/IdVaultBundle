@@ -459,17 +459,14 @@ class VrcService
 
         $currentStage['orderNumber'] = null;
 
-        if (isset($property['properties']['stageNumber'])) {
-            var_dump($property['properties']);
-            exit;
-        }
-
         if (isset($request['currentStage'])) {
             if (filter_var($request['currentStage'], FILTER_VALIDATE_URL)) {
                 $currentStage = $this->commonGroundService->getResource($request['currentStage']);
             } else {
                 $currentStage = $this->commonGroundService->getResourceList(['component' => 'ptc', 'type' => 'stages'], ['name' => ucfirst($request['currentStage'])])['hydra:member'];
-                $currentStage = $currentStage[0];
+                if (isset($currentStage[0])) {
+                    $currentStage = $currentStage[0];
+                }
             }
         }
 
