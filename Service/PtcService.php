@@ -61,7 +61,6 @@ class PtcService
                 foreach ($section['properties'] as $property) {
                     $property = $this->commonGroundService->getResource($property);
                     $properties[$property['name']] = $property;
-
                 }
             }
         }

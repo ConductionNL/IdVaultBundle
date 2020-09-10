@@ -224,16 +224,16 @@ class CommonGroundService
 
         if (!$async) {
             $response = $this->client->request('GET', $url, [
-                'query'   => $query,
-                'headers' => $headers,
-                'auth'    => $auth,
+                'query'       => $query,
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         } else {
             $response = $this->client->requestAsync('GET', $url, [
-                'query'   => $query,
-                'headers' => $headers,
-                'auth'    => $auth,
+                'query'       => $query,
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         }
@@ -347,16 +347,16 @@ class CommonGroundService
 
         if (!$async) {
             $response = $this->client->request('GET', $url, [
-                'query'   => $query,
-                'headers' => $headers,
-                'auth'    => $auth,
+                'query'       => $query,
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         } else {
             $response = $this->client->requestAsync('GET', $url, [
-                'query'   => $query,
-                'headers' => $headers,
-                'auth'    => $auth,
+                'query'       => $query,
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         }
@@ -470,16 +470,16 @@ class CommonGroundService
 
         if (!$async) {
             $response = $this->client->request('PUT', $url, [
-                'body'    => json_encode($resource),
-                'headers' => $headers,
-                'auth'    => $auth,
+                'body'        => json_encode($resource),
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         } else {
             $response = $this->client->requestAsync('PUT', $url, [
-                'body'    => json_encode($resource),
-                'headers' => $headers,
-                'auth'    => $auth,
+                'body'        => json_encode($resource),
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         }
@@ -575,16 +575,16 @@ class CommonGroundService
 
         if (!$async) {
             $response = $this->client->request('POST', $url, [
-                'body'    => json_encode($resource),
-                'headers' => $headers,
-                'auth'    => $auth,
+                'body'        => json_encode($resource),
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         } else {
             $response = $this->client->requestAsync('POST', $url, [
-                'body'    => json_encode($resource),
-                'headers' => $headers,
-                'auth'    => $auth,
+                'body'        => json_encode($resource),
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         }
@@ -871,16 +871,15 @@ class CommonGroundService
         // Hydra Support
         elseif (array_key_exists('@type', $response) && $response['@type'] == 'ConstraintViolationList') {
             foreach ($response['violations'] as $violation) {
-                $this->flash->add('error', $violation['propertyPath'] . ' ' . $this->translator->trans($violation['message']));
+                $this->flash->add('error', $violation['propertyPath'].' '.$this->translator->trans($violation['message']));
             }
 
             return false;
-        }
-        elseif (array_key_exists('hydra:description', $response) ) {
+        } elseif (array_key_exists('hydra:description', $response)) {
             $this->flash->add('error', $this->translator->trans($response['hydra:description']));
+
             return false;
-        }
-        else {
+        } else {
             throw new HttpException($statusCode, $url.' returned: '.json_encode($response));
         }
 
