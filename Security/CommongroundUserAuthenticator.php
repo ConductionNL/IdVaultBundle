@@ -126,8 +126,8 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         }
 
         $url = $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
-        if($url == ''){
-            $url ='/';
+        if ($url == '') {
+            $url = '/';
         }
 
         return new RedirectResponse($url);
