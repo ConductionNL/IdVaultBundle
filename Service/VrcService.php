@@ -119,17 +119,17 @@ class VrcService
                     foreach ($value as $propertyKey => $propertyValue) {
                         if ($this->checkIfEmpty($propertyValue)) {
                             unset($request['properties'][$key][$propertyKey]);
-                        } elseif (is_array($propertyValue) || !$this->commonGroundService->isResource($propertyValue)) {
-                            $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
-                            if (is_array($createdResource) && key_exists('@id', $createdResource)) {
-                                $request['properties'][$key][$propertyKey] = $createdResource['@id'];
-                            }
+                            break;
+                        }
+                        $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
+                        if (is_array($createdResource) && key_exists('@id', $createdResource)) {
+                            $request['properties'][$key][$propertyKey] = $createdResource['@id'];
                         }
                     }
                 } else {
                     if ($this->checkIfEmpty($value)) {
                         unset($request['properties'][$key]);
-                    } elseif (is_array($value) || !$this->commonGroundService->isResource($value)) {
+                    } else {
                         $createdResource = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]]);
                         if (is_array($createdResource) && key_exists('@id', $createdResource)) {
                             $request['properties'][$key] = $createdResource['@id'];
@@ -160,9 +160,9 @@ class VrcService
         // Lets create a start date  for  this request
         // Oke we need to try to figure out  a date for this request
         if (array_key_exists('datum', $request['properties'])) {
-            $startDate = (new \DateTime($request['properties']['datum']));
+            $startDate = (new \DateTime(strtotime($request['properties']['datum'])));
         } elseif (array_key_exists('date', $request['properties'])) {
-            $startDate = (new \DateTime($request['properties']['date']));
+            $startDate = (new \DateTime(strtotime($request['properties']['date'])));
         } else {
             $startDate = new \DateTime();
         }
@@ -453,12 +453,34 @@ class VrcService
      * @param string $property The key of the property to checks
      * @return boolean Whether or not a property is valid to its requestTypes
      */
-    public function checkProperty(?array $request, $property)
+    public function checkProperty(?array $request, $property, $stageNumber)
     {
         $result = ['value'=>null, 'valid'=>true, 'messages'=>[]];
 
+        $currentStage['orderNumber'] = null;
+
+        if(isset($property['properties']['stageNumber'])){
+            var_dump($property['properties']);
+            die;
+        }
+
+        if (isset($request['currentStage'])){
+            if (filter_var($request['currentStage'], FILTER_VALIDATE_URL)) {
+                $currentStage = $this->commonGroundService->getResource($request['currentStage']);
+            }else{
+                $currentStage = $this->commonGroundService->getResourceList(['component' => 'ptc', 'type' => 'stages'],['name' => ucfirst($request['currentStage'])])['hydra:member'];
+                $currentStage = $currentStage[0];
+            }
+        }
+
         // Lets see if the property is requered and unset, in wich case we do not need to do more validation
-        if ((!array_key_exists($property['name'], $request['properties'])) && $property['required']) {
+        if ((!array_key_exists($property['name'], $request['properties'])) && $stageNumber >= $currentStage['orderNumber']) {
+            $result['messages'] = ['value is required'];
+            $result['valid'] = false;
+
+            return $result;
+        }
+        elseif ((!array_key_exists($property['name'], $request['properties'])) && $property['required']) {
             $result['messages'] = ['value is required'];
             $result['valid'] = false;
 
