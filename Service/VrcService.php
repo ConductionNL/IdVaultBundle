@@ -459,12 +459,12 @@ class VrcService
 
         $currentStage['orderNumber'] = null;
 
-        if (isset($request['currentStage'])){
+        if (isset($request['currentStage'])) {
             if (filter_var($request['currentStage'], FILTER_VALIDATE_URL)) {
                 $currentStage = $this->commonGroundService->getResource($request['currentStage']);
-            }else{
-                $currentStage = $this->commonGroundService->getResourceList(['component' => 'ptc', 'type' => 'stages'],['name' => ucfirst($request['currentStage'])])['hydra:member'];
-                if(isset($currentStage[0])){
+            } else {
+                $currentStage = $this->commonGroundService->getResourceList(['component' => 'ptc', 'type' => 'stages'], ['name' => ucfirst($request['currentStage'])])['hydra:member'];
+                if (isset($currentStage[0])) {
                     $currentStage = $currentStage[0];
                 }
             }
@@ -476,8 +476,7 @@ class VrcService
             $result['valid'] = false;
 
             return $result;
-        }
-        elseif ((!array_key_exists($property['name'], $request['properties'])) && $property['required']) {
+        } elseif ((!array_key_exists($property['name'], $request['properties'])) && $property['required']) {
             $result['messages'] = ['value is required'];
             $result['valid'] = false;
 
