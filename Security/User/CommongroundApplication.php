@@ -52,6 +52,7 @@ class CommongroundApplication implements UserInterface, EquatableInterface
     public function setName($name)
     {
         $this->name = $name;
+
         return $this->name;
     }
 
