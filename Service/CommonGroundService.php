@@ -208,6 +208,8 @@ class CommonGroundService
         $auth = false;
         $headers = $this->headers;
 
+        $query = $this->convertQuery($query);
+
         // Component specific congiguration
         if ($component && array_key_exists('accept', $component)) {
             $headers['Accept'] = $component['accept'];
@@ -330,6 +332,9 @@ class CommonGroundService
         $auth = false;
         $headers = $this->headers;
         $headers['X-NLX-Request-Subject-Identifier'] = $url;
+
+
+        $query = $this->convertQuery($query);
 
         // Component specific congiguration
         if ($component && array_key_exists('accept', $component)) {
@@ -1006,6 +1011,31 @@ class CommonGroundService
         }
 
         return $object;
+    }
+
+    /**
+     * Checks if the query is an array and converts it to a query string if that is the case.
+     *
+     * @param $query Mixed The query as passed on to the commonGroundService
+     * @return string The query converted to a string
+     */
+    private function convertQuery($query) : string {
+        if (is_array($query) && $query != []){
+            $queryString = '?';
+            $iterator = 0;
+            foreach($query as $parameter=>$value){
+                $queryString .= "$parameter=$value";
+
+                $iterator++;
+                if($iterator < count($query)){
+                    $queryString .= '&';
+                }
+            }
+            $query = $queryString;
+        } elseif ($query == []){
+            $query = "";
+        }
+        return $query;
     }
 
     /*
