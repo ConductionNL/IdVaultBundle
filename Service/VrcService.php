@@ -471,7 +471,7 @@ class VrcService
         }
 
         // Lets see if the property is requered and unset, in wich case we do not need to do more validation
-        if ((!array_key_exists($property['name'], $request['properties'])) && $stageNumber >= $currentStage['orderNumber']) {
+        if ((!array_key_exists($property['name'], $request['properties'])) && key_exists('orderNumber', $currentStage) && $stageNumber >= $currentStage['orderNumber']) {
             $result['messages'] = ['value is required'];
             $result['valid'] = false;
 
