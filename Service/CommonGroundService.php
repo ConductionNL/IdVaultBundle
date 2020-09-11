@@ -814,7 +814,7 @@ class CommonGroundService
     {
         try {
             return $this->getResource($url);
-        } catch (HttpException $e) {
+        } catch (\Throwable $e) {
             return false;
         }
     }
