@@ -6,6 +6,7 @@ namespace Conduction\CommonGroundBundle\Service;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
+use Conduction\CommonGroundBundle\Doctrine\ResultCollection;
 use GuzzleHttp\Client;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -242,6 +243,7 @@ class CommonGroundService
         $body = (string) $response->getBody()->getContents();
         $response = json_decode($body, true);
 
+
         // Fallback for non-json code
         if (!$response) {
             $response = $body;
@@ -269,6 +271,12 @@ class CommonGroundService
                 $response['results'][$key] = $this->enrichObject($value, $parsedUrl);
             }
         }
+
+        // Lets turn the whole thing into an object
+        $resultCollection = New ResultCollection();
+        $resultCollection->hydrate($response);
+        $resultCollection->setCommonGroundService($this);
+        $response = $resultCollection;
 
         $item->set($response);
         $item->expiresAt(new \DateTime('tomorrow'));
