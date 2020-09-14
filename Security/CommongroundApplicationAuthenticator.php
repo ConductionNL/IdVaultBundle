@@ -60,7 +60,7 @@ class CommongroundApplicationAuthenticator extends AbstractGuardAuthenticator
         //return $this->em->getRepository(CommongroundUser::class)
         //->findOneBy(['apiToken' => $apiToken]);
 
-        $user = new CommongroundApplication('Default Application', $apiToken, null, ['user']);
+        $user = new CommongroundApplication('Default Application', $apiToken, '', null, ['user']);
 
         return $user;
     }
