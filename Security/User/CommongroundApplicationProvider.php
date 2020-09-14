@@ -56,7 +56,7 @@ class CommongroundApplicationProvider implements UserProviderInterface
 
         // ...
 
-        return new CommongroundApplication('Default Application', $uuid, null, ['user']);
+        return new CommongroundApplication('Default Application', $uuid, '', null, ['user']);
         //}
 
         throw new UsernameNotFoundException(
