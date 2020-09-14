@@ -1067,6 +1067,15 @@ class CommonGroundService
             // If it is not we "gues" the endpoint (this is where we could force nlx)
             elseif ($this->params->get('app_internal') == 'true') {
                 $url = 'http://'.$url['component'].'.'.$this->params->get('app_env').'.svc.cluster.local'.$route;
+            } elseif (
+                $this->params->get('app_subpath_routing') &&
+                $this->params->get('app_subpath_routing') != 'false' &&
+                $this->params->get('app_env') == 'prod') {
+                $url = 'https://'.$this->params->get('app_domain').'/api/'.$this->params->get('app_major_version').'/'.$url['component'].$route;
+            } elseif (
+                $this->params->get('app_subpath_routing') &&
+                $this->params->get('app_subpath_routing') != 'false') {
+                $url = 'https://'.$this->params->get('app_env').'.'.$this->params->get('app_domain').'/api/'.$this->params->get('app_major_version').'/'.$url['component'].$route;
             } elseif ($this->params->get('app_env') == 'prod') {
                 $url = 'https://'.$url['component'].'.'.$this->params->get('app_domain').$route;
             } else {
@@ -1087,10 +1096,15 @@ class CommonGroundService
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
 
-            // e.g https://wrc.larping.eu/ becomes https://wrc.dev.larping.eu/
-            $host = explode('.', $parsedUrl['host']);
-            $subdomain = $host[0];
-            $url = str_replace($subdomain.'.', $subdomain.'.'.$this->params->get('app_env').'.', $url);
+            if (!$this->params->get('app_subpath_routing') && $this->params->get('app_subpath_routing') == 'false') {
+                // e.g https://wrc.larping.eu/ becomes https://wrc.dev.larping.eu/
+                $host = explode('.', $parsedUrl['host']);
+                $subdomain = $host[0];
+                $url = str_replace($subdomain.'.', $subdomain.'.'.$this->params->get('app_env').'.', $url);
+            } else {
+                $url = str_replace('https://', "https://{$this->params->get('app_env')}.", $url);
+            }
+            var_dump($url);
         }
 
         // Remove trailing slash
