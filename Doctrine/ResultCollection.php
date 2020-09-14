@@ -2,8 +2,29 @@
 
 namespace Conduction\CommonGroundBundle\Doctrine;
 
-use Doctrine\Common\Collections\Collection;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayIterator;
+use Doctrine\Common\Collections\Closure;
+use Doctrine\Common\Collections\Expr\ClosureExpressionVisitor;
+use const ARRAY_FILTER_USE_BOTH;
+use function array_filter;
+use function array_key_exists;
+use function array_keys;
+use function array_map;
+use function array_reverse;
+use function array_search;
+use function array_slice;
+use function array_values;
+use function count;
+use function current;
+use function end;
+use function in_array;
+use function key;
+use function next;
+use function reset;
+use function spl_object_hash;
+use function uasort;
 
 /**
  * An resource representing a result collection
@@ -17,7 +38,7 @@ use Conduction\CommonGroundBundle\Service\CommonGroundService;
  * @license EUPL <https://github.com/ConductionNL/productenendienstencatalogus/blob/master/LICENSE.md>
  **/
 
-class ResultCollection
+class ResultCollection implements Collection, Selectable
 {
     /**
      * An array containing the entries of this collection.
@@ -85,7 +106,7 @@ class ResultCollection
     }
 
     /**
-     *
+     * {@inheritDoc}
      */
     public function toArray()
     {
@@ -95,6 +116,47 @@ class ResultCollection
         return $result;
     }
 
+    /**
+     * {@inheritDoc}
+     */
+    public function first()
+    {
+        return reset($this->elements);
+    }
+
+    /**
+     * Creates a new instance from the specified elements.
+     *
+     * This method is provided for derived classes to specify how a new
+     * instance should be created when constructor semantics have changed.
+     *
+     * @param array $elements Elements.
+     *
+     * @return static
+     *
+     * @psalm-param array<TKey,T> $elements
+     * @psalm-return static<TKey,T>
+     */
+    protected function createFrom(array $elements)
+    {
+        return new static($elements);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function last()
+    {
+        return end($this->elements);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    public function key()
+    {
+        return key($this->elements);
+    }
     /**
      * @param  array The result of a get list function
      *
