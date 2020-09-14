@@ -1098,10 +1098,16 @@ class CommonGroundService
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
 
-            // e.g https://wrc.larping.eu/ becomes https://wrc.dev.larping.eu/
-            $host = explode('.', $parsedUrl['host']);
-            $subdomain = $host[0];
-            $url = str_replace($subdomain.'.', $subdomain.'.'.$this->params->get('app_env').'.', $url);
+            if (!$this->params->get('app_subpath_routing') && $this->params->get('app_subpath_routing') == 'false') {
+                // e.g https://wrc.larping.eu/ becomes https://wrc.dev.larping.eu/
+                $host = explode('.', $parsedUrl['host']);
+                $subdomain = $host[0];
+                $url = str_replace($subdomain.'.', $subdomain.'.'.$this->params->get('app_env').'.', $url);
+            }
+            else {
+                $url = str_replace('https://', "https://{$this->params->get('app_env')}.", $url);
+            }
+            var_dump($url);
         }
 
         // Remove trailing slash
