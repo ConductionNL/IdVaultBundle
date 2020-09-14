@@ -1068,14 +1068,14 @@ class CommonGroundService
             elseif ($this->params->get('app_internal') == 'true') {
                 $url = 'http://' . $url['component'] . '.' . $this->params->get('app_env') . '.svc.cluster.local' . $route;
             } elseif (
-                $this->params->get('app_subpath') &&
-                $this->params->get('app_subpath') != 'false' &&
+                $this->params->get('app_subpath_routing') &&
+                $this->params->get('app_subpath_routing') != 'false' &&
                 $this->params->get('app_env') == 'prod')
             {
                 $url = 'https://'.$this->params->get('app_domain').'/api/'.$this->params->get('app_major_version').'/'.$url['component'].$route;
             } elseif (
-                $this->params->get('app_subpath') &&
-                $this->params->get('app_subpath') != 'false')
+                $this->params->get('app_subpath_routing') &&
+                $this->params->get('app_subpath_routing') != 'false')
             {
                 $url = 'https://'.$this->params->get('app_env').'.'.$this->params->get('app_domain').'/api/'.$this->params->get('app_major_version').'/'.$url['component'].$route;
             } elseif ($this->params->get('app_env') == 'prod') {
