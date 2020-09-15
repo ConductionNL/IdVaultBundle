@@ -1104,7 +1104,6 @@ class CommonGroundService
             } else {
                 $url = str_replace('https://', "https://{$this->params->get('app_env')}.", $url);
             }
-            var_dump($url);
         }
 
         // Remove trailing slash
