@@ -135,8 +135,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
         if (!$token || count($token) < 1) {
-
-            if (isset($credentials['email'])){
+            if (isset($credentials['email'])) {
                 //create email
                 $email = [];
                 $email['name'] = $credentials['email'];
@@ -144,7 +143,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
                 $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
             }
 
-            if (isset($credentials['telephone'])){
+            if (isset($credentials['telephone'])) {
                 //create phoneNumber
                 $telephone = [];
                 $telephone['name'] = $credentials['telephone'];
