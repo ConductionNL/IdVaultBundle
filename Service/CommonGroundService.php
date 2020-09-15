@@ -1022,7 +1022,7 @@ class CommonGroundService
     private function convertQuery($query): string
     {
         if (is_array($query) && $query != []) {
-            $queryString = '?';
+            $queryString = '';
             $iterator = 0;
             foreach ($query as $parameter=>$value) {
                 $queryString .= "$parameter=$value";
