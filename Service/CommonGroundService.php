@@ -208,6 +208,8 @@ class CommonGroundService
         $auth = false;
         $headers = $this->headers;
 
+        $query = $this->convertQuery($query);
+
         // Component specific congiguration
         if ($component && array_key_exists('accept', $component)) {
             $headers['Accept'] = $component['accept'];
@@ -330,6 +332,8 @@ class CommonGroundService
         $auth = false;
         $headers = $this->headers;
         $headers['X-NLX-Request-Subject-Identifier'] = $url;
+
+        $query = $this->convertQuery($query);
 
         // Component specific congiguration
         if ($component && array_key_exists('accept', $component)) {
@@ -1008,6 +1012,34 @@ class CommonGroundService
         return $object;
     }
 
+    /**
+     * Checks if the query is an array and converts it to a query string if that is the case.
+     *
+     * @param $query Mixed The query as passed on to the commonGroundService
+     *
+     * @return string The query converted to a string
+     */
+    private function convertQuery($query): string
+    {
+        if (is_array($query) && $query != []) {
+            $queryString = '?';
+            $iterator = 0;
+            foreach ($query as $parameter=>$value) {
+                $queryString .= "$parameter=$value";
+
+                $iterator++;
+                if ($iterator < count($query)) {
+                    $queryString .= '&';
+                }
+            }
+            $query = $queryString;
+        } elseif ($query == []) {
+            $query = '';
+        }
+
+        return $query;
+    }
+
     /*
      * Get a single resource from a common ground componant
      */
@@ -1035,6 +1067,15 @@ class CommonGroundService
             // If it is not we "gues" the endpoint (this is where we could force nlx)
             elseif ($this->params->get('app_internal') == 'true') {
                 $url = 'http://'.$url['component'].'.'.$this->params->get('app_env').'.svc.cluster.local'.$route;
+            } elseif (
+                $this->params->get('app_subpath_routing') &&
+                $this->params->get('app_subpath_routing') != 'false' &&
+                $this->params->get('app_env') == 'prod') {
+                $url = 'https://'.$this->params->get('app_domain').'/api/'.$this->params->get('app_major_version').'/'.$url['component'].$route;
+            } elseif (
+                $this->params->get('app_subpath_routing') &&
+                $this->params->get('app_subpath_routing') != 'false') {
+                $url = 'https://'.$this->params->get('app_env').'.'.$this->params->get('app_domain').'/api/'.$this->params->get('app_major_version').'/'.$url['component'].$route;
             } elseif ($this->params->get('app_env') == 'prod') {
                 $url = 'https://'.$url['component'].'.'.$this->params->get('app_domain').$route;
             } else {
@@ -1055,10 +1096,15 @@ class CommonGroundService
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
 
-            // e.g https://wrc.larping.eu/ becomes https://wrc.dev.larping.eu/
-            $host = explode('.', $parsedUrl['host']);
-            $subdomain = $host[0];
-            $url = str_replace($subdomain.'.', $subdomain.'.'.$this->params->get('app_env').'.', $url);
+            if (!$this->params->get('app_subpath_routing') && $this->params->get('app_subpath_routing') == 'false') {
+                // e.g https://wrc.larping.eu/ becomes https://wrc.dev.larping.eu/
+                $host = explode('.', $parsedUrl['host']);
+                $subdomain = $host[0];
+                $url = str_replace($subdomain.'.', $subdomain.'.'.$this->params->get('app_env').'.', $url);
+            } else {
+                $url = str_replace('https://', "https://{$this->params->get('app_env')}.", $url);
+            }
+            var_dump($url);
         }
 
         // Remove trailing slash

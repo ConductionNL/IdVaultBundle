@@ -119,17 +119,17 @@ class VrcService
                     foreach ($value as $propertyKey => $propertyValue) {
                         if ($this->checkIfEmpty($propertyValue)) {
                             unset($request['properties'][$key][$propertyKey]);
-                            break;
-                        }
-                        $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
-                        if (is_array($createdResource) && key_exists('@id', $createdResource)) {
-                            $request['properties'][$key][$propertyKey] = $createdResource['@id'];
+                        } elseif (is_array($propertyValue) || !$this->commonGroundService->isResource($propertyValue)) {
+                            $createdResource = $this->commonGroundService->saveResource($propertyValue, ['component' => $component[0], 'type' => $component[1]]);
+                            if (is_array($createdResource) && key_exists('@id', $createdResource)) {
+                                $request['properties'][$key][$propertyKey] = $createdResource['@id'];
+                            }
                         }
                     }
                 } else {
                     if ($this->checkIfEmpty($value)) {
                         unset($request['properties'][$key]);
-                    } else {
+                    } elseif (is_array($value) || !$this->commonGroundService->isResource($value)) {
                         $createdResource = $this->commonGroundService->saveResource($value, ['component' => $component[0], 'type' => $component[1]]);
                         if (is_array($createdResource) && key_exists('@id', $createdResource)) {
                             $request['properties'][$key] = $createdResource['@id'];
@@ -471,7 +471,7 @@ class VrcService
         }
 
         // Lets see if the property is requered and unset, in wich case we do not need to do more validation
-        if ((!array_key_exists($property['name'], $request['properties'])) && $stageNumber >= $currentStage['orderNumber']) {
+        if ((!array_key_exists($property['name'], $request['properties'])) && key_exists('orderNumber', $currentStage) && $stageNumber >= $currentStage['orderNumber']) {
             $result['messages'] = ['value is required'];
             $result['valid'] = false;
 
