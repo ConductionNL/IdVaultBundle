@@ -227,7 +227,6 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-
         return new RedirectResponse($this->router->generate('app_chin_checkin'));
     }
 
