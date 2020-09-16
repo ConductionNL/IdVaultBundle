@@ -1022,7 +1022,7 @@ class CommonGroundService
     private function convertQuery($query): string
     {
         if (is_array($query) && $query != []) {
-            $queryString = '?';
+            $queryString = '';
             $iterator = 0;
             foreach ($query as $parameter=>$value) {
                 $queryString .= "$parameter=$value";
@@ -1096,7 +1096,7 @@ class CommonGroundService
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
 
-            if (!$this->params->get('app_subpath_routing') && $this->params->get('app_subpath_routing') == 'false') {
+            if (!$this->params->get('app_subpath_routing') || $this->params->get('app_subpath_routing') == 'false') {
                 // e.g https://wrc.larping.eu/ becomes https://wrc.dev.larping.eu/
                 $host = explode('.', $parsedUrl['host']);
                 $subdomain = $host[0];
@@ -1104,7 +1104,6 @@ class CommonGroundService
             } else {
                 $url = str_replace('https://', "https://{$this->params->get('app_env')}.", $url);
             }
-            var_dump($url);
         }
 
         // Remove trailing slash
