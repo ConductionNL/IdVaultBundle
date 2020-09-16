@@ -9,6 +9,7 @@
 
 namespace Conduction\CommonGroundBundle\Security;
 
+use App\Entity\LoginLog;
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -99,7 +100,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         return $credentials;
     }
 
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function getUser($credentials, UserProviderInterface $userProvider, Request $request)
     {
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
         $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
@@ -141,6 +142,14 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $token = $token[0];
 
         $user = $this->commonGroundService->getResource($token['user']['@id']);
+
+        $log = new LoginLog();
+        $log->setAddress($request->getClientIp());
+        $log->setMethod('Facebook');
+        $log->setStatus('200');
+        $log->setUser($user['person']);
+        $this->em->persist($log);
+        $this->em->flush($log);
 
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';

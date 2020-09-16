@@ -9,6 +9,7 @@
 
 namespace Conduction\CommonGroundBundle\Security;
 
+use App\Entity\LoginLog;
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -128,7 +129,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         return $credentials;
     }
 
-    public function getUser($credentials, UserProviderInterface $userProvider)
+    public function getUser($credentials, UserProviderInterface $userProvider, Request $request)
     {
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
         $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $provider[0]['name']])['hydra:member'];
@@ -193,6 +194,14 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $user = $this->commonGroundService->getResource($token['user']['@id']);
 
+        $log = new LoginLog();
+        $log->setAddress($request->getClientIp());
+        $log->setMethod('Idin');
+        $log->setStatus('200');
+        $log->setUser($user['person']);
+        $this->em->persist($log);
+        $this->em->flush($log);
+
         $person = $this->commonGroundService->getResource($user['person']);
 
         if (!in_array('ROLE_USER', $user['roles'])) {
@@ -219,11 +228,19 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
+
         return new RedirectResponse($this->router->generate('app_chin_checkin'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
+        $log = new LoginLog();
+        $log->setAddress($request->getClientIp());
+        $log->setMethod('Idin');
+        $log->setStatus('400');
+        $this->em->persist($log);
+        $this->em->flush($log);
+
         return new RedirectResponse($this->router->generate('app_user_idin'));
     }
 
