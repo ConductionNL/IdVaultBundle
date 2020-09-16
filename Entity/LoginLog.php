@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Entity;
+namespace Conduction\CommonGroundBundle\Entity;
 
 use ApiPlatform\Core\Annotation\ApiFilter;
 use ApiPlatform\Core\Annotation\ApiResource;
@@ -56,7 +56,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *          "post"
  *     }
  * )
- * @ORM\Entity(repositoryClass=App\Repository\CheckinRepository::class)
+ * @ORM\Entity(repositoryClass=Conduction\CommonGroundBundle\Repository\LoginLogRepository::class)
  * @Gedmo\Loggable(logEntryClass="Conduction\CommonGroundBundle\Entity\ChangeLog")
  * @ORM\HasLifecycleCallbacks
  *
@@ -110,22 +110,6 @@ class LoginLog
      * @ORM\Column(type="string", length=255)
      */
     private $method;
-
-    /**
-     * @var string The user of the login
-     *
-     * @Gedmo\Versioned
-     *
-     * @example https://example.org/users/1
-     * @Groups({"read","write"})
-     * @Assert\NotNull
-     * @Assert\Url
-     * @Assert\Length(
-     *     max=255
-     * )
-     * @ORM\Column(type="string", length=255)
-     */
-    private $user;
 
     /**
      * @var string the status code of the login
@@ -196,18 +180,6 @@ class LoginLog
     public function setMethod(string $method): self
     {
         $this->method = $method;
-
-        return $this;
-    }
-
-    public function getUser(): ?string
-    {
-        return $this->user;
-    }
-
-    public function setUser(string $user): self
-    {
-        $this->user = $user;
 
         return $this;
     }
