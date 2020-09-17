@@ -69,7 +69,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $provider = $provider[0];
         $code = $request->query->get('code');
 
-        $redirect = $request->getUri();
+        $redirect = str_replace('http:', 'https:', $request->getUri());
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
         $client = new Client([
