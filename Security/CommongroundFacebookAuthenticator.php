@@ -65,7 +65,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-        $provider = $commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
+        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
         $provider = $provider[0];
         $code = $request->query->get('code');
 
