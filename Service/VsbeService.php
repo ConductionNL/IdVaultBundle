@@ -13,8 +13,8 @@ class VsbeService
     private $commonGroundService;
 
     public function __construct(
-        CommonGroundService $commonGroundService)
-    {
+        CommonGroundService $commonGroundService
+    ) {
         $this->commonGroundService = $commonGroundService;
     }
 
@@ -103,7 +103,7 @@ class VsbeService
          */
     public function onUpdated(?array $resource)
     {
-       // Run the request through the very small business engine
+        // Run the request through the very small business engine
         if ($this->commonGroundService->getComponentHealth('vsbe')) {
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];

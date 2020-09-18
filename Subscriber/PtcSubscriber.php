@@ -98,7 +98,6 @@ class PtcSubscriber implements EventSubscriberInterface
             return;
         }
 
-
         $resource = $this->ptcService->extendProcess($event->getResource());
         $event->setResource($resource);
 
