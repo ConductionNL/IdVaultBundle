@@ -129,7 +129,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
             $users = $users['hydra:member'];
 
             // User dosnt exist
-            if ($users || count($users) < 1) {
+            if (count($users) < 1) {
 
                 if (isset($credentials['telephone'])) {
                     $telephone = [];

@@ -112,7 +112,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
             $users = $users['hydra:member'];
 
             // User dosnt exist
-            if ($users || count($users) < 1) {
+            if (count($users) < 1) {
 
                 //create email
                 $email = [];
