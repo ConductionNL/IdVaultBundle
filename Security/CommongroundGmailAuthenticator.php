@@ -123,37 +123,48 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
         if (!$token || count($token) < 1) {
-            //create email
-            $email = [];
-            $email['name'] = $credentials['email'];
-            $email['email'] = $credentials['email'];
-            $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
 
-            if (isset($credentials['telephone'])) {
-                $telephone = [];
-                $telephone['name'] = $credentials['telephone'];
-                $telephone['telephone'] = $credentials['telephone'];
-                $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
+            $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
+            $users = $users['hydra:member'];
+
+            // User dosnt exist
+            if ($users || count($users) < 1) {
+
+                if (isset($credentials['telephone'])) {
+                    $telephone = [];
+                    $telephone['name'] = $credentials['telephone'];
+                    $telephone['telephone'] = $credentials['telephone'];
+                    $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
+                }
+
+                //create email
+                $email = [];
+                $email['name'] = $credentials['email'];
+                $email['email'] = $credentials['email'];
+                $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
+
+                //create person
+                $person = [];
+                $person['givenName'] = $credentials['givenName'];
+                $person['familyName'] = $credentials['familyName'];
+                $person['emails'] = [$email['@id']];
+                if (isset($credentials['telephone'])) {
+                    $person['telephones'] = [$telephone['@id']];
+                }
+                $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
+
+                //create user
+                $user = [];
+                $user['username'] = $credentials['username'];
+                $user['password'] = $credentials['id'];
+                $user['person'] = $person['@id'];
+                $user['organization'] = $application['organization']['@id'];
+                $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
+
             }
-
-            //create person
-
-            $person = [];
-            $person['givenName'] = $credentials['givenName'];
-            $person['familyName'] = $credentials['familyName'];
-            $person['emails'] = [$email['@id']];
-            if (isset($credentials['telephone'])) {
-                $person['telephones'] = [$telephone['@id']];
+            else{
+                $user = $users[0];
             }
-            $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
-
-            //create user
-            $user = [];
-            $user['username'] = $credentials['username'];
-            $user['password'] = $credentials['id'];
-            $user['person'] = $person['@id'];
-            $user['organization'] = $application['organization']['@id'];
-            $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
 
             //create token
             $token = [];
