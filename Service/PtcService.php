@@ -118,7 +118,7 @@ class PtcService
                     // Idf a request has ben suplied
                     if ($request) {
                         // Lets validate
-                        $result = $this->vrcService->checkProperty($request, $property);
+                        $result = $this->vrcService->checkProperty($request, $property, $stage['orderNumber']);
                         // Set the results
                         $property['value'] = $result['value'];
                         $property['valid'] = $result['valid'];

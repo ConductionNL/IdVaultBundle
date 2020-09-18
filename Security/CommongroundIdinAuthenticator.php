@@ -9,6 +9,7 @@
 
 namespace Conduction\CommonGroundBundle\Security;
 
+use Conduction\CommonGroundBundle\Entity\LoginLog;
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -131,21 +132,25 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
-        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $provider[0]['name']])['hydra:member'];
+        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
         if (!$token || count($token) < 1) {
-            //create email
-            $email = [];
-            $email['name'] = $credentials['email'];
-            $email['email'] = $credentials['email'];
-            $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
+            if (isset($credentials['email'])) {
+                //create email
+                $email = [];
+                $email['name'] = $credentials['email'];
+                $email['email'] = $credentials['email'];
+                $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
+            }
 
-            //create phoneNumber
-            $telephone = [];
-            $telephone['name'] = $credentials['telephone'];
-            $telephone['telephone'] = $credentials['telephone'];
-            $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
+            if (isset($credentials['telephone'])) {
+                //create phoneNumber
+                $telephone = [];
+                $telephone['name'] = $credentials['telephone'];
+                $telephone['telephone'] = $credentials['telephone'];
+                $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
+            }
 
             //create address
             $address = [];
@@ -188,6 +193,13 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         $token = $token[0];
 
         $user = $this->commonGroundService->getResource($token['user']['@id']);
+
+        $log = new LoginLog();
+        $log->setAddress($_SERVER['REMOTE_ADDR']);
+        $log->setMethod('Idin');
+        $log->setStatus('200');
+        $this->em->persist($log);
+        $this->em->flush($log);
 
         $person = $this->commonGroundService->getResource($user['person']);
 

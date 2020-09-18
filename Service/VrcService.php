@@ -453,12 +453,30 @@ class VrcService
      * @param string $property The key of the property to checks
      * @return boolean Whether or not a property is valid to its requestTypes
      */
-    public function checkProperty(?array $request, $property)
+    public function checkProperty(?array $request, $property, $stageNumber)
     {
         $result = ['value'=>null, 'valid'=>true, 'messages'=>[]];
 
+        $currentStage['orderNumber'] = null;
+
+        if (isset($request['currentStage'])) {
+            if (filter_var($request['currentStage'], FILTER_VALIDATE_URL)) {
+                $currentStage = $this->commonGroundService->getResource($request['currentStage']);
+            } else {
+                $currentStage = $this->commonGroundService->getResourceList(['component' => 'ptc', 'type' => 'stages'], ['name' => ucfirst($request['currentStage'])])['hydra:member'];
+                if (isset($currentStage[0])) {
+                    $currentStage = $currentStage[0];
+                }
+            }
+        }
+
         // Lets see if the property is requered and unset, in wich case we do not need to do more validation
-        if ((!array_key_exists($property['name'], $request['properties'])) && $property['required']) {
+        if ((!array_key_exists($property['name'], $request['properties'])) && key_exists('orderNumber', $currentStage) && $stageNumber >= $currentStage['orderNumber']) {
+            $result['messages'] = ['value is required'];
+            $result['valid'] = false;
+
+            return $result;
+        } elseif ((!array_key_exists($property['name'], $request['properties'])) && $property['required']) {
             $result['messages'] = ['value is required'];
             $result['valid'] = false;
 

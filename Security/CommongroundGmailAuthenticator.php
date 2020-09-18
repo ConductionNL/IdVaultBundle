@@ -9,6 +9,7 @@
 
 namespace Conduction\CommonGroundBundle\Security;
 
+use Conduction\CommonGroundBundle\Entity\LoginLog;
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -170,6 +171,13 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $user = $this->commonGroundService->getResource($token['user']['@id']);
         $person = $this->commonGroundService->getResource($user['person']);
 
+        $log = new LoginLog();
+        $log->setAddress($_SERVER['REMOTE_ADDR']);
+        $log->setMethod('Google');
+        $log->setStatus('200');
+        $this->em->persist($log);
+        $this->em->flush($log);
+
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
@@ -180,8 +188,8 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
-        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $provider[0]['name']])['hydra:member'];
+        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'gmail'])['hydra:member'];
+        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
         if (!$token || count($token) < 1) {

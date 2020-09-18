@@ -192,7 +192,7 @@ class AuditTrail
      *      max = 255
      * )
      * @Groups({"read"})
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $route;
 
@@ -203,7 +203,7 @@ class AuditTrail
      *      max = 255
      * )
      * @Groups({"read"})
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $endpoint;
 
@@ -214,7 +214,7 @@ class AuditTrail
      *      max = 255
      * )
      * @Groups({"read"})
-     * @ORM\Column(type="string", length=10)
+     * @ORM\Column(type="string", length=10, nullable=true)
      */
     private $method;
 
@@ -225,7 +225,7 @@ class AuditTrail
      *      max = 255
      * )
      * @Groups({"read"})
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $accept;
 
@@ -236,7 +236,7 @@ class AuditTrail
      *      max = 255
      * )
      * @Groups({"read"})
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $contentType;
 
@@ -247,7 +247,7 @@ class AuditTrail
      *      max = 2555
      * )
      * @Groups({"read"})
-     * @ORM\Column(type="text", nullable=true)
+     * @ORM\Column(type="text", nullable=true, nullable=true)
      */
     private $content;
 
@@ -258,7 +258,7 @@ class AuditTrail
      *      max = 255
      * )
      * @Groups({"read"})
-     * @ORM\Column(type="string", length=255)
+     * @ORM\Column(type="string", length=255, nullable=true)
      */
     private $ip;
 
