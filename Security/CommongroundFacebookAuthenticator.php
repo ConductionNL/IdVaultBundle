@@ -69,8 +69,10 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
         $provider = $provider[0];
 
-        $backUrl = $request->query->get('backUrl');
-        $this->session->set('backUrl', $backUrl);
+        $backUrl = $request->query->get('backUrl', false);
+        if($backUrl){
+            $this->session->set('backUrl', $backUrl);
+        }
 
         $redirect = str_replace('http:', 'https:', $request->getUri());
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
@@ -82,12 +84,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
             'timeout'  => 2.0,
         ]);
 
-        // @todo fix this
-        $validChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $part1 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
-        $part2 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
-
-        $code = urlencode ($part1.'-'.$part2);
+        $code = $request->query->get('code');
 
         $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.$provider['configuration']['app_id'].'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&backUrl='.urlencode ($backUrl).'&code='.$code);
         $accessToken = json_decode($response->getBody()->getContents(), true);

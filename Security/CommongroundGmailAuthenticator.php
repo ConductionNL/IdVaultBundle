@@ -69,20 +69,15 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'gmail'])['hydra:member'];
         $provider = $provider[0];
 
-        $backUrl = $request->query->get('backUrl');
-        $this->session->set('backUrl', $backUrl);
+        $backUrl = $request->query->get('backUrl', false);
+        if($backUrl){
+            $this->session->set('backUrl', $backUrl);
+        }
 
         $redirect = $request->getUri();
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
-
-        // @todo fix this
-        $validChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-        $part1 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
-        $part2 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
-
-        $code = urlencode ($part1.'-'.$part2);
-
+        $code = $request->query->get('code');
         $body = [
             'client_id'         => $provider['configuration']['app_id'],
             'client_secret'     => $provider['configuration']['secret'],
