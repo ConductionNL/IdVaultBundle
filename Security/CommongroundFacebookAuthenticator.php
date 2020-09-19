@@ -82,7 +82,9 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
             'timeout'  => 2.0,
         ]);
 
-        $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.$provider['configuration']['app_id'].'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&backUrl='.$backUrl);
+        $code =  $this->session->getId();
+
+        $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.$provider['configuration']['app_id'].'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&backUrl='.$backUrl.'&code='.$code);
         $accessToken = json_decode($response->getBody()->getContents(), true);
 
         $response = $client->request('GET', '/me?&fields=id,name,email&access_token='.$accessToken['access_token']);

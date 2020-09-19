@@ -75,11 +75,14 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $redirect = $request->getUri();
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
+        $code =  $this->session->getId();
+
         $body = [
             'client_id'         => $provider['configuration']['app_id'],
             'client_secret'     => $provider['configuration']['secret'],
             'redirect_uri'      => $redirect,
             'backUrl'              => $redirect,
+            'code'              => $code,
             'grant_type'        => 'authorization_code',
         ];
 
