@@ -17,6 +17,7 @@ use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -56,18 +57,20 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
     public function supports(Request $request)
     {
         return 'app_user_gmail' === $request->attributes->get('_route')
-            && $request->isMethod('GET') && $request->query->get('code');
+            && $request->isMethod('GET');
     }
 
     /**
      * Called on every request. Return whatever credentials you want to
      * be passed to getUser() as $credentials.
      */
-    public function getCredentials(Request $request)
+    public function getCredentials(Session $session,Request $request)
     {
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'gmail'])['hydra:member'];
         $provider = $provider[0];
-        $code = $request->query->get('code');
+
+        $backUrl = $request->query->get('backUrl');
+        $session->set('backUrl', $backUrl);
 
         $redirect = $request->getUri();
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
@@ -76,7 +79,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
             'client_id'         => $provider['configuration']['app_id'],
             'client_secret'     => $provider['configuration']['secret'],
             'redirect_uri'      => $redirect,
-            'code'              => $code,
+            'backUrl'              => $redirect,
             'grant_type'        => 'authorization_code',
         ];
 
@@ -211,9 +214,18 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         return true;
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Session $session, Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->router->generate('app_chin_checkin'));
+        $backUrl= $session->get('backUrl', false);
+        if($backUrl){
+            return new RedirectResponse($backUrl);
+        }
+        //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
+        //    return new RedirectResponse('/'.$application['defaultConfiguration']['configuration']['userPage']);
+        //}
+        else{
+            return new RedirectResponse($this->router->generate('app_zz_index'));
+        }
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)

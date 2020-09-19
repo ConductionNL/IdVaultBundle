@@ -17,6 +17,7 @@ use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -56,18 +57,20 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
     public function supports(Request $request)
     {
         return 'app_user_facebook' === $request->attributes->get('_route')
-            && $request->isMethod('GET') && $request->query->get('code');
+            && $request->isMethod('GET');
     }
 
     /**
      * Called on every request. Return whatever credentials you want to
      * be passed to getUser() as $credentials.
      */
-    public function getCredentials(Request $request)
+    public function getCredentials(Session $session,Request $request)
     {
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
         $provider = $provider[0];
-        $code = $request->query->get('code');
+
+        $backUrl = $request->query->get('backUrl');
+        $session->set('backUrl', $backUrl);
 
         $redirect = str_replace('http:', 'https:', $request->getUri());
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
@@ -79,7 +82,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
             'timeout'  => 2.0,
         ]);
 
-        $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.$provider['configuration']['app_id'].'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&code='.$code);
+        $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.$provider['configuration']['app_id'].'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&backUrl='.$backUrl);
         $accessToken = json_decode($response->getBody()->getContents(), true);
 
         $response = $client->request('GET', '/me?&fields=id,name,email&access_token='.$accessToken['access_token']);
@@ -184,9 +187,18 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         return true;
     }
 
-    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Session $session, Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->router->generate('app_chin_checkin'));
+        $backUrl= $session->get('backUrl', false);
+        if($backUrl){
+            return new RedirectResponse($backUrl);
+        }
+        //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
+        //    return new RedirectResponse('/'.$application['defaultConfiguration']['configuration']['userPage']);
+        //}
+        else{
+            return new RedirectResponse($this->router->generate('app_zz_index'));
+        }
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
