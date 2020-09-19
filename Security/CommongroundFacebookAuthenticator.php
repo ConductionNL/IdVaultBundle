@@ -64,13 +64,13 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
      * Called on every request. Return whatever credentials you want to
      * be passed to getUser() as $credentials.
      */
-    public function getCredentials(Session $session,Request $request)
+    public function getCredentials(Request $request)
     {
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
         $provider = $provider[0];
 
         $backUrl = $request->query->get('backUrl');
-        $session->set('backUrl', $backUrl);
+        $this->session->set('backUrl', $backUrl);
 
         $redirect = str_replace('http:', 'https:', $request->getUri());
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
@@ -187,9 +187,9 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         return true;
     }
 
-    public function onAuthenticationSuccess(Session $session, Request $request, TokenInterface $token, $providerKey)
+    public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        $backUrl= $session->get('backUrl', false);
+        $backUrl= $this->session->get('backUrl', false);
         if($backUrl){
             return new RedirectResponse($backUrl);
         }
