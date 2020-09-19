@@ -81,13 +81,13 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $part1 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
         $part2 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
 
-        $code = $part1.'-'.$part2;
+        $code = urlencode ($part1.'-'.$part2);
 
         $body = [
             'client_id'         => $provider['configuration']['app_id'],
             'client_secret'     => $provider['configuration']['secret'],
             'redirect_uri'      => $redirect,
-            'backUrl'              => $redirect,
+            'backUrl'           => $backUrl,
             'code'              => $code,
             'grant_type'        => 'authorization_code',
         ];

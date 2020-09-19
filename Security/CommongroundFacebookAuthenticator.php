@@ -87,7 +87,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $part1 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
         $part2 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
 
-        $code = $part1.'-'.$part2;
+        $code = urlencode ($part1.'-'.$part2);
 
         $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.$provider['configuration']['app_id'].'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&backUrl='.$backUrl.'&code='.$code);
         $accessToken = json_decode($response->getBody()->getContents(), true);
