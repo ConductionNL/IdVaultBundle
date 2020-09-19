@@ -66,6 +66,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
+        $code = $request->query->get('code');
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
         $provider = $provider[0];
 
@@ -84,7 +85,6 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
             'timeout'  => 2.0,
         ]);
 
-        $code = $request->query->get('code');
 
         $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.$provider['configuration']['app_id'].'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&backUrl='.urlencode ($backUrl).'&code='.$code);
         $accessToken = json_decode($response->getBody()->getContents(), true);

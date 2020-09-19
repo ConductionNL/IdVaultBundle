@@ -66,6 +66,8 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
+        $code = $request->query->get('code');
+
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'gmail'])['hydra:member'];
         $provider = $provider[0];
 
@@ -77,7 +79,6 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $redirect = $request->getUri();
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
-        $code = $request->query->get('code');
         $body = [
             'client_id'         => $provider['configuration']['app_id'],
             'client_secret'     => $provider['configuration']['secret'],
