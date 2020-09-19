@@ -75,7 +75,13 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $redirect = $request->getUri();
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
-        $code =  $this->session->getId();
+
+        // @todo fix this
+        $validChars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $part1 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
+        $part2 = substr(str_shuffle(str_repeat($validChars, ceil(3 / strlen($validChars)))), 1, 3);
+
+        $code = $part1.'-'.$part2;
 
         $body = [
             'client_id'         => $provider['configuration']['app_id'],
