@@ -83,7 +83,6 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
             'client_id'         => $provider['configuration']['app_id'],
             'client_secret'     => $provider['configuration']['secret'],
             'redirect_uri'      => $redirect,
-            'backUrl'           => urlencode ($backUrl),
             'code'              => $code,
             'grant_type'        => 'authorization_code',
         ];
