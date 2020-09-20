@@ -57,7 +57,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
     public function supports(Request $request)
     {
         return 'app_user_gmail' === $request->attributes->get('_route')
-            && $request->isMethod('GET');
+            && $request->isMethod('GET') && $request->query->get('code');
     }
 
     /**

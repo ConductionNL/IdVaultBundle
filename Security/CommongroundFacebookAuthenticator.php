@@ -57,7 +57,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
     public function supports(Request $request)
     {
         return 'app_user_facebook' === $request->attributes->get('_route')
-            && $request->isMethod('GET');
+            && $request->isMethod('GET') && $request->query->get('code');
     }
 
     /**
