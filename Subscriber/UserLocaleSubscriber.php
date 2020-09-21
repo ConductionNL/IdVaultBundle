@@ -1,6 +1,7 @@
 <?php
 
 // Subscriber/UserLocaleSubscriber.php
+
 namespace Conduction\CommonGroundBundle\Subscriber;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
