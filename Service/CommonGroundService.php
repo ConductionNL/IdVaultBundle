@@ -1091,7 +1091,7 @@ class CommonGroundService
         $parsedUrl = parse_url($url);
 
         // We only do this on non-production enviroments
-        if ($this->params->get('app_env') != 'prod' && $autowire && strpos($url, '.'.$this->params->get('app_env')) == false) {
+        if ($this->params->get('app_env') != 'prod' && $autowire && strpos($url, $this->params->get('app_env').'.') === false) {
 
             // Lets make sure we dont have doubles
             $url = str_replace($this->params->get('app_env').'.', '', $url);
