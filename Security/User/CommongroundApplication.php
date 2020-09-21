@@ -55,6 +55,12 @@ class CommongroundApplication implements UserInterface, EquatableInterface
         return $this->locale;
     }
 
+    public function setLocale($locale)
+    {
+        $this->locale = $locale;
+        return $this;
+    }
+
     public function setName($name)
     {
         $this->name = $name;
