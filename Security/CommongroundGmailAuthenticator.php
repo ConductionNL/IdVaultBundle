@@ -9,6 +9,7 @@
 
 namespace Conduction\CommonGroundBundle\Security;
 
+use Conduction\CommonGroundBundle\Entity\LoginLog;
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -16,6 +17,7 @@ use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -64,9 +66,15 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
+        $code = $request->query->get('code');
+
         $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'gmail'])['hydra:member'];
         $provider = $provider[0];
-        $code = $request->query->get('code');
+
+        $backUrl = $request->query->get('backUrl', false);
+        if($backUrl){
+            $this->session->set('backUrl', $backUrl);
+        }
 
         $redirect = $request->getUri();
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
@@ -123,37 +131,48 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
         if (!$token || count($token) < 1) {
-            //create email
-            $email = [];
-            $email['name'] = $credentials['email'];
-            $email['email'] = $credentials['email'];
-            $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
 
-            if (isset($credentials['telephone'])) {
-                $telephone = [];
-                $telephone['name'] = $credentials['telephone'];
-                $telephone['telephone'] = $credentials['telephone'];
-                $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
+            $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
+            $users = $users['hydra:member'];
+
+            // User dosnt exist
+            if (count($users) < 1) {
+
+                if (isset($credentials['telephone'])) {
+                    $telephone = [];
+                    $telephone['name'] = $credentials['telephone'];
+                    $telephone['telephone'] = $credentials['telephone'];
+                    $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
+                }
+
+                //create email
+                $email = [];
+                $email['name'] = $credentials['email'];
+                $email['email'] = $credentials['email'];
+                $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
+
+                //create person
+                $person = [];
+                $person['givenName'] = $credentials['givenName'];
+                $person['familyName'] = $credentials['familyName'];
+                $person['emails'] = [$email['@id']];
+                if (isset($credentials['telephone'])) {
+                    $person['telephones'] = [$telephone['@id']];
+                }
+                $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
+
+                //create user
+                $user = [];
+                $user['username'] = $credentials['username'];
+                $user['password'] = $credentials['id'];
+                $user['person'] = $person['@id'];
+                $user['organization'] = $application['organization']['@id'];
+                $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
+
             }
-
-            //create person
-
-            $person = [];
-            $person['givenName'] = $credentials['givenName'];
-            $person['familyName'] = $credentials['familyName'];
-            $person['emails'] = [$email['@id']];
-            if (isset($credentials['telephone'])) {
-                $person['telephones'] = [$telephone['@id']];
+            else{
+                $user = $users[0];
             }
-            $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
-
-            //create user
-            $user = [];
-            $user['username'] = $credentials['username'];
-            $user['password'] = $credentials['id'];
-            $user['person'] = $person['@id'];
-            $user['organization'] = $application['organization']['@id'];
-            $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
 
             //create token
             $token = [];
@@ -170,6 +189,13 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $user = $this->commonGroundService->getResource($token['user']['@id']);
         $person = $this->commonGroundService->getResource($user['person']);
 
+        $log = new LoginLog();
+        $log->setAddress($_SERVER['REMOTE_ADDR']);
+        $log->setMethod('Google');
+        $log->setStatus('200');
+        $this->em->persist($log);
+        $this->em->flush($log);
+
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
@@ -180,8 +206,8 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
-        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $provider[0]['name']])['hydra:member'];
+        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'gmail'])['hydra:member'];
+        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
         $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
 
         if (!$token || count($token) < 1) {
@@ -194,7 +220,16 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->router->generate('app_chin_checkin'));
+        $backUrl= $this->session->get('backUrl', false);
+        if($backUrl){
+            return new RedirectResponse($backUrl);
+        }
+        //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
+        //    return new RedirectResponse('/'.$application['defaultConfiguration']['configuration']['userPage']);
+        //}
+        else{
+            return new RedirectResponse($this->router->generate('app_zz_index'));
+        }
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)

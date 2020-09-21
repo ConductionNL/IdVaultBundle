@@ -580,7 +580,7 @@ class VrcService
             if (!is_array($property['enum'])) {
                 $property['enum'] = explode(',', $property['enum']);
             }
-            if (in_array($result['value'], $property['enum'])) {
+            if (!in_array($result['value'], $property['enum'])) {
                 $result['messages'][] = 'There the value should be one of '.implode(',', $property['enum']);
                 $result['valid'] = false;
             }
