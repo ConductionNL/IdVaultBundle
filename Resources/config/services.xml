@@ -64,9 +64,10 @@
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="locale.subscriber" class="Conduction\CommonGroundBundle\Subscriber\LocaleSubscriber">
+            <argument>%kernel.default_locale%</argument>
             <tag name="kernel.event_subscriber"/>
         </service>
-        <service id="userlocale.subscriber" class="Conduction\CommonGroundBundle\Subscriber\UserLocaleSubscriber">
+        <service id="user.locale.subscriber" class="Conduction\CommonGroundBundle\Subscriber\UserLocaleSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
         <service id="ptc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\PtcSubscriber">
