@@ -75,8 +75,10 @@ class IncompleteDate implements \Serializable, \JsonSerializable
         return sprintf('%04u-%02u-%02u', $this->getYear(), $this->getMonth(), $this->getDay());
     }
 
-    public static function fromString($string){
+    public static function fromString($string)
+    {
         $date = explode('-', $string);
+
         return new IncompleteDate($date[0], $date[1], $date[2]);
     }
 
@@ -103,14 +105,17 @@ class IncompleteDate implements \Serializable, \JsonSerializable
         return ['jaar'=>$this->getYear(), 'maand'=>$this->getMonth(), 'dag'=>$this->getDay(), 'datum'=>$this->__toString()];
     }
 
-    public function compareTo(IncompleteDate $other){
+    public function compareTo(IncompleteDate $other)
+    {
         var_dump('bla');
+
         return false;
     }
 
-    public function equals($other){
+    public function equals($other)
+    {
         var_dump('blub');
+
         return false;
     }
-
 }
