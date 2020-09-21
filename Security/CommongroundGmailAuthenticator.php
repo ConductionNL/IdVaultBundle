@@ -17,7 +17,6 @@ use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -73,7 +72,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $provider = $provider[0];
 
         $backUrl = $request->query->get('backUrl', false);
-        if($backUrl){
+        if ($backUrl) {
             $this->session->set('backUrl', $backUrl);
         }
 
@@ -132,13 +131,11 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
 
         if (!$token || count($token) < 1) {
-
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
             $users = $users['hydra:member'];
 
             // User dosnt exist
             if (count($users) < 1) {
-
                 if (isset($credentials['telephone'])) {
                     $telephone = [];
                     $telephone['name'] = $credentials['telephone'];
@@ -169,9 +166,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
                 $user['person'] = $person['@id'];
                 $user['organization'] = $application['organization']['@id'];
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
-
-            }
-            else{
+            } else {
                 $user = $users[0];
             }
 
@@ -221,14 +216,14 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        $backUrl= $this->session->get('backUrl', false);
-        if($backUrl){
+        $backUrl = $this->session->get('backUrl', false);
+        if ($backUrl) {
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
         //    return new RedirectResponse('/'.$application['defaultConfiguration']['configuration']['userPage']);
         //}
-        else{
+        else {
             return new RedirectResponse($this->router->generate('app_zz_index'));
         }
     }

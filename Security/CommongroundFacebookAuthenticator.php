@@ -17,7 +17,6 @@ use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Session\Session;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
@@ -72,7 +71,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $provider = $provider[0];
 
         $backUrl = $request->query->get('backUrl', false);
-        if($backUrl){
+        if ($backUrl) {
             $this->session->set('backUrl', $backUrl);
         }
 
@@ -85,7 +84,6 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
             // You can set any number of default request options.
             'timeout'  => 2.0,
         ]);
-
 
         $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.$provider['configuration']['app_id'].'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&code='.$code);
         $accessToken = json_decode($response->getBody()->getContents(), true);
@@ -115,7 +113,6 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
 
         if (!$token || count($token) < 1) {
-
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
             $users = $users['hydra:member'];
 
@@ -143,11 +140,9 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
                 $user['person'] = $person['@id'];
                 $user['organization'] = $application['organization']['@id'];
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
-            }
-            else{
+            } else {
                 $user = $users[0];
             }
-
 
             //create token
             $token = [];
@@ -194,14 +189,14 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        $backUrl= $this->session->get('backUrl', false);
-        if($backUrl){
+        $backUrl = $this->session->get('backUrl', false);
+        if ($backUrl) {
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
         //    return new RedirectResponse('/'.$application['defaultConfiguration']['configuration']['userPage']);
         //}
-        else{
+        else {
             return new RedirectResponse($this->router->generate('app_zz_index'));
         }
     }
