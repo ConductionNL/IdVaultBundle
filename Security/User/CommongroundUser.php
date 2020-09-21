@@ -109,8 +109,6 @@ class CommongroundUser implements UserInterface, EquatableInterface
         return $this->locale;
     }
 
-
-
     public function isEnabled()
     {
         return $this->isActive;
