@@ -63,6 +63,12 @@
         <service id="irc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\IrcSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
+        <service id="locale.subscriber" class="Conduction\CommonGroundBundle\Subscriber\LocaleSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
+        <service id="userlocale.subscriber" class="Conduction\CommonGroundBundle\Subscriber\UserLocaleSubscriber">
+            <tag name="kernel.event_subscriber"/>
+        </service>
         <service id="ptc.subscriber" class="Conduction\CommonGroundBundle\Subscriber\PtcSubscriber">
             <tag name="kernel.event_subscriber"/>
         </service>
