@@ -118,19 +118,26 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
 
             // User dosnt exist
             if (count($users) < 1) {
+                if (isset($credentials['telephone'])) {
+                    $telephone = [];
+                    $telephone['name'] = $credentials['telephone'];
+                    $telephone['telephone'] = $credentials['telephone'];
+                }
 
                 //create email
-                $email = [];
-                $email['name'] = $credentials['email'];
-                $email['email'] = $credentials['email'];
-                $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
+                $emailObect = [];
+                $emailObect['name'] = $credentials['email'];
+                $emailObect['email'] = $credentials['email'];
 
                 //create person
-                $names = explode(' ', $credentials['name']);
                 $person = [];
-                $person['givenName'] = $names[0];
-                $person['familyName'] = end($names);
-                $person['emails'] = [$email['@id']];
+                $person['givenName'] = $credentials['givenName'];
+                $person['familyName'] = $credentials['familyName'];
+                $person['emails'] = [$emailObect];
+                if (isset($credentials['telephone'])) {
+                    $person['telephones'] = [$telephone];
+                }
+
                 $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
 
                 //create user
@@ -138,7 +145,8 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
                 $user['username'] = $credentials['username'];
                 $user['password'] = $credentials['id'];
                 $user['person'] = $person['@id'];
-                $user['organization'] = $application['organization']['@id'];
+                $user['organization'] = $application;
+                $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
             } else {
                 $user = $users[0];
@@ -147,8 +155,8 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
             //create token
             $token = [];
             $token['token'] = $credentials['id'];
-            $token['user'] = $user['@id'];
-            $token['provider'] = $provider[0]['@id'];
+            $token['user'] = 'users/'.$user['id'];
+            $token['provider'] = 'providers/'.$provider[0]['id'];
             $token = $this->commonGroundService->createResource($token, ['component' => 'uc', 'type' => 'tokens']);
 
             $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
