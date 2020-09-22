@@ -15,13 +15,14 @@ class CommongroundApplication implements UserInterface, EquatableInterface
     private $salt;
     private $roles;
 
-    public function __construct(string $username = '', string $password = '', string $name = '', string $salt = null, array $roles = [])
+    public function __construct(string $username = '', string $password = '', string $name = '', string $salt = null, array $roles = [], $locale = null)
     {
         $this->username = $username;
         $this->password = $password;
         $this->name = $name;
         $this->salt = $salt;
         $this->roles = $roles;
+        $this->locale = $locale; // The language of this user
     }
 
     public function getRoles()
@@ -47,6 +48,17 @@ class CommongroundApplication implements UserInterface, EquatableInterface
     public function getName()
     {
         return $this->name;
+    }
+
+    public function getLocale()
+    {
+        return $this->locale;
+    }
+
+    public function setLocale($locale)
+    {
+        $this->locale = $locale;
+        return $this;
     }
 
     public function setName($name)
