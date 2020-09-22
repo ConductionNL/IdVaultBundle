@@ -84,6 +84,9 @@ class VsbeSubscriber implements EventSubscriberInterface
     {
         // Lets make sure we only triger on requests resources
         $resource = $event->getResource();
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
+            return;
+        }
 
         $resource = $this->vsbeService->onUpdated($event->getResource());
         $event->setResource($resource);
@@ -108,6 +111,9 @@ class VsbeSubscriber implements EventSubscriberInterface
     {
         // Lets make sure we only triger on requests resources
         $resource = $event->getResource();
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
+            return;
+        }
 
         $resource = $this->vsbeService->onCreated($event->getResource());
         $event->setResource($resource);
