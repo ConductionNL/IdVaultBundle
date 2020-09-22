@@ -178,16 +178,13 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
             $token = $this->commonGroundService->createResource($token, ['component' => 'uc', 'type' => 'tokens']);
 
             $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $provider[0]['name']])['hydra:member'];
-        }
-        else{
+        } else {
             $token = $tokens[0];
             // Deze $urls zijn een hotfix voor niet werkende @id's op de cgb cgs
             $userUlr = $this->commonGroundService->cleanUrl(['component'=>'uc', 'type'=>'users', 'id'=>$token['user']['id']]);
             $user = $this->commonGroundService->getResource($userUlr);
             $person = $this->commonGroundService->getResource($user['person']);
         }
-
-
 
         $log = new LoginLog();
         $log->setAddress($_SERVER['REMOTE_ADDR']);
