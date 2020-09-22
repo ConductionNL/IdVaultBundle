@@ -169,7 +169,7 @@ class CommongroundProvider implements UserProviderInterface
 
     private function checkResidence($type, $user, $organization)
     {
-        $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
+        $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => $this->params->get('app_id')]);
         $resident = false;
         if (isset($application['defaultConfiguration']['configuration']['cityNames'])) {
             foreach ($application['defaultConfiguration']['configuration']['cityNames'] as $name) {
