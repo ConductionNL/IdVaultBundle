@@ -130,9 +130,10 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
                 $emailObect['email'] = $credentials['email'];
 
                 //create person
+                $names = explode(' ', $credentials['name']);
                 $person = [];
-                $person['givenName'] = $credentials['givenName'];
-                $person['familyName'] = $credentials['familyName'];
+                $person['givenName'] = $names[0];
+                $person['familyName'] = end($names);
                 $person['emails'] = [$emailObect];
                 if (isset($credentials['telephone'])) {
                     $person['telephones'] = [$telephone];
