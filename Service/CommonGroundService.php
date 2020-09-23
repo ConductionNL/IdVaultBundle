@@ -1004,7 +1004,7 @@ class CommonGroundService
             if(($this->params->get('app_subpath_routing') || $this->params->get('app_subpath_routing') !== 'false') && (!$this->params->get('app_internal') || $this->params->get('app_internal') === 'false')){
                 $path = explode('/', $parsedUrl['path']);
                 //@TODO this should be more dynamic
-                $path = array_slice($path, 0, 3);
+                $path = array_slice($path, 0, 4);
                 $path = implode('/', $path);
                 $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$path.$object['@id'];
             } else {
