@@ -1001,9 +1001,10 @@ class CommonGroundService
     private function convertAtId(array $object, array $parsedUrl)
     {
         if (array_key_exists('@id', $object)) {
-            if ($this->params->get('app_subpath_routing') || $this->params->get('app_subpath_routing') != 'false') {
+            if(($this->params->get('app_subpath_routing') || $this->params->get('app_subpath_routing') !== 'false') && (!$this->params->get('app_internal') || $this->params->get('app_internal') === 'false')){
                 $path = explode('/', $parsedUrl['path']);
-                array_pop($path);
+                //@TODO this should be more dynamic
+                $path = array_slice($path, 0, 3);
                 $path = implode('/', $path);
                 $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$path.$object['@id'];
             } else {
