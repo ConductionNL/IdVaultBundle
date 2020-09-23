@@ -139,6 +139,9 @@ class CommongroundProvider implements UserProviderInterface
 
                 return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], $kvk['tradeNames']['businessName'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization', $resident);
             case 'user':
+                if (empty($user['person'])) {
+                    throw new \Exception('This user has no person. ID: '.$user['id']);
+                }
                 $person = $this->commonGroundService->getResource($user['person']);
 
                 return new CommongroundUser($user['username'], $user['id'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'user');
