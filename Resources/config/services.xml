@@ -33,6 +33,7 @@
         <service id="Conduction\CommonGroundBundle\Security\CommongroundDigispoofAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundEherkenningAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundIdinAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundIdinLoginAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundFacebookAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundGmailAuthenticator" />
 
