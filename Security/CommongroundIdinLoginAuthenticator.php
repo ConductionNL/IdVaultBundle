@@ -28,7 +28,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
+class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;
@@ -55,7 +55,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return 'app_user_idin' === $request->attributes->get('_route')
+        return 'app_user_idinlogin' === $request->attributes->get('_route')
             && $request->isMethod('GET') && $request->query->get('code');
     }
 
@@ -104,22 +104,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $credentials = [
             'username'    => $user['consumer.bin'],
-            'firstName'   => $user['consumer.partnerlastname'],
-            'lastName'    => $user['consumer.legallastname'],
-            'postalCode'  => $user['consumer.postalcode'],
-            'streetName'  => $user['consumer.street'],
-            'houseNumber' => $user['consumer.houseno'],
-            'country'     => $user['consumer.country'],
-            'city'        => $user['consumer.city'],
         ];
-
-        if (isset($user['consumer.email'])) {
-            $credentials['email'] = $user['consumer.email'];
-        }
-
-        if (isset($user['consumer.telephone'])) {
-            $credentials['telephone'] = $user['consumer.telephone'];
-        }
 
         $request->getSession()->set(
             Security::LAST_USERNAME,
@@ -140,40 +125,11 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             $users = $users['hydra:member'];
 
             if (count($users) < 1) {
-                if (isset($credentials['email'])) {
-                    //create email
-                    $email = [];
-                    $email['name'] = $credentials['email'];
-                    $email['email'] = $credentials['email'];
-                    $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
-                }
-
-                if (isset($credentials['telephone'])) {
-                    //create phoneNumber
-                    $telephone = [];
-                    $telephone['name'] = $credentials['telephone'];
-                    $telephone['telephone'] = $credentials['telephone'];
-                    $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
-                }
-
-                //create address
-                $address = [];
-                $address['name'] = $credentials['firstName'];
-                $address['street'] = $credentials['streetName'];
-                $address['houseNumber'] = $credentials['houseNumber'];
-                $address['postalCode'] = $credentials['postalCode'];
-                $address['country'] = $credentials['country'];
-                $address['region'] = $credentials['city'];
-                $address = $this->commonGroundService->createResource($address, ['component' => 'cc', 'type' => 'addresses']);
-
                 //create person
                 $person = [];
-                $person['name'] = $credentials['firstName'];
-                $person['givenName'] = $credentials['firstName'];
-                $person['familyName'] = $credentials['lastName'];
-                $person['emails'] = [$email['@id']];
-                $person['telephones'] = [$telephone['@id']];
-                $person['addresses'] = [$address['@id']];
+                $person['name'] = $credentials['username'];
+                $person['givenName'] = $credentials['username'];
+                $person['familyName'] = $credentials['username'];
                 $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
 
                 //create user
@@ -183,6 +139,8 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
                 $user['person'] = $person['@id'];
                 $user['organization'] = $application;
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
+
+                $this->session->set('newUser', true);
             } else {
                 $user = $users[0];
             }
@@ -206,7 +164,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $log = new LoginLog();
         $log->setAddress($_SERVER['REMOTE_ADDR']);
-        $log->setMethod('Idin');
+        $log->setMethod('IdinLogin');
         $log->setStatus('200');
         $this->em->persist($log);
         $this->em->flush($log);
@@ -236,7 +194,12 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
         $backUrl = $this->session->get('backUrl', false);
-        if ($backUrl) {
+        $newUser = $this->session->get('newUser', false);
+        $this->session->remove('newUser');
+
+        if ($newUser) {
+            return new RedirectResponse($this->router->generate('app_user_edit'));
+        } elseif ($backUrl) {
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
