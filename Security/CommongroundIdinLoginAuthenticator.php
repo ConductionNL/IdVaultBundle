@@ -68,9 +68,8 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
 
         $code = $request->query->get('code');
 
-//        $redirect = str_replace('http:', 'https:', $request->getUri());
-//        $redirect = substr($redirect, 0, strpos($redirect, '?'));
-        $redirect = "https://dev.checking.nu/idin";
+        $redirect = str_replace('http:', 'https:', $request->getUri());
+        $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
         $body = [
             'client_id'    => 'demo-preprod-basic',
