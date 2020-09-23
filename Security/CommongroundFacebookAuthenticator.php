@@ -148,7 +148,6 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
                 $user['person'] = $person['@id'];
                 $user['organization'] = $application;
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
-                $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
             } else {
                 $user = $users[0];
             }
