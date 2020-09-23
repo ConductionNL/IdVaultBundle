@@ -185,7 +185,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         }
 
         $person = $this->commonGroundService->getResource($user['person']);
-        
+
         $log = new LoginLog();
         $log->setAddress($_SERVER['REMOTE_ADDR']);
         $log->setMethod('Google');
