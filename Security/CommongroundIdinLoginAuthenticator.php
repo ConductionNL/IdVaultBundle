@@ -65,7 +65,6 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
      */
     public function getCredentials(Request $request)
     {
-
         $code = $request->query->get('code');
 
         $redirect = str_replace('http:', 'https:', $request->getUri());
@@ -106,7 +105,6 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
         $credentials = [
             'username'    => $user['consumer.bin'],
         ];
-
 
         $request->getSession()->set(
             Security::LAST_USERNAME,
@@ -171,7 +169,6 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
         $this->em->persist($log);
         $this->em->flush($log);
 
-
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
@@ -202,8 +199,7 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
 
         if ($newUser) {
             return new RedirectResponse($this->router->generate('app_user_edit'));
-
-        }elseif ($backUrl) {
+        } elseif ($backUrl) {
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
