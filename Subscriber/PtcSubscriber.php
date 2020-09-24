@@ -42,7 +42,8 @@ class PtcSubscriber implements EventSubscriberInterface
     {
         // Lets make sure we only triger on requests resources
         /* @todo lets also check for a vrc component */
-        if ($event->getResource()['@type'] != 'ProcessType') {
+        $processType = $event->getResource();
+        if (!key_exists('@type', $processType) || $processType['@type'] != 'ProcessType') {
             return;
         }
 
