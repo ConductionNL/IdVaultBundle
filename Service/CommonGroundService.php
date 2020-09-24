@@ -101,7 +101,6 @@ class CommonGroundService
         $this->guzzleConfig = [
             // Base URI is used with relative requests
             'http_errors' => false,
-            //'base_uri' => 'https://wrc.zaakonline.nl/applications/536bfb73-63a5-4719-b535-d835607b88b2/',
             // You can set any number of default request options.
             'timeout'  => 4000.0,
             // To work with NLX we need a couple of default headers
@@ -109,6 +108,13 @@ class CommonGroundService
             // Do not check certificates
             'verify' => false,
         ];
+
+        if ($this->params->has('app_certificate') && file_exists($this->params->get('app_certificate'))) {
+            $this->guzzleConfig['cert'] = $this->params->get('app_certificate');
+        }
+        if ($this->params->has('app_ssl_key') && file_exists($this->params->get('app_ssl_key'))) {
+            $this->guzzleConfig['ssl_key'] = $this->params->get('app_ssl_key');
+        }
 
         // Lets start up a default client
         $this->client = new Client($this->guzzleConfig);
@@ -1001,7 +1007,11 @@ class CommonGroundService
     private function convertAtId(array $object, array $parsedUrl)
     {
         if (array_key_exists('@id', $object)) {
-            if (($this->params->get('app_subpath_routing') || $this->params->get('app_subpath_routing') !== 'false') && (!$this->params->get('app_internal') || $this->params->get('app_internal') === 'false')) {
+            if (
+                $this->params->has('app_subpath_routing') &&
+                ($this->params->get('app_subpath_routing') && $this->params->get('app_subpath_routing') !== 'false') &&
+                (!$this->params->get('app_internal') || $this->params->get('app_internal') === 'false')
+            ) {
                 $path = explode('/', $parsedUrl['path']);
                 //@TODO this should be more dynamic
                 $path = array_slice($path, 0, 4);
