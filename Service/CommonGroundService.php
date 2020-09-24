@@ -75,6 +75,8 @@ class CommonGroundService
         $this->translator = $translator;
         $this->eventDispatcher = $eventDispatcher;
 
+
+
         // To work with NLX we need a couple of default headers
         $this->headers = [
             'Accept'         => 'application/ld+json',
@@ -101,7 +103,6 @@ class CommonGroundService
         $this->guzzleConfig = [
             // Base URI is used with relative requests
             'http_errors' => false,
-            //'base_uri' => 'https://wrc.zaakonline.nl/applications/536bfb73-63a5-4719-b535-d835607b88b2/',
             // You can set any number of default request options.
             'timeout'  => 4000.0,
             // To work with NLX we need a couple of default headers
@@ -109,6 +110,11 @@ class CommonGroundService
             // Do not check certificates
             'verify' => false,
         ];
+
+        if(file_exists('/var/run/certs/tls.crt')){
+            $this->guzzleConfig['cert'] = '/var/run/certs/tls.crt';
+            var_dump('set certificate to \'/var/run/certs/tls.crt\'')
+        }
 
         // Lets start up a default client
         $this->client = new Client($this->guzzleConfig);
