@@ -113,7 +113,10 @@ class CommonGroundService
 
         if(file_exists('/var/run/certs/tls.crt')){
             $this->guzzleConfig['cert'] = '/var/run/certs/tls.crt';
-            var_dump('set certificate to \'/var/run/certs/tls.crt\'');
+        }
+        if(file_exists('/var/run/certs/tls.key')){
+            $this->guzzleConfig['ssl_key'] = '/var/run/certs/tls.key';
+            var_dump('set key to \'/var/run/certs/tls.key\'')
         }
 
         // Lets start up a default client
