@@ -75,8 +75,6 @@ class CommonGroundService
         $this->translator = $translator;
         $this->eventDispatcher = $eventDispatcher;
 
-
-
         // To work with NLX we need a couple of default headers
         $this->headers = [
             'Accept'         => 'application/ld+json',
@@ -111,10 +109,10 @@ class CommonGroundService
             'verify' => false,
         ];
 
-        if($this->params->has('app_certificate') && file_exists($this->params->get('app_certificate'))){
+        if ($this->params->has('app_certificate') && file_exists($this->params->get('app_certificate'))) {
             $this->guzzleConfig['cert'] = $this->params->get('app_certificate');
         }
-        if($this->params->has('app_ssl_key') && file_exists($this->params->get('app_ssl_key'))){
+        if ($this->params->has('app_ssl_key') && file_exists($this->params->get('app_ssl_key'))) {
             $this->guzzleConfig['ssl_key'] = $this->params->get('app_ssl_key');
         }
 
