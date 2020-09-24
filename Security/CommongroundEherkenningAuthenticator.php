@@ -111,7 +111,14 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], $kvk['branchNumber'], 'person');
+        array_push($user['roles'], 'scope.vrc.requests.read');
+        array_push($user['roles'], 'scope.orc.orders.read');
+        array_push($user['roles'], 'scope.cmc.messages.read');
+        array_push($user['roles'], 'scope.bc.invoices.read');
+        array_push($user['roles'], 'scope.arc.events.read');
+        array_push($user['roles'], 'scope.irc.assents.read');
+
+        return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], $kvk['tradeNames']['businessName'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -162,7 +169,7 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
         $company = $companies['data']['items'][0];
 
         $this->session->set('user', $user);
-        $this->session->set('company', $company);
+        $this->session->set('organization', $company);
 
         return new RedirectResponse($backUrl);
     }

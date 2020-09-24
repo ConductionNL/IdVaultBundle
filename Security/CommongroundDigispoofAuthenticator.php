@@ -20,7 +20,6 @@ use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
-use Symfony\Component\Security\Core\Security;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
@@ -69,11 +68,6 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
 
         ];
 
-        $request->getSession()->set(
-            Security::LAST_USERNAME,
-            $credentials['bsn']
-        );
-
         return $credentials;
     }
 
@@ -96,7 +90,14 @@ class CommongroundDigispoofAuthenticator extends AbstractGuardAuthenticator
             $user['roles'][] = 'ROLE_USER';
         }
 
-        return new CommongroundUser($user['burgerservicenummer'], $user['id'], null, $user['roles'], $user['naam'], null, 'person');
+        array_push($user['roles'], 'scope.vrc.requests.read');
+        array_push($user['roles'], 'scope.orc.orders.read');
+        array_push($user['roles'], 'scope.cmc.messages.read');
+        array_push($user['roles'], 'scope.bc.invoices.read');
+        array_push($user['roles'], 'scope.arc.events.read');
+        array_push($user['roles'], 'scope.irc.assents.read');
+
+        return new CommongroundUser($user['naam']['voornamen'], $user['id'], $user['naam']['voornamen'], null, $user['roles'], $user['@id'], null, 'person', false);
     }
 
     public function checkCredentials($credentials, UserInterface $user)

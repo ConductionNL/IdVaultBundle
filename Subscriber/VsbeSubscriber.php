@@ -4,17 +4,17 @@ namespace Conduction\CommonGroundBundle\Subscriber;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
-use Conduction\CommonGroundBundle\Service\VrcService;
+use Conduction\CommonGroundBundle\Service\VsbeService;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\KernelEvents;
 
-class VrcSubscriber implements EventSubscriberInterface
+class VsbeSubscriber implements EventSubscriberInterface
 {
-    private $vrcService;
+    private $vsbeService;
 
-    public function __construct(VrcService $vrcService)
+    public function __construct(VsbeService $vsbeService)
     {
-        $this->vrcService = $vrcService;
+        $this->vsbeService = $vsbeService;
     }
 
     public static function getSubscribedEvents()
@@ -76,17 +76,6 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function update(CommongroundUpdateEvent $event)
     {
-        $resource = $event->getResource();
-        $url = $event->getUrl();
-
-        if (!$url || !is_array($url) || $url['component'] != 'vrc' || $url['type'] != 'requests') {
-            return;
-        }
-
-        $resource = $this->vrcService->createCommongroundResources($resource);
-//        $this->vrcService->clearDependencies($resource);
-        $event->setResource($resource);
-
         return $event;
     }
 
@@ -99,8 +88,7 @@ class VrcSubscriber implements EventSubscriberInterface
             return;
         }
 
-        $this->vrcService->checkEvents($resource);
-        $this->vrcService->checkOffers($resource);
+        $resource = $this->vsbeService->onUpdated($event->getResource());
         $event->setResource($resource);
 
         return $event;
@@ -111,14 +99,9 @@ class VrcSubscriber implements EventSubscriberInterface
     {
         // Lets make sure we only triger on requests resources
         $resource = $event->getResource();
-        $url = $event->getUrl();
-        if (!$url || !is_array($url) || $url['component'] != 'vrc' || $url['type'] != 'requests') {
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
             return;
         }
-
-//        $this->vrcService->clearDependencies($resource);
-        $this->vrcService->createCommongroundResources($resource);
-        $event->setResource($resource);
 
         return $event;
     }
@@ -126,15 +109,13 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function created(CommongroundUpdateEvent $event)
     {
+        // Lets make sure we only triger on requests resources
         $resource = $event->getResource();
-
         if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Request') {
             return;
         }
 
-        $this->vrcService->checkEvents($resource);
-        $this->vrcService->checkOffers($resource);
-
+        $resource = $this->vsbeService->onCreated($event->getResource());
         $event->setResource($resource);
 
         return $event;

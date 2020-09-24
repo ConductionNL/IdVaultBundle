@@ -49,7 +49,6 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         if (!$contentType) {
             $contentType = $event->getRequest()->headers->get('Accept');
         }
-
         // Only do somthing if fields is query supplied
         if ((!$fields && !$extends) || $method != 'GET') {
             return $result;
@@ -72,60 +71,64 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
                 $contentType = 'application/ld+json';
                 $renderType = 'jsonld';
         }
+
         $json = $this->serializer->serialize(
             $result,
             $renderType,
             ['enable_max_depth' => true]
         );
+
         $array = json_decode($json, true);
-        if (!is_array($extends)) {
-            $extends = explode(',', $extends);
-        }
-        foreach ($extends as $extend) {
-            $extend = explode('.', $extend);
-            $array = $this->recursiveExtend($array, $extend);
+        if (!key_exists('id', $array)) {
+            foreach ($array as $key=> $resource) {
+                $array[$key] = $resource = $this->getExtends($extends, $resource);
+
+                if ($fields != [] && $fields != '') {
+                    $array[$key] = $this->getFields($fields, $resource);
+                }
+            }
+
+            switch ($renderType) {
+                case 'jsonld':
+                    $response['@context'] = $array[0]['@context'];
+                    $response['@id'] = $event->getRequest()->getPathInfo();
+                    $response['@type'] = 'hydra:Collection';
+                    $response['hydra:member'] = array_values($array);
+                    $response['hydra:totalItems'] = count($array);
+                    break;
+                default:
+                    $response['_embedded']['item'] = $array;
+                    $response['totalItems'] = count($array);
+                    $response['itemsPerPage'] = 30;
+                    $links = [];
+                    foreach ($array as $key=>$resource) {
+                        array_push($links, json_decode($json, true)[$key]['_links']['self']);
+                    }
+                    $response['_links'] = $response['_links'] = [
+                        'self' => ['href'=>$event->getRequest()->getRequestUri()],
+                        'item' => $links,
+                    ];
+                    break;
+            }
+        } else {
+            $array = $this->getExtends($extends, $array);
+            if ($fields != [] && $fields != '') {
+                $array = $this->getFields($fields, $array);
+            }
+            $response = $array;
         }
 
         if ($fields != [] && $fields != '') {
-            // let turn fields into an array if it isn't one already
-            if (!is_array($fields)) {
-                $fields = explode(',', $fields);
-            }
-            // Its possible to nest fields for filterins
-            foreach ($fields as $key=>$field) {
-                $field = explode('.', $field);
-                unset($fields[$key]);
-                $field = $this->recursiveField($field);
-
-                $fields = $this->array_merge_recursive_ex($fields, $field);
-            }
-//            die;
-            // Overwrite maxdepth for extended properties
-            // we always need to return an id and links (in order not to break stuff)
-            if (!in_array('id', $fields)) {
-                $fields[] = 'id';
-            }
-            if (!in_array('@id', $fields)) {
-                $fields[] = '@id';
-            }
-            if (!in_array('@type', $fields)) {
-                $fields[] = '@type';
-            }
-            if (!in_array('@context', $fields)) {
-                $fields[] = '@context';
-            }
-            $array = $this->selectFields($array, $fields);
-
             // now we need to overide the normal subscriber
             $json = $this->serializer->serialize(
-                $array,
+                $response,
                 $renderType,
                 ['enable_max_depth' => true,
                     'attributes'    => $fields, ]
             );
         } else {
             $json = $this->serializer->serialize(
-                $array,
+                $response,
                 $renderType,
                 ['enable_max_depth' => true]
             );
@@ -138,6 +141,51 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         );
         $this->commonGroundService->setHeader('Authorization', $this->params->get('app_commonground_key'));
         $event->setResponse($response);
+    }
+
+    public function getExtends($extends, $array)
+    {
+        if (!is_array($extends)) {
+            $extends = explode(',', $extends);
+        }
+        foreach ($extends as $extend) {
+            $extend = explode('.', $extend);
+            $array = $this->recursiveExtend($array, $extend);
+        }
+
+        return $array;
+    }
+
+    public function getFields($fields, $array)
+    {
+        if (!is_array($fields)) {
+            $fields = explode(',', $fields);
+        }
+        // Its possible to nest fields for filterins
+        foreach ($fields as $key=>$field) {
+            $field = explode('.', $field);
+            unset($fields[$key]);
+            $field = $this->recursiveField($field);
+
+            $fields = $this->array_merge_recursive_ex($fields, $field);
+        }
+//            die;
+        // Overwrite maxdepth for extended properties
+        // we always need to return an id and links (in order not to break stuff)
+        if (!in_array('id', $fields)) {
+            $fields[] = 'id';
+        }
+        if (!in_array('@id', $fields)) {
+            $fields[] = '@id';
+        }
+        if (!in_array('@type', $fields)) {
+            $fields[] = '@type';
+        }
+        if (!in_array('@context', $fields)) {
+            $fields[] = '@context';
+        }
+
+        return $this->selectFields($array, $fields);
     }
 
     public function recursiveExtend(array $resource, array $extend)
@@ -176,7 +224,7 @@ class FieldsAndExtendSubscriber implements EventSubscriberInterface
         foreach ($fields as $key=>$field) {
             if (!is_array($field) && array_key_exists($field, $resource)) {
                 $returnArray[$field] = $resource[$field];
-            } elseif (array_key_exists($key, $resource)) {
+            } elseif (array_key_exists($key, $resource) && $resource[$key] && is_array($resource[$key])) {
                 if (!array_key_exists($key, $returnArray)) {
                     $returnArray[$key] = $this->selectFields($resource[$key], $field);
                 } else {

@@ -4,6 +4,9 @@ namespace Conduction\CommonGroundBundle\ValueObject;
 
 class UnderInvestigation
 {
+    public $properties;
+    public $date;
+
     /**
      * @param array  $properties
      * @param string $date
