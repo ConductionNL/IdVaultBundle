@@ -111,11 +111,11 @@ class CommonGroundService
             'verify' => false,
         ];
 
-        if(file_exists('/var/run/certs/tls.crt')){
-            $this->guzzleConfig['cert'] = '/var/run/certs/tls.crt';
+        if($this->params->has('app_certificate') && file_exists($this->params->get('app_certificate'))){
+            $this->guzzleConfig['cert'] = $this->params->get('app_certificate');
         }
-        if(file_exists('/var/run/certs/tls.key')){
-            $this->guzzleConfig['ssl_key'] = '/var/run/certs/tls.key';
+        if($this->params->has('app_ssl_key') && file_exists($this->params->get('app_ssl_key'))){
+            $this->guzzleConfig['ssl_key'] = $this->params->get('app_ssl_key');
         }
 
         // Lets start up a default client
