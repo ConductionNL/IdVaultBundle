@@ -198,7 +198,7 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
         $this->session->remove('newUser');
 
         if ($newUser) {
-            return new RedirectResponse($this->router->generate('app_user_edit'));
+            return new RedirectResponse($this->router->generate('app_chin_edit'));
         } elseif ($backUrl) {
             return new RedirectResponse($backUrl);
         }
