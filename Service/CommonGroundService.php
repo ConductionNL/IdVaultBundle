@@ -44,7 +44,7 @@ class CommonGroundService
     private $requestStack;
 
     /**
-     * @var Request
+     *
      */
     private $request;
 
@@ -133,7 +133,7 @@ class CommonGroundService
         $this->client = new Client($this->guzzleConfig);
 
         // Locale
-        $this->local = $request->getLocale();
+        $this->local = $this->request->getLocale();
     }
 
     public function isCommonGround(string $url)
