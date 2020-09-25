@@ -73,7 +73,6 @@ class CommonGroundService
         SessionInterface $session,
         CacheInterface $cache,
         RequestStack $requestStack,
-        Request $request,
         FlashBagInterface $flash,
         TranslatorInterface $translator,
         EventDispatcherInterface $eventDispatcher
@@ -83,10 +82,11 @@ class CommonGroundService
         $this->cache = $cache;
         $this->session = $session;
         $this->requestStack = $requestStack;
-        $this->request = $request;
         $this->flash = $flash;
         $this->translator = $translator;
         $this->eventDispatcher = $eventDispatcher;
+
+        $this->request =  $this->requestStack->getCurrentRequest();;
 
         // To work with NLX we need a couple of default headers
         $this->headers = [
