@@ -12,6 +12,7 @@ use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RequestStack;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 // Events
@@ -43,6 +44,11 @@ class CommonGroundService
     private $requestStack;
 
     /**
+     * @var Request
+     */
+    private $request;
+
+    /**
      * @var FlashBagInterface
      */
     private $flash;
@@ -57,11 +63,17 @@ class CommonGroundService
      */
     private $eventDispatcher;
 
+    /**
+     * @var string
+     */
+    private $local;
+
     public function __construct(
         ParameterBagInterface $params,
         SessionInterface $session,
         CacheInterface $cache,
         RequestStack $requestStack,
+        Request $request,
         FlashBagInterface $flash,
         TranslatorInterface $translator,
         EventDispatcherInterface $eventDispatcher
@@ -71,6 +83,7 @@ class CommonGroundService
         $this->cache = $cache;
         $this->session = $session;
         $this->requestStack = $requestStack;
+        $this->request = $request;
         $this->flash = $flash;
         $this->translator = $translator;
         $this->eventDispatcher = $eventDispatcher;
@@ -112,6 +125,9 @@ class CommonGroundService
 
         // Lets start up a default client
         $this->client = new Client($this->guzzleConfig);
+
+        // Locale
+        $this->local = $request->getLocale();
     }
 
     public function isCommonGround(string $url)
@@ -1042,6 +1058,12 @@ class CommonGroundService
             $query = $queryString;
         } elseif ($query == []) {
             $query = '';
+        }
+
+        // Lets pass trough a locale if required
+        if($this->local){
+            if($query != '') $query .='&';
+            $query .='_local='.$this->local;
         }
 
         return $query;
