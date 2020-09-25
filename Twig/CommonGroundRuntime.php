@@ -66,7 +66,7 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     public function getPath(string $route, array $route_parameters = [], $relative = false)
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return '/' . $this->params->get('app_subpath') . $this->router->generate($route, $route_parameters, $relative);
+            return '/'.$this->params->get('app_subpath').$this->router->generate($route, $route_parameters, $relative);
         } else {
             return $this->router->generate($route, $route_parameters, $relative);
         }
@@ -82,10 +82,10 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
                 $temp = $value;
             }
 
-            $result .= '<li>' . $temp . '</li>';
+            $result .= '<li>'.$temp.'</li>';
         }
 
-        return '<ul>' . $result . '</ul>';
+        return '<ul>'.$result.'</ul>';
     }
 
     public function dateInterval($string, $format)
