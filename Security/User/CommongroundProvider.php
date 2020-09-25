@@ -56,6 +56,7 @@ class CommongroundProvider implements UserProviderInterface
     private function fetchUser($username, $password, $organization, $type, $person)
     {
         //only trigger if type of user is organization
+        $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
         if ($type == 'organization') {
             $client = new Client([
                 // Base URI is used with relative requests
@@ -95,25 +96,31 @@ class CommongroundProvider implements UserProviderInterface
             $users = $users['hydra:member'];
             $user = $users[0];
         } elseif ($type == 'idin') {
-            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'idin'])['hydra:member'];
-            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $username, 'provider.name' => $provider[0]['name']])['hydra:member'];
-            $user = $this->commonGroundService->getResource($token[0]['user']['@id']);
+            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'idin', 'application' => $this->params->get('app_id')])['hydra:member'];
+            $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $username, 'provider.name' => $provider[0]['name']])['hydra:member'];
+            // Deze $urls zijn een hotfix voor niet werkende @id's op de cgb cgs
+            $userUlr = $this->commonGroundService->cleanUrl(['component'=>'uc', 'type'=>'users', 'id'=>$tokens[0]['user']['id']]);
+            $user = $this->commonGroundService->getResource($userUlr);
             if (!isset($user['roles'])) {
                 $user['roles'] = [];
             }
             array_push($user['roles'], 'scope.chin.checkins.read');
         } elseif ($type == 'facebook') {
-            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'facebook'])['hydra:member'];
-            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $password, 'provider.name' => $provider[0]['name']])['hydra:member'];
-            $user = $this->commonGroundService->getResource($token[0]['user']['@id']);
+            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'facebook', 'application' => $this->params->get('app_id')])['hydra:member'];
+            $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $password, 'provider.name' => $provider[0]['name']])['hydra:member'];
+            // Deze $urls zijn een hotfix voor niet werkende @id's op de cgb cgs
+            $userUlr = $this->commonGroundService->cleanUrl(['component'=>'uc', 'type'=>'users', 'id'=>$tokens[0]['user']['id']]);
+            $user = $this->commonGroundService->getResource($userUlr);
             if (!isset($user['roles'])) {
                 $user['roles'] = [];
             }
             array_push($user['roles'], 'scope.chin.checkins.read');
         } elseif ($type == 'gmail') {
-            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['name' => 'gmail'])['hydra:member'];
-            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $password, 'provider.name' => $provider[0]['name']])['hydra:member'];
-            $user = $this->commonGroundService->getResource($token[0]['user']['@id']);
+            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'gmail', 'application' => $this->params->get('app_id')])['hydra:member'];
+            $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $password, 'provider.name' => $provider[0]['name']])['hydra:member'];
+            // Deze $urls zijn een hotfix voor niet werkende @id's op de cgb cgs
+            $userUlr = $this->commonGroundService->cleanUrl(['component'=>'uc', 'type'=>'users', 'id'=>$tokens[0]['user']['id']]);
+            $user = $this->commonGroundService->getResource($userUlr);
             if (!isset($user['roles'])) {
                 $user['roles'] = [];
             }
@@ -166,7 +173,7 @@ class CommongroundProvider implements UserProviderInterface
 
     private function checkResidence($type, $user, $organization)
     {
-        $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => getenv('APP_ID')]);
+        $application = $this->commonGroundService->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => $this->params->get('app_id')]);
         $resident = false;
         if (isset($application['defaultConfiguration']['configuration']['cityNames'])) {
             foreach ($application['defaultConfiguration']['configuration']['cityNames'] as $name) {
