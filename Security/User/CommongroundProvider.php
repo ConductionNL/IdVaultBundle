@@ -56,6 +56,7 @@ class CommongroundProvider implements UserProviderInterface
     private function fetchUser($username, $password, $organization, $type, $person)
     {
         //only trigger if type of user is organization
+        $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
         if ($type == 'organization') {
             $client = new Client([
                 // Base URI is used with relative requests
