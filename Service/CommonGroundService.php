@@ -221,7 +221,7 @@ class CommonGroundService
 
         $url = $this->cleanUrl($endpoint, false, $autowire);
 
-        $item = $this->cache->getItem('commonground_'.md5($url));
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
         if ($item->isHit() && $cache && $this->params->get('app_cache')) {
             // return $item->get();
         }
@@ -344,7 +344,7 @@ class CommonGroundService
 
         $url = $this->cleanUrl($endpoint, false, $autowire);
 
-        $item = $this->cache->getItem('commonground_'.md5($url));
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
 
         if ($item->isHit() && $cache && $this->params->get('app_cache')) {
             return $item->get();
@@ -525,7 +525,7 @@ class CommonGroundService
         $response = $this->enrichObject($response, $parsedUrl);
 
         // Lets cache this item for speed purposes
-        $item = $this->cache->getItem('commonground_'.md5($url));
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
         $item->set($response);
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
@@ -630,7 +630,7 @@ class CommonGroundService
         $response = $this->enrichObject($response, $parsedUrl);
 
         // Lets cache this item for speed purposes
-        $item = $this->cache->getItem('commonground_'.md5($url.'/'.$response['id']));
+        $item = $this->cache->getItem('commonground_'.md5($url.'/'.$response['id']).'_'.$this->local);
         $item->set($response);
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
@@ -721,7 +721,7 @@ class CommonGroundService
         }
 
         // Remove the item from cache
-        $this->cache->delete('commonground_'.md5($url));
+        $this->cache->delete('commonground_'.md5($url).'_'.$this->local);
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
