@@ -741,22 +741,29 @@ class CommonGroundService
     public function saveResource($resource, $endpoint = false, $autowire = true, $events = true)
     {
         // We dont require an endpoint if a resource is self explanatory
-        if (!$endpoint && array_key_exists('@id', $resource)) {
-            $endpoint = $resource['@id'];
-        }
-
         if (is_array($endpoint) && array_key_exists('component', $endpoint)) {
             $component = $this->getComponent($endpoint['component']);
-            $component['code'] = $endpoint['component'];
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($endpoint) && $endpoint != null && $componentUrl = $this->isCommonGround($endpoint)) {
+                $endpoint = $componentUrl;
+                $component = $this->getComponent($endpoint['component']);
+                if (array_key_exists('accept', $endpoint)) {
+                    $component['accept'] = $endpoint['accept'];
+                }
+            } elseif ($endpoint == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
+                $endpoint = $componentUrl;
+                $component = $this->getComponent($endpoint['component']);
+                if (array_key_exists('accept', $endpoint)) {
+                    $component['accept'] = $endpoint['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
-            $event = new CommongroundUpdateEvent($resource, $component);
+            $event = new CommongroundUpdateEvent($resource, $component, $endpoint);
             $this->eventDispatcher->dispatch(
                 $event,
                 CommonGroundEvents::SAVE
