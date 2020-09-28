@@ -90,9 +90,11 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
 
     public function dateInterval($string, $format)
     {
-        $string = new DateInterval($string);
-        $string = $string->format($format);
+        return $this->commongroundService->dateInterval();
+    }
 
-        return $string;
+    public function addDateInterval($date, $intervalInIso8601)
+    {
+        return $this->commongroundService->addDateInterval();
     }
 }
