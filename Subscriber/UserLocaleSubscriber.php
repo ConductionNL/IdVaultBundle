@@ -4,6 +4,7 @@
 
 namespace Conduction\CommonGroundBundle\Subscriber;
 
+use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Http\Event\InteractiveLoginEvent;
@@ -26,7 +27,7 @@ class UserLocaleSubscriber implements EventSubscriberInterface
     {
         $user = $event->getAuthenticationToken()->getUser();
 
-        if (null !== $user->getLocale()) {
+        if ($user instanceof CommongroundUser && null !== $user->getLocale()) {
             $this->session->set('_locale', $user->getLocale());
         }
     }
