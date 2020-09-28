@@ -220,6 +220,7 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         $backUrl = $this->session->get('backUrl', false);
         if ($backUrl) {
             $this->session->set('checkingProvider', 'gmail');
+
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){

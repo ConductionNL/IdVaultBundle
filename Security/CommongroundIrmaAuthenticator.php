@@ -13,7 +13,6 @@ use Conduction\CommonGroundBundle\Entity\LoginLog;
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -77,7 +76,6 @@ class CommongroundIrmaAuthenticator extends AbstractGuardAuthenticator
 
         $redirect = str_replace('http:', 'https:', $request->getUri());
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
-
 
         $credentials = [
 
