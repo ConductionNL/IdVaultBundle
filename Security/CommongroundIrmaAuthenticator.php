@@ -13,7 +13,6 @@ use Conduction\CommonGroundBundle\Entity\LoginLog;
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -28,7 +27,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
+class CommongroundIrmaAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;
@@ -55,7 +54,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return 'app_user_facebook' === $request->attributes->get('_route')
+        return 'app_user_irma' === $request->attributes->get('_route')
             && $request->isMethod('GET') && $request->query->get('code');
     }
 
@@ -67,7 +66,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
     {
         $code = $request->query->get('code');
         $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
-        $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'facebook', 'application' => $this->params->get('app_id')])['hydra:member'];
+        $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'irma', 'application' => $this->params->get('app_id')])['hydra:member'];
         $provider = $providers[0];
 
         $backUrl = $request->query->get('backUrl', false);
@@ -78,24 +77,8 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $redirect = str_replace('http:', 'https:', $request->getUri());
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
-        $client = new Client([
-            // Base URI is used with relative requests
-            'base_uri' => 'https://graph.facebook.com',
-            // You can set any number of default request options.
-            'timeout'  => 2.0,
-        ]);
-
-        $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.str_replace('"', '', $provider['configuration']['app_id']).'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&code='.$code);
-        $accessToken = json_decode($response->getBody()->getContents(), true);
-
-        $response = $client->request('GET', '/me?&fields=id,name,email&access_token='.$accessToken['access_token']);
-        $user = json_decode($response->getBody()->getContents(), true);
-
         $credentials = [
-            'username'  => $user['email'],
-            'email'     => $user['email'],
-            'name'      => $user['name'],
-            'id'        => $user['id'],
+
         ];
 
         $request->getSession()->set(
@@ -171,7 +154,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
 
         $log = new LoginLog();
         $log->setAddress($_SERVER['REMOTE_ADDR']);
-        $log->setMethod('Facebook');
+        $log->setMethod('Irma');
         $log->setStatus('200');
         $this->em->persist($log);
         $this->em->flush($log);
@@ -181,7 +164,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         }
         array_push($user['roles'], 'scope.chin.checkins.read');
 
-        return new CommongroundUser($user['username'], $credentials['id'], $credentials['name'], null, $user['roles'], $user['person'], null, 'facebook');
+        return new CommongroundUser($user['username'], $credentials['id'], $credentials['name'], null, $user['roles'], $user['person'], null, 'irma');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
@@ -202,8 +185,6 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
     {
         $backUrl = $this->session->get('backUrl', false);
         if ($backUrl) {
-            $this->session->set('checkingProvider', 'facebook');
-
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){

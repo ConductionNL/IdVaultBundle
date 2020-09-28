@@ -6,16 +6,16 @@ namespace Conduction\CommonGroundBundle\Service;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
+use DateInterval;
 use GuzzleHttp\Client;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
-
 // Events
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Translation\TranslatorInterface;
@@ -44,9 +44,6 @@ class CommonGroundService
      */
     private $requestStack;
 
-    /**
-     *
-     */
     private $request;
 
     /**
@@ -77,8 +74,7 @@ class CommonGroundService
         FlashBagInterface $flash,
         TranslatorInterface $translator,
         EventDispatcherInterface $eventDispatcher
-    )
-    {
+    ) {
         $this->params = $params;
         $this->session = $session;
         $this->cache = $cache;
@@ -88,17 +84,17 @@ class CommonGroundService
         $this->translator = $translator;
         $this->eventDispatcher = $eventDispatcher;
 
-        $this->request = $this->requestStack->getCurrentRequest();;
+        $this->request = $this->requestStack->getCurrentRequest();
 
         // To work with NLX we need a couple of default headers
         $this->headers = [
-            'Accept' => 'application/ld+json',
-            'Content-Type' => 'application/json',
+            'Accept'        => 'application/ld+json',
+            'Content-Type'  => 'application/json',
             'Authorization' => $this->params->get('app_commonground_key'),
             // NLX
             'X-NLX-Request-Application-Id' => $this->params->get('app_commonground_id'), // the id of the application performing the request
             // NL Api Strategie
-            'Accept-Crs' => 'EPSG:4326',
+            'Accept-Crs'  => 'EPSG:4326',
             'Content-Crs' => 'EPSG:4326',
         ];
 
@@ -225,7 +221,7 @@ class CommonGroundService
 
         $url = $this->cleanUrl($endpoint, false, $autowire);
 
-        $item = $this->cache->getItem('commonground_' . md5($url) . '_' . $this->local);
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
         if ($item->isHit() && $cache && $this->params->get('app_cache')) {
             // return $item->get();
         }
@@ -243,7 +239,7 @@ class CommonGroundService
         if ($component && array_key_exists('auth', $component)) {
             switch ($component['auth']) {
                 case 'jwt':
-                    $headers['Authorization'] = 'Bearer ' . $this->getJwtToken($component['code']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case 'username-password':
                     $auth = [$component['username'], $component['password']];
@@ -252,22 +248,22 @@ class CommonGroundService
 
         if (!$async) {
             $response = $this->client->request('GET', $url, [
-                'query' => $query,
-                'headers' => $headers,
-                'auth' => $auth,
+                'query'       => $query,
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         } else {
             $response = $this->client->requestAsync('GET', $url, [
-                'query' => $query,
-                'headers' => $headers,
-                'auth' => $auth,
+                'query'       => $query,
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         }
 
         $statusCode = $response->getStatusCode();
-        $body = (string)$response->getBody()->getContents();
+        $body = (string) $response->getBody()->getContents();
         $response = json_decode($body, true);
 
         // Fallback for non-json code
@@ -348,7 +344,7 @@ class CommonGroundService
 
         $url = $this->cleanUrl($endpoint, false, $autowire);
 
-        $item = $this->cache->getItem('commonground_' . md5($url) . '_' . $this->local);
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
 
         if ($item->isHit() && $cache && $this->params->get('app_cache')) {
             return $item->get();
@@ -368,7 +364,7 @@ class CommonGroundService
         if ($component && array_key_exists('auth', $component)) {
             switch ($component['auth']) {
                 case 'jwt':
-                    $headers['Authorization'] = 'Bearer ' . $this->getJwtToken($component['code']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case 'username-password':
                     $auth = [$component['username'], $component['password']];
@@ -377,22 +373,22 @@ class CommonGroundService
 
         if (!$async) {
             $response = $this->client->request('GET', $url, [
-                'query' => $query,
-                'headers' => $headers,
-                'auth' => $auth,
+                'query'       => $query,
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         } else {
             $response = $this->client->requestAsync('GET', $url, [
-                'query' => $query,
-                'headers' => $headers,
-                'auth' => $auth,
+                'query'       => $query,
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         }
 
         $statusCode = $response->getStatusCode();
-        $body = (string)$response->getBody();
+        $body = (string) $response->getBody();
         $response = json_decode($body, true);
 
         // Fallback for non-json code
@@ -482,7 +478,7 @@ class CommonGroundService
         if ($component && array_key_exists('auth', $component)) {
             switch ($component['auth']) {
                 case 'jwt':
-                    $headers['Authorization'] = 'Bearer ' . $this->getJwtToken($component['code']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case 'username-password':
                     $auth = [$component['username'], $component['password']];
@@ -500,16 +496,16 @@ class CommonGroundService
 
         if (!$async) {
             $response = $this->client->request('PUT', $url, [
-                'body' => json_encode($resource),
-                'headers' => $headers,
-                'auth' => $auth,
+                'body'        => json_encode($resource),
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         } else {
             $response = $this->client->requestAsync('PUT', $url, [
-                'body' => json_encode($resource),
-                'headers' => $headers,
-                'auth' => $auth,
+                'body'        => json_encode($resource),
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         }
@@ -529,7 +525,7 @@ class CommonGroundService
         $response = $this->enrichObject($response, $parsedUrl);
 
         // Lets cache this item for speed purposes
-        $item = $this->cache->getItem('commonground_' . md5($url) . '_' . $this->local);
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
         $item->set($response);
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
@@ -594,7 +590,7 @@ class CommonGroundService
         if ($component && array_key_exists('auth', $component)) {
             switch ($component['auth']) {
                 case 'jwt':
-                    $headers['Authorization'] = 'Bearer ' . $this->getJwtToken($component['code']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case 'username-password':
                     $auth = [$component['username'], $component['password']];
@@ -605,16 +601,16 @@ class CommonGroundService
 
         if (!$async) {
             $response = $this->client->request('POST', $url, [
-                'body' => json_encode($resource),
-                'headers' => $headers,
-                'auth' => $auth,
+                'body'        => json_encode($resource),
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         } else {
             $response = $this->client->requestAsync('POST', $url, [
-                'body' => json_encode($resource),
-                'headers' => $headers,
-                'auth' => $auth,
+                'body'        => json_encode($resource),
+                'headers'     => $headers,
+                'auth'        => $auth,
                 'http_errors' => $error,
             ]);
         }
@@ -634,7 +630,7 @@ class CommonGroundService
         $response = $this->enrichObject($response, $parsedUrl);
 
         // Lets cache this item for speed purposes
-        $item = $this->cache->getItem('commonground_' . md5($url . '/' . $response['id']) . '_' . $this->local);
+        $item = $this->cache->getItem('commonground_'.md5($url.'/'.$response['id']).'_'.$this->local);
         $item->set($response);
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
@@ -697,7 +693,7 @@ class CommonGroundService
         if ($component && array_key_exists('auth', $component)) {
             switch ($component['auth']) {
                 case 'jwt':
-                    $headers['Authorization'] = 'Bearer ' . $this->getJwtToken($component['code']);
+                    $headers['Authorization'] = 'Bearer '.$this->getJwtToken($component['code']);
                     break;
                 case 'username-password':
                     $auth = [$component['username'], $component['password']];
@@ -707,12 +703,12 @@ class CommonGroundService
         if (!$async) {
             $response = $this->client->request('DELETE', $url, [
                 'headers' => $headers,
-                'auth' => $auth,
+                'auth'    => $auth,
             ]);
         } else {
             $response = $this->client->requestAsync('DELETE', $url, [
                 'headers' => $headers,
-                'auth' => $auth,
+                'auth'    => $auth,
             ]);
         }
 
@@ -725,7 +721,7 @@ class CommonGroundService
         }
 
         // Remove the item from cache
-        $this->cache->delete('commonground_' . md5($url) . '_' . $this->local);
+        $this->cache->delete('commonground_'.md5($url).'_'.$this->local);
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
@@ -819,22 +815,22 @@ class CommonGroundService
                 $resourceType = $this->getUuidFromUrl($resourceType);
             }
 
-            $text = $text . $this->translator->trans($resourceType);
+            $text = $text.$this->translator->trans($resourceType);
         }
 
         // Lets try to name the object
         if (array_key_exists('reference', $resource)) {
-            $text = $text . ' ' . $resource['reference'];
+            $text = $text.' '.$resource['reference'];
         } elseif (array_key_exists('name', $resource)) {
-            $text = $text . ' ' . $resource['name'];
+            $text = $text.' '.$resource['name'];
         } elseif (array_key_exists('id', $resource)) {
-            $text = $text . ' ' . $resource['id'];
+            $text = $text.' '.$resource['id'];
         } else {
             /// do nothing
         }
 
         // set the message
-        $text = $text . ' ' . $this->translator->trans($message);
+        $text = $text.' '.$this->translator->trans($message);
 
         // Throw te actual flash
         $this->flash->add($type, $text);
@@ -866,7 +862,7 @@ class CommonGroundService
     {
         $url = $this->cleanUrl($url, $resource);
 
-        $this->cache->delete('commonground_' . md5($url));
+        $this->cache->delete('commonground_'.md5($url));
     }
 
     /*
@@ -892,14 +888,14 @@ class CommonGroundService
         // Non-Json suppor
 
         if (!$response) {
-            $this->flash->add('error', $statusCode . ':' . $url);
+            $this->flash->add('error', $statusCode.':'.$url);
         } // ZGW support
         elseif (!array_key_exists('@type', $response) && array_key_exists('types', $response)) {
             $this->flash->add('error', $this->translator->trans($response['detail']));
         } // Hydra Support
         elseif (array_key_exists('@type', $response) && $response['@type'] == 'ConstraintViolationList') {
             foreach ($response['violations'] as $violation) {
-                $this->flash->add('error', $violation['propertyPath'] . ' ' . $this->translator->trans($violation['message']));
+                $this->flash->add('error', $violation['propertyPath'].' '.$this->translator->trans($violation['message']));
             }
 
             return false;
@@ -908,7 +904,7 @@ class CommonGroundService
 
             return false;
         } else {
-            throw new HttpException($statusCode, $url . ' returned: ' . json_encode($response));
+            throw new HttpException($statusCode, $url.' returned: '.json_encode($response));
         }
 
         return $response;
@@ -1034,9 +1030,9 @@ class CommonGroundService
                 //@TODO this should be more dynamic
                 $path = array_slice($path, 0, 4);
                 $path = implode('/', $path);
-                $object['@id'] = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $path . $object['@id'];
+                $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$path.$object['@id'];
             } else {
-                $object['@id'] = $parsedUrl['scheme'] . '://' . $parsedUrl['host'] . $object['@id'];
+                $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$object['@id'];
             }
         }
         foreach ($object as $key => $subObject) {
@@ -1075,8 +1071,10 @@ class CommonGroundService
 
         // Lets pass trough a locale if required
         if ($this->local) {
-            if ($query != '') $query .= '&';
-            $query .= '_local=' . $this->local;
+            if ($query != '') {
+                $query .= '&';
+            }
+            $query .= '_local='.$this->local;
         }
 
         return $query;
@@ -1091,15 +1089,15 @@ class CommonGroundService
         if (is_array($url) && array_key_exists('component', $url)) {
             $route = '';
             if (array_key_exists('type', $url)) {
-                $route = $route . '/' . $url['type'];
+                $route = $route.'/'.$url['type'];
             }
             if (array_key_exists('id', $url)) {
-                $route = $route . '/' . $url['id'];
+                $route = $route.'/'.$url['id'];
             }
 
             // If the component is defined we get the config values
             if ($component = $this->getComponent($url['component'])) {
-                $url = $component['location'] . $route;
+                $url = $component['location'].$route;
 
                 // Components may overule the autowire
                 if (array_key_exists('autowire', $component)) {
@@ -1107,20 +1105,20 @@ class CommonGroundService
                 }
             } // If it is not we "gues" the endpoint (this is where we could force nlx)
             elseif ($this->params->get('app_internal') == 'true') {
-                $url = 'http://' . $url['component'] . '.' . $this->params->get('app_env') . '.svc.cluster.local' . $route;
+                $url = 'http://'.$url['component'].'.'.$this->params->get('app_env').'.svc.cluster.local'.$route;
             } elseif (
                 $this->params->get('app_subpath_routing') &&
                 $this->params->get('app_subpath_routing') != 'false' &&
                 $this->params->get('app_env') == 'prod') {
-                $url = 'https://' . $this->params->get('app_domain') . '/api/' . $this->params->get('app_major_version') . '/' . $url['component'] . $route;
+                $url = 'https://'.$this->params->get('app_domain').'/api/'.$this->params->get('app_major_version').'/'.$url['component'].$route;
             } elseif (
                 $this->params->get('app_subpath_routing') &&
                 $this->params->get('app_subpath_routing') != 'false') {
-                $url = 'https://' . $this->params->get('app_env') . '.' . $this->params->get('app_domain') . '/api/' . $this->params->get('app_major_version') . '/' . $url['component'] . $route;
+                $url = 'https://'.$this->params->get('app_env').'.'.$this->params->get('app_domain').'/api/'.$this->params->get('app_major_version').'/'.$url['component'].$route;
             } elseif ($this->params->get('app_env') == 'prod') {
-                $url = 'https://' . $url['component'] . '.' . $this->params->get('app_domain') . $route;
+                $url = 'https://'.$url['component'].'.'.$this->params->get('app_domain').$route;
             } else {
-                $url = 'https://' . $url['component'] . '.' . $this->params->get('app_env') . '.' . $this->params->get('app_domain') . $route;
+                $url = 'https://'.$url['component'].'.'.$this->params->get('app_env').'.'.$this->params->get('app_domain').$route;
             }
         }
 
@@ -1132,16 +1130,16 @@ class CommonGroundService
         $parsedUrl = parse_url($url);
 
         // We only do this on non-production enviroments
-        if ($this->params->get('app_env') != 'prod' && $autowire && strpos($url, $this->params->get('app_env') . '.') === false) {
+        if ($this->params->get('app_env') != 'prod' && $autowire && strpos($url, $this->params->get('app_env').'.') === false) {
 
             // Lets make sure we dont have doubles
-            $url = str_replace($this->params->get('app_env') . '.', '', $url);
+            $url = str_replace($this->params->get('app_env').'.', '', $url);
 
             if (!$this->params->get('app_subpath_routing') || $this->params->get('app_subpath_routing') == 'false') {
                 // e.g https://wrc.larping.eu/ becomes https://wrc.dev.larping.eu/
                 $host = explode('.', $parsedUrl['host']);
                 $subdomain = $host[0];
-                $url = str_replace($subdomain . '.', $subdomain . '.' . $this->params->get('app_env') . '.', $url);
+                $url = str_replace($subdomain.'.', $subdomain.'.'.$this->params->get('app_env').'.', $url);
             } else {
                 $url = str_replace('https://', "https://{$this->params->get('app_env')}.", $url);
             }
@@ -1179,7 +1177,7 @@ class CommonGroundService
         }
 
         $host_names = explode('.', $host);
-        $host = $host_names[count($host_names) - 2] . '.' . $host_names[count($host_names) - 1];
+        $host = $host_names[count($host_names) - 2].'.'.$host_names[count($host_names) - 1];
 
         return $host;
     }
@@ -1214,7 +1212,7 @@ class CommonGroundService
     {
         $url = $this->cleanUrl(['component' => $component]);
 
-        $item = $this->cache->getItem('componentHealth_' . md5($component));
+        $item = $this->cache->getItem('componentHealth_'.md5($component));
         if ($item->isHit() && !$force) {
             return $item->get();
         }
@@ -1280,13 +1278,13 @@ class CommonGroundService
         $base64UrlPayload = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($payload));
 
         // Create Signature Hash
-        $signature = hash_hmac('sha256', $base64UrlHeader . '.' . $base64UrlPayload, $component['secret'], true);
+        $signature = hash_hmac('sha256', $base64UrlHeader.'.'.$base64UrlPayload, $component['secret'], true);
 
         // Encode Signature to Base64Url String
         $base64UrlSignature = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($signature));
 
         // Return JWT
-        return $base64UrlHeader . '.' . $base64UrlPayload . '.' . $base64UrlSignature;
+        return $base64UrlHeader.'.'.$base64UrlPayload.'.'.$base64UrlSignature;
     }
 
     /*
@@ -1300,5 +1298,24 @@ class CommonGroundService
         $array = explode('/', $url);
         /* @todo we might want to validate against uuid and id here */
         return end($array);
+    }
+
+    public function dateInterval($string, $format)
+    {
+        $string = new DateInterval($string);
+        $string = $string->format($format);
+
+        return $string;
+    }
+
+    public function addDateInterval($date, $interval)
+    {
+        $date = new \DateTime($date);
+        $interval = new DateInterval($interval);
+
+        $date->add($interval)->format("Y-m-d");
+
+        return $date;
+
     }
 }
