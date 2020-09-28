@@ -6,6 +6,7 @@ namespace Conduction\CommonGroundBundle\Service;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
+use DateInterval;
 use GuzzleHttp\Client;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -1297,5 +1298,23 @@ class CommonGroundService
         $array = explode('/', $url);
         /* @todo we might want to validate against uuid and id here */
         return end($array);
+    }
+
+    public function dateInterval($string, $format)
+    {
+        $string = new DateInterval($string);
+        $string = $string->format($format);
+
+        return $string;
+    }
+
+    public function addDateInterval($date, $interval)
+    {
+        $date = new \DateTime($date);
+        $interval = new DateInterval($interval);
+
+        $date->add($interval)->format('Y-m-d');
+
+        return $date;
     }
 }
