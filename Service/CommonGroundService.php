@@ -1313,9 +1313,8 @@ class CommonGroundService
         $date = new \DateTime($date);
         $interval = new DateInterval($interval);
 
-        $date->add($interval)->format("Y-m-d");
+        $date->add($interval)->format('Y-m-d');
 
         return $date;
-
     }
 }
