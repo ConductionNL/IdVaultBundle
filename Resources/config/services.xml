@@ -36,6 +36,7 @@
         <service id="Conduction\CommonGroundBundle\Security\CommongroundIdinLoginAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundFacebookAuthenticator" />
         <service id="Conduction\CommonGroundBundle\Security\CommongroundGmailAuthenticator" />
+        <service id="Conduction\CommonGroundBundle\Security\CommongroundIrmaAuthenticator" />
 
         <!--CommonGround Repositories-->
         <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
