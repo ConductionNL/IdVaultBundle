@@ -116,7 +116,12 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
-        return new RedirectResponse($this->router->generate('app_user_login'));
+        if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
+        } else {
+            return new RedirectResponse($this->router->generate('app_user_login'));
+        }
+
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
@@ -139,9 +144,6 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     public function start(Request $request, AuthenticationException $authException = null)
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            var_dump($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false');
-            var_dump('start');
-            die;
             return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
         } else {
             return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
@@ -156,9 +158,6 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     protected function getLoginUrl()
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            var_dump($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false');
-            var_dump('getLoginUrl');
-            die;
             return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
         } else {
             return $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
