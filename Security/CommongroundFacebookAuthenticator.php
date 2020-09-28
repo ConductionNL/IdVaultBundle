@@ -85,7 +85,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
             'timeout'  => 2.0,
         ]);
 
-        $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.str_replace("\"","",$provider['configuration']['app_id']).'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&code='.$code);
+        $response = $client->request('GET', '/v8.0/oauth/access_token?client_id='.str_replace('"', '', $provider['configuration']['app_id']).'&redirect_uri='.$redirect.'&client_secret='.$provider['configuration']['secret'].'&code='.$code);
         $accessToken = json_decode($response->getBody()->getContents(), true);
 
         $response = $client->request('GET', '/me?&fields=id,name,email&access_token='.$accessToken['access_token']);
@@ -203,6 +203,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
         $backUrl = $this->session->get('backUrl', false);
         if ($backUrl) {
             $this->session->set('checkingProvider', 'facebook');
+
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){

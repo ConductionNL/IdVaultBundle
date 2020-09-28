@@ -222,6 +222,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         $backUrl = $this->session->get('backUrl', false);
         if ($backUrl) {
             $this->session->set('checkingProvider', 'idin-identity');
+
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
