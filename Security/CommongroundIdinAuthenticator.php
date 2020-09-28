@@ -67,11 +67,16 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     {
         $code = $request->query->get('code');
 
+        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'idin', 'application' => $params->get('app_id')])['hydra:member'];
+        $provider = $provider[0];
+
+        $endpoint = str_replace('/oidc/token', '', $provider['configuration']['endpoint']);
+
         $redirect = str_replace('http:', 'https:', $request->getUri());
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
         $body = [
-            'client_id'    => 'demo-preprod-basic',
+            'client_id'    => $provider['configuration']['app_id'],
             'grant_type'   => 'authorization_code',
             'code'         => $code,
             'redirect_uri' => $redirect,
@@ -79,13 +84,13 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $client = new Client([
             // Base URI is used with relative requests
-            'base_uri' => 'https://eu01.preprod.signicat.com',
+            'base_uri' => $endpoint,
             // You can set any number of default request options.
             'timeout'  => 2.0,
         ]);
 
         $response = $client->request('POST', '/oidc/token', [
-            'auth'        => ['demo-preprod-basic', 'KmcxXfuttfBGnn86DlW8Tg3_dYu6khWafkn5uVo7fGg'],
+            'auth'        => [$provider['configuration']['app_id'], $provider['configuration']['secret']],
             'form_params' => $body,
         ]);
 
@@ -104,13 +109,8 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $credentials = [
             'username'    => $user['consumer.bin'],
-            'firstName'   => $user['consumer.partnerlastname'],
+            'firstName'   => $user['consumer.initials'],
             'lastName'    => $user['consumer.legallastname'],
-            'postalCode'  => $user['consumer.postalcode'],
-            'streetName'  => $user['consumer.street'],
-            'houseNumber' => $user['consumer.houseno'],
-            'country'     => $user['consumer.country'],
-            'city'        => $user['consumer.city'],
         ];
 
         if (isset($user['consumer.email'])) {
@@ -140,40 +140,24 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
             $users = $users['hydra:member'];
 
             if (count($users) < 1) {
-                if (isset($credentials['email'])) {
-                    //create email
-                    $email = [];
-                    $email['name'] = $credentials['email'];
-                    $email['email'] = $credentials['email'];
-                    $email = $this->commonGroundService->createResource($email, ['component' => 'cc', 'type' => 'emails']);
-                }
-
-                if (isset($credentials['telephone'])) {
-                    //create phoneNumber
-                    $telephone = [];
-                    $telephone['name'] = $credentials['telephone'];
-                    $telephone['telephone'] = $credentials['telephone'];
-                    $telephone = $this->commonGroundService->createResource($telephone, ['component' => 'cc', 'type' => 'telephones']);
-                }
-
-                //create address
-                $address = [];
-                $address['name'] = $credentials['firstName'];
-                $address['street'] = $credentials['streetName'];
-                $address['houseNumber'] = $credentials['houseNumber'];
-                $address['postalCode'] = $credentials['postalCode'];
-                $address['country'] = $credentials['country'];
-                $address['region'] = $credentials['city'];
-                $address = $this->commonGroundService->createResource($address, ['component' => 'cc', 'type' => 'addresses']);
-
                 //create person
                 $person = [];
                 $person['name'] = $credentials['firstName'];
                 $person['givenName'] = $credentials['firstName'];
                 $person['familyName'] = $credentials['lastName'];
-                $person['emails'] = [$email['@id']];
-                $person['telephones'] = [$telephone['@id']];
-                $person['addresses'] = [$address['@id']];
+
+                if (isset($credentials['email'])) {
+                    //create email
+                    $person['emails'][0]['name'] = $credentials['email'];
+                    $person['emails'][0]['email'] = $credentials['email'];
+                }
+
+                if (isset($credentials['telephone'])) {
+                    //create phoneNumber
+                    $person['telephones'][0]['name'] = $credentials['telephone'];
+                    $person['telephones'][0]['telephone'] = $credentials['telephone'];
+                }
+
                 $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
 
                 //create user
@@ -206,7 +190,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $log = new LoginLog();
         $log->setAddress($_SERVER['REMOTE_ADDR']);
-        $log->setMethod('Idin');
+        $log->setMethod('Idin-identity');
         $log->setStatus('200');
         $this->em->persist($log);
         $this->em->flush($log);
@@ -237,6 +221,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     {
         $backUrl = $this->session->get('backUrl', false);
         if ($backUrl) {
+            $this->session->set('checkingProvider', 'idin-identity');
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){

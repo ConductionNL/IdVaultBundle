@@ -202,6 +202,7 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
     {
         $backUrl = $this->session->get('backUrl', false);
         if ($backUrl) {
+            $this->session->set('checkingProvider', 'facebook');
             return new RedirectResponse($backUrl);
         }
         //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){

@@ -67,11 +67,16 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
     {
         $code = $request->query->get('code');
 
+        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'idin', 'application' => $params->get('app_id')])['hydra:member'];
+        $provider = $provider[0];
+
+        $endpoint = str_replace('/oidc/token', '', $provider['configuration']['endpoint']);
+
         $redirect = str_replace('http:', 'https:', $request->getUri());
         $redirect = substr($redirect, 0, strpos($redirect, '?'));
 
         $body = [
-            'client_id'    => 'demo-preprod-basic',
+            'client_id'    => $provider['configuration']['app_id'],
             'grant_type'   => 'authorization_code',
             'code'         => $code,
             'redirect_uri' => $redirect,
@@ -79,13 +84,13 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
 
         $client = new Client([
             // Base URI is used with relative requests
-            'base_uri' => 'https://eu01.preprod.signicat.com',
+            'base_uri' => $endpoint,
             // You can set any number of default request options.
             'timeout'  => 2.0,
         ]);
 
         $response = $client->request('POST', '/oidc/token', [
-            'auth'        => ['demo-preprod-basic', 'KmcxXfuttfBGnn86DlW8Tg3_dYu6khWafkn5uVo7fGg'],
+            'auth'        => [$provider['configuration']['app_id'], $provider['configuration']['secret']],
             'form_params' => $body,
         ]);
 
@@ -164,7 +169,7 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
 
         $log = new LoginLog();
         $log->setAddress($_SERVER['REMOTE_ADDR']);
-        $log->setMethod('IdinLogin');
+        $log->setMethod('Idin-login');
         $log->setStatus('200');
         $this->em->persist($log);
         $this->em->flush($log);
@@ -196,7 +201,7 @@ class CommongroundIdinLoginAuthenticator extends AbstractGuardAuthenticator
         $backUrl = $this->session->get('backUrl', false);
         $newUser = $this->session->get('newUser', false);
         $this->session->remove('newUser');
-
+        $this->session->set('checkingProvider', 'idin-login');
         if ($newUser) {
             return new RedirectResponse($this->router->generate('app_chin_edit'));
         } elseif ($backUrl) {
