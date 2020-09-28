@@ -24,6 +24,7 @@ class CommonGroundExtension extends AbstractExtension
             new TwigFunction('commonground_path', [CommonGroundRuntime::class, 'getPath']),
             new TwigFunction('path', [CommonGroundRuntime::class, 'getPath']),
             new TwigFunction('iterable', [CommonGroundRuntime::class, 'iterableArray']),
+            new TwigFunction('date_interval', [CommonGroundRuntime::class, 'date_interval']),
         ];
     }
 }
