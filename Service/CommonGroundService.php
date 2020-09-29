@@ -382,19 +382,31 @@ class CommonGroundService
         }
 
         if (!$async) {
+            try{
             $response = $this->client->request('GET', $url, [
                 'query'       => $query,
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('GET', $url, [
                 'query'       => $query,
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         }
 
         $statusCode = $response->getStatusCode();
@@ -619,7 +631,7 @@ class CommonGroundService
             }
         }
 
-        $resource = $this->cleanResource($resource);
+        $resource = $this->cleanResource($resource); 
 
         if (!$async) {
             try {
@@ -734,15 +746,27 @@ class CommonGroundService
         }
 
         if (!$async) {
+            try {
             $response = $this->client->request('DELETE', $url, [
                 'headers' => $headers,
                 'auth'    => $auth,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('DELETE', $url, [
                 'headers' => $headers,
                 'auth'    => $auth,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         }
 
         $statusCode = $response->getStatusCode();
