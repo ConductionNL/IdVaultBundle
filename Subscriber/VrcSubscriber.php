@@ -58,10 +58,9 @@ class VrcSubscriber implements EventSubscriberInterface
         if (!$url || !is_array($url) || $url['component'] != 'vrc' || $url['type'] != 'requests') {
             return;
         }
-//        var_dump('saving');
 
 //        $this->vrcService->clearDependencies($resource);
-        $this->vrcService->createCommongroundResources($resource);
+        $resource = $this->vrcService->createCommongroundResources($resource);
         $event->setResource($resource);
 
         return $event;
@@ -129,7 +128,7 @@ class VrcSubscriber implements EventSubscriberInterface
         }
 
 //        $this->vrcService->clearDependencies($resource);
-        $this->vrcService->createCommongroundResources($resource);
+        $resource = $this->vrcService->createCommongroundResources($resource);
         $event->setResource($resource);
 
         return $event;
