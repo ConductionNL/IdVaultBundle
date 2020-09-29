@@ -247,19 +247,29 @@ class CommonGroundService
         }
 
         if (!$async) {
+            try {
             $response = $this->client->request('GET', $url, [
                 'query'       => $query,
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('GET', $url, [
                 'query'       => $query,
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         }
 
         $statusCode = $response->getStatusCode();
@@ -495,19 +505,31 @@ class CommonGroundService
         }
 
         if (!$async) {
+            try {
             $response = $this->client->request('PUT', $url, [
                 'body'        => json_encode($resource),
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('PUT', $url, [
                 'body'        => json_encode($resource),
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         }
 
         $statusCode = $response->getStatusCode();
@@ -600,19 +622,30 @@ class CommonGroundService
         $resource = $this->cleanResource($resource);
 
         if (!$async) {
+            try {
             $response = $this->client->request('POST', $url, [
                 'body'        => json_encode($resource),
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('POST', $url, [
                 'body'        => json_encode($resource),
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                    var_dump($e->getResponse()->getBody()->getContents());var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                    throw $e;
+            }
         }
 
         $statusCode = $response->getStatusCode();
