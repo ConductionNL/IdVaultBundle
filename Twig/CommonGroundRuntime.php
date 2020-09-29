@@ -5,6 +5,7 @@
 namespace Conduction\CommonGroundBundle\Twig;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
+use DateInterval;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Extension\RuntimeExtensionInterface;
@@ -85,5 +86,15 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
         }
 
         return '<ul>'.$result.'</ul>';
+    }
+
+    public function dateInterval($string, $format)
+    {
+        return $this->commongroundService->dateInterval($string, $format);
+    }
+
+    public function addDateInterval($date, $interval)
+    {
+        return $this->commongroundService->addDateInterval($date, $interval);
     }
 }

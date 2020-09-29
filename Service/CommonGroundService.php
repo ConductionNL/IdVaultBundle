@@ -6,11 +6,13 @@ namespace Conduction\CommonGroundBundle\Service;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
+use DateInterval;
 use GuzzleHttp\Client;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -42,6 +44,8 @@ class CommonGroundService
      */
     private $requestStack;
 
+    private $request;
+
     /**
      * @var FlashBagInterface
      */
@@ -56,6 +60,11 @@ class CommonGroundService
      * @var EventDispatcherInterface
      */
     private $eventDispatcher;
+
+    /**
+     * @var string
+     */
+    private $local;
 
     public function __construct(
         ParameterBagInterface $params,
@@ -75,16 +84,18 @@ class CommonGroundService
         $this->translator = $translator;
         $this->eventDispatcher = $eventDispatcher;
 
+        $this->request = $this->requestStack->getCurrentRequest();
+
         // To work with NLX we need a couple of default headers
         $this->headers = [
-            'Accept'         => 'application/ld+json',
-            'Content-Type'   => 'application/json',
-            'Authorization'  => $this->params->get('app_commonground_key'),
+            'Accept'        => 'application/ld+json',
+            'Content-Type'  => 'application/json',
+            'Authorization' => $this->params->get('app_commonground_key'),
             // NLX
             'X-NLX-Request-Application-Id' => $this->params->get('app_commonground_id'), // the id of the application performing the request
             // NL Api Strategie
-            'Accept-Crs'   => 'EPSG:4326',
-            'Content-Crs'  => 'EPSG:4326',
+            'Accept-Crs'  => 'EPSG:4326',
+            'Content-Crs' => 'EPSG:4326',
         ];
 
         if ($session->get('user') && is_array($session->get('user')) && array_key_exists('@id', $session->get('user'))) {
@@ -102,7 +113,7 @@ class CommonGroundService
             // Base URI is used with relative requests
             'http_errors' => false,
             // You can set any number of default request options.
-            'timeout'  => 4000.0,
+            'timeout' => 4000.0,
             // To work with NLX we need a couple of default headers
             'headers' => $this->headers,
             // Do not check certificates
@@ -118,6 +129,11 @@ class CommonGroundService
 
         // Lets start up a default client
         $this->client = new Client($this->guzzleConfig);
+
+        // Locale
+        if (!empty($this->request)) {
+            $this->local = $this->request->getLocale();
+        }
     }
 
     public function isCommonGround(string $url)
@@ -134,7 +150,7 @@ class CommonGroundService
         $path = explode('/', $parsedUrl['path']);
         $host = explode('.', $parsedUrl['host']);
 
-        /**@TODO: Dit moet echt nog even wat dynamischer*/
+        /**@TODO: Dit moet echt nog even wat dynamischer */
         if (in_array('api', $path) && count($path) > 3) {
             $componentPath = implode('/', array_slice($path, 0, 4));
 
@@ -151,7 +167,7 @@ class CommonGroundService
 
         $componentUrl = "{$parsedUrl['scheme']}://{$parsedUrl['host']}{$componentPath}";
         $components = $this->params->get('common_ground.components');
-        foreach ($components as $code=>$component) {
+        foreach ($components as $code => $component) {
             if ($component['location'] == $componentUrl || strpos($component['location'], $componentUrl, ) !== false) {
                 $returnUrl['component'] = $code;
 
@@ -205,7 +221,7 @@ class CommonGroundService
 
         $url = $this->cleanUrl($endpoint, false, $autowire);
 
-        $item = $this->cache->getItem('commonground_'.md5($url));
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
         if ($item->isHit() && $cache && $this->params->get('app_cache')) {
             // return $item->get();
         }
@@ -328,7 +344,7 @@ class CommonGroundService
 
         $url = $this->cleanUrl($endpoint, false, $autowire);
 
-        $item = $this->cache->getItem('commonground_'.md5($url));
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
 
         if ($item->isHit() && $cache && $this->params->get('app_cache')) {
             return $item->get();
@@ -472,7 +488,7 @@ class CommonGroundService
         $resource = $this->cleanResource($resource);
 
         //Unset properties without values. To force empty, set an empty array ([])
-        foreach ($resource as $key=>$value) {
+        foreach ($resource as $key => $value) {
             if ($value === null) {
                 unset($resource[$key]);
             }
@@ -509,7 +525,7 @@ class CommonGroundService
         $response = $this->enrichObject($response, $parsedUrl);
 
         // Lets cache this item for speed purposes
-        $item = $this->cache->getItem('commonground_'.md5($url));
+        $item = $this->cache->getItem('commonground_'.md5($url).'_'.$this->local);
         $item->set($response);
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
@@ -614,7 +630,7 @@ class CommonGroundService
         $response = $this->enrichObject($response, $parsedUrl);
 
         // Lets cache this item for speed purposes
-        $item = $this->cache->getItem('commonground_'.md5($url.'/'.$response['id']));
+        $item = $this->cache->getItem('commonground_'.md5($url.'/'.$response['id']).'_'.$this->local);
         $item->set($response);
         $item->expiresAt(new \DateTime('tomorrow'));
         $this->cache->save($item);
@@ -705,7 +721,7 @@ class CommonGroundService
         }
 
         // Remove the item from cache
-        $this->cache->delete('commonground_'.md5($url));
+        $this->cache->delete('commonground_'.md5($url).'_'.$this->local);
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
@@ -725,22 +741,29 @@ class CommonGroundService
     public function saveResource($resource, $endpoint = false, $autowire = true, $events = true)
     {
         // We dont require an endpoint if a resource is self explanatory
-        if (!$endpoint && array_key_exists('@id', $resource)) {
-            $endpoint = $resource['@id'];
-        }
-
         if (is_array($endpoint) && array_key_exists('component', $endpoint)) {
             $component = $this->getComponent($endpoint['component']);
-            $component['code'] = $endpoint['component'];
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($endpoint) && $endpoint != null && $componentUrl = $this->isCommonGround($endpoint)) {
+                $endpoint = $componentUrl;
+                $component = $this->getComponent($endpoint['component']);
+                if (array_key_exists('accept', $endpoint)) {
+                    $component['accept'] = $endpoint['accept'];
+                }
+            } elseif ($endpoint == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
+                $endpoint = $componentUrl;
+                $component = $this->getComponent($endpoint['component']);
+                if (array_key_exists('accept', $endpoint)) {
+                    $component['accept'] = $endpoint['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
-            $event = new CommongroundUpdateEvent($resource, $component);
+            $event = new CommongroundUpdateEvent($resource, $component, $endpoint);
             $this->eventDispatcher->dispatch(
                 $event,
                 CommonGroundEvents::SAVE
@@ -834,7 +857,7 @@ class CommonGroundService
      */
     public function getApplication($force = false, $async = false)
     {
-        $application = $this->getResource(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('common_ground.app.id')]);
+        $application = $this->getResource(['component' => 'wrc', 'type' => 'applications', 'id' => $this->params->get('common_ground.app.id')]);
 
         return $application;
     }
@@ -873,12 +896,10 @@ class CommonGroundService
 
         if (!$response) {
             $this->flash->add('error', $statusCode.':'.$url);
-        }
-        // ZGW support
+        } // ZGW support
         elseif (!array_key_exists('@type', $response) && array_key_exists('types', $response)) {
             $this->flash->add('error', $this->translator->trans($response['detail']));
-        }
-        // Hydra Support
+        } // Hydra Support
         elseif (array_key_exists('@type', $response) && $response['@type'] == 'ConstraintViolationList') {
             foreach ($response['violations'] as $violation) {
                 $this->flash->add('error', $violation['propertyPath'].' '.$this->translator->trans($violation['message']));
@@ -1021,7 +1042,7 @@ class CommonGroundService
                 $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$object['@id'];
             }
         }
-        foreach ($object as $key=>$subObject) {
+        foreach ($object as $key => $subObject) {
             if (is_array($subObject)) {
                 $object[$key] = $this->convertAtId($subObject, $parsedUrl);
             }
@@ -1042,7 +1063,7 @@ class CommonGroundService
         if (is_array($query) && $query != []) {
             $queryString = '';
             $iterator = 0;
-            foreach ($query as $parameter=>$value) {
+            foreach ($query as $parameter => $value) {
                 $queryString .= "$parameter=$value";
 
                 $iterator++;
@@ -1053,6 +1074,14 @@ class CommonGroundService
             $query = $queryString;
         } elseif ($query == []) {
             $query = '';
+        }
+
+        // Lets pass trough a locale if required
+        if ($this->local) {
+            if ($query != '') {
+                $query .= '&';
+            }
+            $query .= '_local='.$this->local;
         }
 
         return $query;
@@ -1081,8 +1110,7 @@ class CommonGroundService
                 if (array_key_exists('autowire', $component)) {
                     $autowire = $component['autowire'];
                 }
-            }
-            // If it is not we "gues" the endpoint (this is where we could force nlx)
+            } // If it is not we "gues" the endpoint (this is where we could force nlx)
             elseif ($this->params->get('app_internal') == 'true') {
                 $url = 'http://'.$url['component'].'.'.$this->params->get('app_env').'.svc.cluster.local'.$route;
             } elseif (
@@ -1189,7 +1217,7 @@ class CommonGroundService
      */
     public function getComponentHealth(string $component, $force = false)
     {
-        $url = $this->cleanUrl(['component'=>$component]);
+        $url = $this->cleanUrl(['component' => $component]);
 
         $item = $this->cache->getItem('componentHealth_'.md5($component));
         if ($item->isHit() && !$force) {
@@ -1248,7 +1276,7 @@ class CommonGroundService
         $header = json_encode(['typ' => 'JWT', 'alg' => 'HS256', 'client_identifier' => $component['id']]);
 
         // Create token payload as a JSON string
-        $payload = json_encode(['iss' => $component['id'], 'client_id' =>$component['id'], 'user_id' => $userId, 'user_representation' => $userRepresentation, 'iat' => time()]);
+        $payload = json_encode(['iss' => $component['id'], 'client_id' => $component['id'], 'user_id' => $userId, 'user_representation' => $userRepresentation, 'iat' => time()]);
 
         // Encode Header to Base64Url String
         $base64UrlHeader = str_replace(['+', '/', '='], ['-', '_', ''], base64_encode($header));
@@ -1277,5 +1305,23 @@ class CommonGroundService
         $array = explode('/', $url);
         /* @todo we might want to validate against uuid and id here */
         return end($array);
+    }
+
+    public function dateInterval($string, $format)
+    {
+        $string = new DateInterval($string);
+        $string = $string->format($format);
+
+        return $string;
+    }
+
+    public function addDateInterval($date, $interval)
+    {
+        $date = new \DateTime($date);
+        $interval = new DateInterval($interval);
+
+        $date->add($interval)->format('Y-m-d');
+
+        return $date;
     }
 }
