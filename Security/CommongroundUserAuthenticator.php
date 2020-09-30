@@ -121,7 +121,6 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         } else {
             return new RedirectResponse($this->router->generate('app_user_login'));
         }
-
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
