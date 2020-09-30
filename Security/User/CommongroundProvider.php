@@ -137,7 +137,7 @@ class CommongroundProvider implements UserProviderInterface
             case 'organization':
                 $resident = $this->checkResidence('organization', $user, $kvk);
 
-                return new CommongroundUser($kvk['tradeNames']['businessName'], $user['id'], $kvk['tradeNames']['businessName'], null, $user['roles'], $user['@id'], $kvk['branchNumber'], 'organization', $resident);
+                return new CommongroundUser($kvk['name'], $user['id'], $kvk['name'], null, $user['roles'], $user['@id'], $kvk['id'], 'organization', $resident);
             case 'user':
                 if (empty($user['person'])) {
                     throw new \Exception('This user has no person. ID: '.$user['id']);
