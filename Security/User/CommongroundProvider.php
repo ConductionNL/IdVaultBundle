@@ -58,18 +58,11 @@ class CommongroundProvider implements UserProviderInterface
         //only trigger if type of user is organization
         $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
         if ($type == 'organization') {
-            $client = new Client([
-                // Base URI is used with relative requests
-                'base_uri' => 'https://api.kvk.nl',
-                // You can set any number of default request options.
-                'timeout'  => 2.0,
-            ]);
-            $response = $client->request('GET', '/api/v2/testsearch/companies?q=test&mainBranch=true&branch=false&branchNumber='.$organization);
-            $companies = json_decode($response->getBody()->getContents(), true);
-            if (!$companies || count($companies) < 1) {
+            try{
+                $kvk = $this->commonGroundService->getResource(['component'=>'kvk', 'type'=>'companies', 'id'=>$organization]);
+            } catch(\HttpException $e){
                 return;
             }
-            $kvk = $companies['data']['items'][0];
             $user = $this->commonGroundService->getResource($person);
             if (!isset($user['roles'])) {
                 $user['roles'] = [];
