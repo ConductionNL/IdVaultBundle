@@ -6,6 +6,7 @@ namespace Conduction\CommonGroundBundle\Service;
 
 use Conduction\CommonGroundBundle\Event\CommonGroundEvents;
 use Conduction\CommonGroundBundle\Event\CommongroundUpdateEvent;
+use DateInterval;
 use GuzzleHttp\Client;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Cache\Adapter\AdapterInterface as CacheInterface;
@@ -246,19 +247,29 @@ class CommonGroundService
         }
 
         if (!$async) {
+            try {
             $response = $this->client->request('GET', $url, [
                 'query'       => $query,
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('GET', $url, [
                 'query'       => $query,
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         }
 
         $statusCode = $response->getStatusCode();
@@ -371,19 +382,31 @@ class CommonGroundService
         }
 
         if (!$async) {
+            try{
             $response = $this->client->request('GET', $url, [
                 'query'       => $query,
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('GET', $url, [
                 'query'       => $query,
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         }
 
         $statusCode = $response->getStatusCode();
@@ -494,19 +517,31 @@ class CommonGroundService
         }
 
         if (!$async) {
+            try {
             $response = $this->client->request('PUT', $url, [
                 'body'        => json_encode($resource),
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('PUT', $url, [
                 'body'        => json_encode($resource),
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         }
 
         $statusCode = $response->getStatusCode();
@@ -596,22 +631,33 @@ class CommonGroundService
             }
         }
 
-        $resource = $this->cleanResource($resource);
+        $resource = $this->cleanResource($resource); 
 
         if (!$async) {
+            try {
             $response = $this->client->request('POST', $url, [
                 'body'        => json_encode($resource),
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('POST', $url, [
                 'body'        => json_encode($resource),
                 'headers'     => $headers,
                 'auth'        => $auth,
                 'http_errors' => $error,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                    var_dump($e->getResponse()->getBody()->getContents());var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                    throw $e;
+            }
         }
 
         $statusCode = $response->getStatusCode();
@@ -700,15 +746,27 @@ class CommonGroundService
         }
 
         if (!$async) {
+            try {
             $response = $this->client->request('DELETE', $url, [
                 'headers' => $headers,
                 'auth'    => $auth,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         } else {
+            try {
             $response = $this->client->requestAsync('DELETE', $url, [
                 'headers' => $headers,
                 'auth'    => $auth,
-            ]);
+            ]);} catch ( \GuzzleHttp\Exception\ClientException $e) {
+// here's the good stuff
+                var_dump($e->getResponse()->getBody()->getContents());//Log::error($e->getResponse()->getBody()->getContents());
+                throw $e;
+
+            }
         }
 
         $statusCode = $response->getStatusCode();
@@ -740,22 +798,29 @@ class CommonGroundService
     public function saveResource($resource, $endpoint = false, $autowire = true, $events = true)
     {
         // We dont require an endpoint if a resource is self explanatory
-        if (!$endpoint && array_key_exists('@id', $resource)) {
-            $endpoint = $resource['@id'];
-        }
-
         if (is_array($endpoint) && array_key_exists('component', $endpoint)) {
             $component = $this->getComponent($endpoint['component']);
-            $component['code'] = $endpoint['component'];
         } else {
-            /* @to remove temp fix and find component based on url */
-            //$component = false;
-            $component = [];
+            if (!is_array($endpoint) && $endpoint != null && $componentUrl = $this->isCommonGround($endpoint)) {
+                $endpoint = $componentUrl;
+                $component = $this->getComponent($endpoint['component']);
+                if (array_key_exists('accept', $endpoint)) {
+                    $component['accept'] = $endpoint['accept'];
+                }
+            } elseif ($endpoint == null && array_key_exists('@id', $resource) && $componentUrl = $this->isCommonGround($resource['@id'])) {
+                $endpoint = $componentUrl;
+                $component = $this->getComponent($endpoint['component']);
+                if (array_key_exists('accept', $endpoint)) {
+                    $component['accept'] = $endpoint['accept'];
+                }
+            } else {
+                $component = [];
+            }
         }
 
         // creates the ResourceUpdateEvent and dispatches it
         if ($events) {
-            $event = new CommongroundUpdateEvent($resource, $component);
+            $event = new CommongroundUpdateEvent($resource, $component, $endpoint);
             $this->eventDispatcher->dispatch(
                 $event,
                 CommonGroundEvents::SAVE
@@ -1297,5 +1362,23 @@ class CommonGroundService
         $array = explode('/', $url);
         /* @todo we might want to validate against uuid and id here */
         return end($array);
+    }
+
+    public function dateInterval($string, $format)
+    {
+        $string = new DateInterval($string);
+        $string = $string->format($format);
+
+        return $string;
+    }
+
+    public function addDateInterval($date, $interval)
+    {
+        $date = new \DateTime($date);
+        $interval = new DateInterval($interval);
+
+        $date->add($interval)->format('Y-m-d');
+
+        return $date;
     }
 }

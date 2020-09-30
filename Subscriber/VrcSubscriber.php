@@ -52,6 +52,17 @@ class VrcSubscriber implements EventSubscriberInterface
     // Our resource might reqoure aditional resources to be created, so lets look into that
     public function save(CommongroundUpdateEvent $event)
     {
+        // Lets make sure we only triger on requests resources
+        $resource = $event->getResource();
+        $url = $event->getUrl();
+        if (!$url || !is_array($url) || $url['component'] != 'vrc' || $url['type'] != 'requests') {
+            return;
+        }
+
+//        $this->vrcService->clearDependencies($resource);
+        $resource = $this->vrcService->createCommongroundResources($resource);
+        $event->setResource($resource);
+
         return $event;
     }
 
@@ -117,7 +128,7 @@ class VrcSubscriber implements EventSubscriberInterface
         }
 
 //        $this->vrcService->clearDependencies($resource);
-        $this->vrcService->createCommongroundResources($resource);
+        $resource = $this->vrcService->createCommongroundResources($resource);
         $event->setResource($resource);
 
         return $event;
