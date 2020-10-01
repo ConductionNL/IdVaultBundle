@@ -181,7 +181,7 @@ class VrcService
             }
 
             // Falback for unfindable properties
-            if(!is_array($property)){
+            if (!is_array($property)) {
                 continue;
             }
 
@@ -314,10 +314,10 @@ class VrcService
             }
 
             // Falback for unfindable properties
-            if(!is_array($property)){
+            if (!is_array($property)) {
                 continue;
             }
-            
+
             if (
                 array_key_exists('iri', $property) &&
                 (
