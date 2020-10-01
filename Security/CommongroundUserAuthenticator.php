@@ -15,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -29,6 +30,10 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 {
+    /**
+     * @var FlashBagInterface
+     */
+    private $flash;
     private $em;
     private $params;
     private $commonGroundService;
@@ -36,7 +41,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     private $router;
     private $urlGenerator;
 
-    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator)
+    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, FlashBagInterface $flash)
     {
         $this->em = $em;
         $this->params = $params;
@@ -44,6 +49,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         $this->csrfTokenManager = $csrfTokenManager;
         $this->router = $router;
         $this->urlGenerator = $urlGenerator;
+        $this->flash = $flash;
     }
 
     /**
@@ -89,7 +95,9 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
         $users = $users['hydra:member'];
 
+
         if (!$users || count($users) < 1) {
+            $this->flash->add('error', 'The username/password combination is invalid');
             return;
         }
 
@@ -104,6 +112,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function checkCredentials($credentials, UserInterface $user)
     {
+
         $user = $this->commonGroundService->createResource($credentials, ['component'=>'uc', 'type'=>'login'], false, true, false, false);
 
         if (!$user) {
