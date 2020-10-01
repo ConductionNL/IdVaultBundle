@@ -180,6 +180,11 @@ class VrcService
                 $property = $this->getPropertyByName($key, $request);
             }
 
+            // Falback for unfindable properties
+            if(!is_array($property)){
+                continue;
+            }
+
             if (
                 array_key_exists('iri', $property) &&
                 $property['format'] == 'uri' &&
@@ -308,6 +313,11 @@ class VrcService
                 $property = $this->getPropertyByName($key, $request);
             }
 
+            // Falback for unfindable properties
+            if(!is_array($property)){
+                continue;
+            }
+            
             if (
                 array_key_exists('iri', $property) &&
                 (
