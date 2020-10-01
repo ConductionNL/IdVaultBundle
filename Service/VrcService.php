@@ -101,6 +101,11 @@ class VrcService
      */
     public function createCommongroundResources($request)
     {
+        // If we don't have any properties then there is no need to create resources
+        if(!array_key_exists('properties',$request)){
+            return $request;
+        }
+
         foreach ($request['properties'] as $key => $value) {
 
             // We currently support both name and uuid based keying of properties
@@ -181,7 +186,7 @@ class VrcService
             }
 
             // Falback for unfindable properties
-            if(!is_array($property)){
+            if (!is_array($property)) {
                 continue;
             }
 
@@ -314,10 +319,10 @@ class VrcService
             }
 
             // Falback for unfindable properties
-            if(!is_array($property)){
+            if (!is_array($property)) {
                 continue;
             }
-            
+
             if (
                 array_key_exists('iri', $property) &&
                 (
