@@ -666,7 +666,7 @@ class CommonGroundService
                 var_dump($e->getResponse()->getBody()->getContents());
                 var_dump($e->getResponse()->getBody()->getContents()); //Log::error($e->getResponse()->getBody()->getContents());
 
-                    throw $e;
+                throw $e;
             }
         }
 

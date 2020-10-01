@@ -95,9 +95,9 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
         $users = $users['hydra:member'];
 
-
         if (!$users || count($users) < 1) {
             $this->flash->add('error', 'The username/password combination is invalid');
+
             return;
         }
 
@@ -112,7 +112,6 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-
         $user = $this->commonGroundService->createResource($credentials, ['component'=>'uc', 'type'=>'login'], false, true, false, false);
 
         if (!$user) {
