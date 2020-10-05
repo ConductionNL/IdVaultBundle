@@ -1241,18 +1241,22 @@ class CommonGroundService
     }
 
     /**
-     * Returns the content of $this->local
+     * Returns the content of $this->local.
+     *
      * @return string
      */
-    public function getLocal(){
+    public function getLocal()
+    {
         return $this->local;
     }
 
     /**
-     * Overwrites the content of $this->local
+     * Overwrites the content of $this->local.
+     *
      * @param $input
      */
-    public function setLocal($input){
+    public function setLocal($input)
+    {
         $this->local = $input;
     }
 
