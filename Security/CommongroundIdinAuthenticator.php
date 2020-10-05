@@ -67,7 +67,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     {
         $code = $request->query->get('code');
 
-        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'idin', 'application' => $params->get('app_id')])['hydra:member'];
+        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'idin', 'application' => $this->params->get('app_id')])['hydra:member'];
         $provider = $provider[0];
 
         $endpoint = str_replace('/oidc/token', '', $provider['configuration']['endpoint']);
