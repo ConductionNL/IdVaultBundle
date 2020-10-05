@@ -51,6 +51,8 @@ class IrcService
             $resource['forwardUrl'] = 'https://'.$this->params->get('app_domain').'/irc/assents/'.$resource['id'];
         }
 
+        $resource = $this->commonGroundService->saveResource($resource, ['component'=>'irc','type'=>'assents']);
+
         return $resource;
     }
 }
