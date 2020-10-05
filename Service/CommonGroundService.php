@@ -1240,6 +1240,22 @@ class CommonGroundService
         $this->headers[$key] = $value;
     }
 
+    /**
+     * Returns the content of $this->local
+     * @return string
+     */
+    public function getLocal(){
+        return $this->local;
+    }
+
+    /**
+     * Overwrites the content of $this->local
+     * @param $input
+     */
+    public function setLocal($input){
+        $this->local = $input;
+    }
+
     /*
      * Get a single resource from a common ground componant
      */
