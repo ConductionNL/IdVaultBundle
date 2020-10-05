@@ -5,7 +5,6 @@
 namespace Conduction\CommonGroundBundle\Security\User;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
-use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Exception\UnsupportedUserException;
@@ -58,9 +57,9 @@ class CommongroundProvider implements UserProviderInterface
         //only trigger if type of user is organization
         $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
         if ($type == 'organization') {
-            try{
+            try {
                 $kvk = $this->commonGroundService->getResource(['component'=>'kvk', 'type'=>'companies', 'id'=>$organization]);
-            } catch(\HttpException $e){
+            } catch (\HttpException $e) {
                 return;
             }
             $user = $this->commonGroundService->getResource($person);
