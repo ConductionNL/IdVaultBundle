@@ -19,8 +19,9 @@ class IrcSubscriber implements EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-            CommonGroundEvents::UPDATE => 'update',
-            CommonGroundEvents::CREATE => 'create',
+            CommonGroundEvents::UPDATE  => 'update',
+            CommonGroundEvents::CREATE  => 'create',
+            CommonGroundEvents::CREATED => 'created',
         ];
     }
 
@@ -50,9 +51,18 @@ class IrcSubscriber implements EventSubscriberInterface
             return false;
         }
 
+        $event->setResource($this->ircService->scanResource($resource));
+
+        return $event;
+    }
+
+    public function created(CommongroundUpdateEvent $event)
+    {
+        $resource = $event->getResource();
+
         $resource = $this->ircService->setForwardUrl($resource);
 
-        $event->setResource($this->ircService->scanResource($resource));
+        $event->setResource($resource);
 
         return $event;
     }
