@@ -22,7 +22,7 @@ class IrcService
     public function scanResource(array $resource)
     {
         // Lets see if we need to create a contact for the contact
-        if (array_key_exists('contact', $resource) && !array_key_exists('@id', $resource['contact'])) {
+        if (!empty($resource['contact']) && !empty($resource['contact']['@id'])) {
             $contact = $this->commonGroundService->saveResource($resource['contact'], ['component'=>'cc', 'type'=>'people']);
             if (is_array($contact) && key_exists('@id', $contact)) {
                 $resource['contact'] = $contact['@id'];
