@@ -89,9 +89,9 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             'timeout'  => 2.0,
         ]);
 
-        try{
+        try {
             $kvk = $this->commonGroundService->getResource(['component'=>'kvk', 'type'=>'companies', 'id'=>$credentials['kvk']]);
-        } catch(\HttpException $e){
+        } catch (\HttpException $e) {
             return;
         }
 
@@ -134,9 +134,9 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             'timeout'  => 2.0,
         ]);
 
-        try{
+        try {
             $company = $this->commonGroundService->getResource(['component'=>'kvk', 'type'=>'companies', 'id'=>$credentials['kvk']]);
-        } catch(\HttpException $e){
+        } catch (\HttpException $e) {
             return;
         }
 
@@ -163,9 +163,10 @@ class CommongroundEherkenningAuthenticator extends AbstractGuardAuthenticator
             'timeout'  => 2.0,
         ]);
         var_dump($kvk);
-        try{
+
+        try {
             $company = $this->commonGroundService->getResource(['component'=>'kvk', 'type'=>'companies', 'id'=>$kvk]);
-        } catch(\HttpException $e){
+        } catch (\HttpException $e) {
             return;
         }
 
