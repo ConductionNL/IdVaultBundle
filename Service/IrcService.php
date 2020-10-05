@@ -44,8 +44,9 @@ class IrcService
         return $resource;
     }
 
-    public function setForwardUrl(array $resource) {
-        if($this->params->get('app_env') != 'prod'){
+    public function setForwardUrl(array $resource)
+    {
+        if ($this->params->get('app_env') != 'prod') {
             $resource['forwardUrl'] = 'https://dev.'.$this->params->get('app_domain').'/irc/assents/'.$resource['id'];
         } else {
             $resource['forwardUrl'] = 'https://'.$this->params->get('app_domain').'/irc/assents/'.$resource['id'];
