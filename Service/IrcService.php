@@ -4,13 +4,16 @@
 
 namespace Conduction\CommonGroundBundle\Service;
 
+use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+
 class IrcService
 {
     private $commonGroundService;
 
-    public function __construct(CommonGroundService $commonGroundService)
+    public function __construct(CommonGroundService $commonGroundService, ParameterBagInterface $params)
     {
         $this->commonGroundService = $commonGroundService;
+        $this->params = $params;
     }
 
     /*
@@ -36,6 +39,17 @@ class IrcService
             if (is_array($contact) && key_exists('@id', $contact)) {
                 $resource['requester'] = $contact['@id'];
             }
+        }
+
+        return $resource;
+    }
+
+    public function setForwardUrl(array $resource)
+    {
+        if ($this->params->get('app_env') != 'prod') {
+            $resource['forwardUrl'] = 'https://dev.'.$this->params->get('app_domain').'/irc/assents/'.$resource['id'];
+        } else {
+            $resource['forwardUrl'] = 'https://'.$this->params->get('app_domain').'/irc/assents/'.$resource['id'];
         }
 
         return $resource;
