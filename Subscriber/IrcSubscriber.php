@@ -50,6 +50,8 @@ class IrcSubscriber implements EventSubscriberInterface
             return false;
         }
 
+        $resource = $this->ircService->setForwardUrl($resource);
+
         $event->setResource($this->ircService->scanResource($resource));
 
         return $event;
