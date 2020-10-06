@@ -59,6 +59,9 @@ class IrcSubscriber implements EventSubscriberInterface
     public function created(CommongroundUpdateEvent $event)
     {
         $resource = $event->getResource();
+        if (!array_key_exists('@type', $resource) || $resource['@type'] != 'Assent') {
+            return;
+        }
 
         $resource = $this->ircService->setForwardUrl($resource);
 
