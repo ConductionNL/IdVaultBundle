@@ -108,8 +108,7 @@ class VsbeService
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
             $vsbeResource['action'] = 'UPDATE';
-
-            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
+            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results'], false, true, false);
         }
 
         return $resource;
@@ -142,8 +141,7 @@ class VsbeService
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
             $vsbeResource['action'] = 'CREATE';
-
-            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results']);
+            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results'], false, true, false);
         }
 
         return $resource;

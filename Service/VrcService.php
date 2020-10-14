@@ -102,7 +102,7 @@ class VrcService
     public function createCommongroundResources($request)
     {
         // If we don't have any properties then there is no need to create resources
-        if(!array_key_exists('properties',$request)){
+        if (!array_key_exists('properties', $request) || $request['properties'] === null) {
             return $request;
         }
 
