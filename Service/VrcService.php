@@ -366,8 +366,8 @@ class VrcService
                     $order['customer'] = $request['submitters'][0]['person'];
                 }
             } else {
-                /* @todo use the user */
-                //$order['customer'] = $request['submmiters'];
+                /* @todo elseif to use the user */
+                $order['customer'] = $request['organization'];
             }
 
             $order = $this->commonGroundService->saveResource($order, ['component' => 'orc', 'type' => 'orders']);
