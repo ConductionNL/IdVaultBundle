@@ -5,7 +5,6 @@
 namespace Conduction\CommonGroundBundle\Twig;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
-use DateInterval;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Twig\Extension\RuntimeExtensionInterface;
@@ -66,8 +65,9 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     public function getPath(string $route, array $route_parameters = [], $relative = false)
     {
         $actual_link = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
+        $actual_link = rtrim($actual_link, '/'); // Remove trailing slash
         // subpaths dont fly on localhost
-        if($actual_link =="http://localhost/" || $actual_link = "http://localhost/"){
+        if($actual_link =="http://localhost" || $actual_link = "http://localhost"){
             return $actual_link.$this->router->generate($route, $route_parameters, false);
         }
         elseif ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
@@ -91,15 +91,5 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
         }
 
         return '<ul>'.$result.'</ul>';
-    }
-
-    public function dateInterval($string, $format)
-    {
-        return $this->commongroundService->dateInterval($string, $format);
-    }
-
-    public function addDateInterval($date, $interval)
-    {
-        return $this->commongroundService->addDateInterval($date, $interval);
     }
 }
