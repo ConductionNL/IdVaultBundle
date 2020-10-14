@@ -67,7 +67,7 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
         $actual_link = "http://$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
         $actual_link = rtrim($actual_link, '/'); // Remove trailing slash
         // subpaths dont fly on localhost
-        if($actual_link =="http://localhost" || $actual_link = "http://localhost"){
+        if($actual_link =="http://localhost" || $actual_link == "http://localhost"){
             return $actual_link.$this->router->generate($route, $route_parameters, false);
         }
         elseif ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
