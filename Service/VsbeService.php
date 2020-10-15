@@ -4,7 +4,6 @@
 
 namespace Conduction\CommonGroundBundle\Service;
 
-use Symfony\Component\Process\Process;
 /*
  * The VRC Service handels logic reqoured to properly connect with the vrc component
  *
@@ -109,7 +108,7 @@ class VsbeService
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
             $vsbeResource['action'] = 'UPDATE';
-            exec(dirname(__FILE__, 5)."/bin/console app:vsbe:start {$vsbeResource["object"]} {$vsbeResource['action']} > /dev/null &");
+            exec(dirname(__FILE__, 5)."/bin/console app:vsbe:start {$vsbeResource['object']} {$vsbeResource['action']} > /dev/null &");
         }
 
         return $resource;
@@ -142,7 +141,7 @@ class VsbeService
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
             $vsbeResource['action'] = 'CREATE';
-            exec(dirname(__FILE__, 5)."/bin/console app:vsbe:start {$vsbeResource["object"]} {$vsbeResource['action']} > /dev/null &");
+            exec(dirname(__FILE__, 5)."/bin/console app:vsbe:start {$vsbeResource['object']} {$vsbeResource['action']} > /dev/null &");
         }
 
         return $resource;
