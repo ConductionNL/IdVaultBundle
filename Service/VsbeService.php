@@ -4,6 +4,7 @@
 
 namespace Conduction\CommonGroundBundle\Service;
 
+use Symfony\Component\Process\Process;
 /*
  * The VRC Service handels logic reqoured to properly connect with the vrc component
  *
@@ -141,7 +142,12 @@ class VsbeService
             $vsbeResource = [];
             $vsbeResource['object'] = $resource['@id'];
             $vsbeResource['action'] = 'CREATE';
-            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results'], false, true, false);
+//            $this->commonGroundService->createResource($vsbeResource, ['component'=>'vsbe', 'type'=>'results'], false, true, false);
+            $process = new Process(['bin/console', 'app:vsbe:start', $vsbeResource['object'], $vsbeResource['action']]);
+            $process->run();
+
+            var_dump($process->getOutput());
+            var_dump($process->getErrorOutput());
         }
 
         return $resource;
