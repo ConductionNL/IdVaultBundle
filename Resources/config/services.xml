@@ -92,6 +92,9 @@
         <service id="Conduction\CommonGroundBundle\Command\PubliccodeCommand">
             <tag name="console.command"/>
         </service>
+        <service id="Conduction\CommonGroundBundle\Command\RunVSBECommand">
+            <tag name="console.command"/>
+        </service>
 
         <!--CommonGround Twig extensions-->
         <service id="Conduction\CommonGroundBundle\Twig\CommonGroundExtension"  class="Conduction\CommonGroundBundle\Twig\CommonGroundExtension">
