@@ -42,9 +42,6 @@
         <service id="Conduction\CommonGroundBundle\Repository\AuditTrailRepository">
             <tag name="doctrine.repository_service"/>
         </service>
-        <service id="Conduction\CommonGroundBundle\Repository\LoginLogRepository">
-            <tag name="doctrine.repository_service"/>
-        </service>
 
         <!--CommonGround Subscribers-->
         <service id="audit.subscriber" class="Conduction\CommonGroundBundle\Subscriber\AuditSubscriber">
