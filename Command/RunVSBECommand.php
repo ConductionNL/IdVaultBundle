@@ -39,8 +39,8 @@ class RunVSBECommand extends Command
             ->setHelp('This command allows you to create a new hel chart from the helm template')
             ->setAliases(['app:vsbe:start'])
             ->setDescription('Kick off the VSBE')
-            ->addOption('object', null, InputOption::VALUE_REQUIRED, 'The object to start')
-            ->addOption('action', null, InputOption::VALUE_OPTIONAL, 'The CRUD action that belongs to the object', 'CREATE');
+            ->addArgument('object', null, InputOption::VALUE_REQUIRED, 'The object to start')
+            ->addArgument('action', null, InputOption::VALUE_OPTIONAL, 'The CRUD action that belongs to the object', 'CREATE');
     }
 
     /**
@@ -50,8 +50,8 @@ class RunVSBECommand extends Command
     {
         $io = new SymfonyStyle($input, $output);
         /** @var string $version */
-        $resource['action'] = $input->getOption('action');
-        $resource['object'] = $input->getOption('object');
+        $resource['action'] = $input->getArgument('action');
+        $resource['object'] = $input->getArgument('object');
 
         $this->commonGroundService->createResource($resource, ['component'=>'vsbe', 'type'=>'results'], false, true, false);
     }
