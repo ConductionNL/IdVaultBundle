@@ -10,8 +10,12 @@ namespace Conduction\CommonGroundBundle\ValueObject;
  *
  */
 
-class IncompleteDate
+class IncompleteDate implements \Serializable, \JsonSerializable
 {
+    public $day;
+    public $month;
+    public $year;
+
     /**
      * @param int $day
      * @param int $month
@@ -69,5 +73,49 @@ class IncompleteDate
     public function getDate()
     {
         return sprintf('%04u-%02u-%02u', $this->getYear(), $this->getMonth(), $this->getDay());
+    }
+
+    public static function fromString($string)
+    {
+        $date = explode('-', $string);
+
+        return new IncompleteDate($date[0], $date[1], $date[2]);
+    }
+
+    public function __toString()
+    {
+        return sprintf('%04u-%02u-%02u', $this->getYear(), $this->getMonth(), $this->getDay());
+    }
+
+    public function serialize()
+    {
+        return json_encode($this->jsonSerialize());
+    }
+
+    public function unserialize($serialized)
+    {
+        $normalized = self::fromString($serialized);
+        $this->day = $normalized->getDay();
+        $this->month = $normalized->getMonth();
+        $this->year = $normalized->getYear();
+    }
+
+    public function jsonSerialize()
+    {
+        return ['jaar'=>$this->getYear(), 'maand'=>$this->getMonth(), 'dag'=>$this->getDay(), 'datum'=>$this->__toString()];
+    }
+
+    public function compareTo(IncompleteDate $other)
+    {
+        var_dump('bla');
+
+        return false;
+    }
+
+    public function equals($other)
+    {
+        var_dump('blub');
+
+        return false;
     }
 }

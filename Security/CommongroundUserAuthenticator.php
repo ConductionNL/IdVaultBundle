@@ -2,6 +2,11 @@
 
 // src/Security/TokenAuthenticator.php
 
+/*
+ * This authenticator authenticas agains the commonground user component
+ *
+ */
+
 namespace Conduction\CommonGroundBundle\Security;
 
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
@@ -10,6 +15,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Session\Flash\FlashBagInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Symfony\Component\Routing\RouterInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
@@ -24,6 +30,10 @@ use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
 class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 {
+    /**
+     * @var FlashBagInterface
+     */
+    private $flash;
     private $em;
     private $params;
     private $commonGroundService;
@@ -31,7 +41,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     private $router;
     private $urlGenerator;
 
-    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator)
+    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, FlashBagInterface $flash)
     {
         $this->em = $em;
         $this->params = $params;
@@ -39,6 +49,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         $this->csrfTokenManager = $csrfTokenManager;
         $this->router = $router;
         $this->urlGenerator = $urlGenerator;
+        $this->flash = $flash;
     }
 
     /**
@@ -48,8 +59,8 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return 'app_user_login' === $request->attributes->get('_route')
-        && $request->isMethod('POST');
+        return ('app_user_login' === $request->attributes->get('_route') || 'app_user_login2' === $request->attributes->get('_route'))
+            && $request->isMethod('POST');
     }
 
     /**
@@ -81,10 +92,12 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         }
         */
 
-        $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true);
+        $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
         $users = $users['hydra:member'];
 
         if (!$users || count($users) < 1) {
+            $this->flash->add('error', 'The username/password combination is invalid');
+
             return;
         }
 
@@ -93,13 +106,18 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
+        foreach ($user['roles'] as $key=>$role) {
+            if (strpos($role, 'ROLE_') !== 0) {
+                $user['roles'][$key] = "ROLE_$role";
+            }
+        }
 
-        return new CommongroundUser($user['username'], $user['id'], null, $user['roles'], $user['person'], $user['organization']);
+        return new CommongroundUser($user['username'], $user['id'], $user['username'], null, $user['roles'], $user['person'], $user['organization'], 'user');
     }
 
     public function checkCredentials($credentials, UserInterface $user)
     {
-        $user = $this->commonGroundService->createResource($credentials, ['component'=>'uc', 'type'=>'login']);
+        $user = $this->commonGroundService->createResource($credentials, ['component'=>'uc', 'type'=>'login'], false, true, false, false);
 
         if (!$user) {
             return false;
@@ -112,10 +130,10 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_wrc_templates', []));
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
+        } else {
+            return new RedirectResponse($this->router->generate('app_user_login'));
         }
-
-        return new RedirectResponse($this->router->generate('app_wrc_templates', [], UrlGeneratorInterface::RELATIVE_PATH));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
@@ -124,7 +142,12 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
             return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_login', []));
         }
 
-        return new RedirectResponse($this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH));
+        $url = $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
+        if ($url == '') {
+            $url = '/';
+        }
+
+        return new RedirectResponse($url);
     }
 
     /**

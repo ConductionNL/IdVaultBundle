@@ -15,11 +15,13 @@ class CommongroundUpdateEvent extends Event
 
     protected $resource;
     protected $component;
+    protected $url;
 
-    public function __construct(?array $resource, ?array $component)
+    public function __construct(?array $resource, $component = false, $url = null)
     {
         $this->resource = $resource;
         $this->component = $component;
+        $this->url = $url;
     }
 
     public function setResource(?array $resource)
@@ -44,5 +46,17 @@ class CommongroundUpdateEvent extends Event
     public function getComponent()
     {
         return $this->component;
+    }
+
+    public function setUrl($url)
+    {
+        $this->url = $url;
+
+        return $this;
+    }
+
+    public function getUrl()
+    {
+        return $this->url;
     }
 }
