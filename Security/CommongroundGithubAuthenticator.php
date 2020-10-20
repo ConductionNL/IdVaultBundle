@@ -83,8 +83,9 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
 
         $state = $this->session->get('state');
 
-        if ($state !== $request->get('state')){
+        if ($state !== $request->get('state')) {
             $this->flash->add('error', 'information received from untrusted site');
+
             return new RedirectResponse($this->router->generate('app_default_index'));
         }
 
@@ -103,7 +104,7 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
 
         $response = $client->request('POST', '/login/oauth/access_token', [
             'headers' => [
-                'Accept' => 'application/json'
+                'Accept' => 'application/json',
             ],
             'form_params'  => $body,
         ]);
@@ -151,7 +152,7 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
     {
         $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
         $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'github', 'application' => $this->params->get('app_id')])['hydra:member'];
-        $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => (string)$credentials['id'], 'provider.name' => $providers[0]['name']])['hydra:member'];
+        $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => (string) $credentials['id'], 'provider.name' => $providers[0]['name']])['hydra:member'];
 
         if (!$tokens || count($tokens) < 1) {
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
@@ -176,7 +177,7 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
                 //create user
                 $user = [];
                 $user['username'] = $credentials['username'];
-                $user['password'] = (string)$credentials['id'];
+                $user['password'] = (string) $credentials['id'];
                 $user['person'] = $person['@id'];
                 $user['organization'] = $application;
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
@@ -186,12 +187,12 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
 
             //create token
             $token = [];
-            $token['token'] = (string)$credentials['id'];
+            $token['token'] = (string) $credentials['id'];
             $token['user'] = 'users/'.$user['id'];
             $token['provider'] = 'providers/'.$providers[0]['id'];
             $token = $this->commonGroundService->createResource($token, ['component' => 'uc', 'type' => 'tokens']);
 
-            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => (string)$credentials['id'], 'provider.name' => $providers[0]['name']])['hydra:member'];
+            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => (string) $credentials['id'], 'provider.name' => $providers[0]['name']])['hydra:member'];
         } else {
             $token = $tokens[0];
             // Deze $urls zijn een hotfix voor niet werkende @id's op de cgb cgs
