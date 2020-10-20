@@ -117,6 +117,16 @@ class CommongroundProvider implements UserProviderInterface
                 $user['roles'] = [];
             }
             array_push($user['roles'], 'scope.chin.checkins.read');
+        } elseif ($type == 'github') {
+            $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'github', 'application' => $this->params->get('app_id')])['hydra:member'];
+            $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $password, 'provider.name' => $provider[0]['name']])['hydra:member'];
+            // Deze $urls zijn een hotfix voor niet werkende @id's op de cgb cgs
+            $userUlr = $this->commonGroundService->cleanUrl(['component' => 'uc', 'type' => 'users', 'id' => $tokens[0]['user']['id']]);
+            $user = $this->commonGroundService->getResource($userUlr);
+            if (!isset($user['roles'])) {
+                $user['roles'] = [];
+            }
+            array_push($user['roles'], 'scope.chin.checkins.read');
         }
 
         if (!isset($user['roles'])) {
@@ -156,6 +166,10 @@ class CommongroundProvider implements UserProviderInterface
                 $person = $this->commonGroundService->getResource($user['person']);
 
                 return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'gmail');
+            case 'github':
+                $person = $this->commonGroundService->getResource($user['person']);
+
+                return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'github');
             default:
                 throw new UsernameNotFoundException(
                     sprintf('User "%s" does not exist.', $username)
