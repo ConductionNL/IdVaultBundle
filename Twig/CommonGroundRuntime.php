@@ -66,7 +66,7 @@ class CommonGroundRuntime implements RuntimeExtensionInterface
     public function getPath(string $route, array $route_parameters = [], $relative = false)
     {
         if ($this->params->get('app_url') && $this->params->get('app_url') != 'false') {
-            return $this->params->get('app_url').$this->router->generate($route, $route_parameters, UrlGeneratorInterface::RELATIVE_PATH);
+            return $this->params->get('app_url').$this->router->generate($route, $route_parameters, UrlGeneratorInterface::ABSOLUTE_PATH);
         } else {
             return $this->router->generate($route, $route_parameters, $relative);
         }
