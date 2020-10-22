@@ -66,6 +66,7 @@ class PubliccodeCommand extends Command
                 $publiccode,
             ]);
         }
+
         return 0;
     }
 }
