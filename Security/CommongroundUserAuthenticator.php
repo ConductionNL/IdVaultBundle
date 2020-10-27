@@ -43,7 +43,6 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     private $urlGenerator;
     private $session;
 
-
     public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, FlashBagInterface $flash, SessionInterface $session)
     {
         $this->em = $em;
@@ -137,8 +136,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
         if ($backUrl) {
             return new RedirectResponse($backUrl);
-        }
-        else {
+        } else {
             return new RedirectResponse($this->router->generate('app_user_login'));
         }
     }
