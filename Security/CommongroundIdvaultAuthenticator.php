@@ -77,7 +77,7 @@ class CommongroundIdvaultAuthenticator extends AbstractGuardAuthenticator
 
         $client = new Client([
             // Base URI is used with relative requests
-            'headers' => ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
+            'headers'  => ['Content-Type' => 'application/json', 'Accept' => 'application/json'],
             'base_uri' => 'https://dev.id-vault.com',
             // You can set any number of default request options.
             'timeout'  => 2.0,
@@ -85,10 +85,10 @@ class CommongroundIdvaultAuthenticator extends AbstractGuardAuthenticator
 
         $response = $client->request('POST', '/api/access_tokens', [
             'json' => [
-                'clientId'         => $provider['configuration']['app_id'],
-                'clientSecret'     => $provider['configuration']['secret'],
+                'clientId'          => $provider['configuration']['app_id'],
+                'clientSecret'      => $provider['configuration']['secret'],
                 'code'              => $code,
-                'grantType'        => 'authorization_code',
+                'grantType'         => 'authorization_code',
             ],
         ]);
 
