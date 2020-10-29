@@ -37,7 +37,6 @@
 		"symfony/console" : "^5.0@stable",
 		"doctrine/doctrine-bundle": "^1.6 || ^2.0",
 		"doctrine/doctrine-fixtures-bundle": "^3.2",
-		"doctrine/rst-parser": "^0.1.0",
 		"guzzlehttp/guzzle": "^6.3",
 		"knplabs/knp-markdown-bundle": "^1.8",
 		"mollie/mollie-api-php": "^2.0",
