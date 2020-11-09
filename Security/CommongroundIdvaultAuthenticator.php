@@ -152,7 +152,6 @@ class CommongroundIdvaultAuthenticator extends AbstractGuardAuthenticator
                 $user['username'] = $credentials['username'];
                 $user['password'] = $credentials['id'];
                 $user['person'] = $person['@id'];
-                $user['organization'] = $application;
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
             } else {
                 $user = $users[0];
@@ -188,7 +187,11 @@ class CommongroundIdvaultAuthenticator extends AbstractGuardAuthenticator
         }
         array_push($user['roles'], 'scope.chin.checkins.read');
 
-        return new CommongroundUser($user['username'], $credentials['id'], $person['name'], null, $user['roles'], $user['person'], null, 'id-vault');
+        if (isset($user['organization'])) {
+            return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'idvault');
+        } else {
+            return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'idvault');
+        }
     }
 
     public function checkCredentials($credentials, UserInterface $user)
