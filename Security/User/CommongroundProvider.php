@@ -153,23 +153,43 @@ class CommongroundProvider implements UserProviderInterface
                 }
                 $person = $this->commonGroundService->getResource($user['person']);
 
-                return new CommongroundUser($user['username'], $user['id'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'user');
+                if (isset($user['organization'])) {
+                    return new CommongroundUser($user['username'], $user['id'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'user');
+                } else {
+                    return new CommongroundUser($user['username'], $user['id'], $person['name'], null, $user['roles'], $user['person'], null, 'user');
+                }
             case 'idin':
                 $person = $this->commonGroundService->getResource($user['person']);
 
-                return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'idin');
+                if (isset($user['organization'])) {
+                    return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'idin');
+                } else {
+                    return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'idin');
+                }
             case 'facebook':
                 $person = $this->commonGroundService->getResource($user['person']);
 
-                return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'facebook');
+                if (isset($user['organization'])) {
+                    return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'facebook');
+                } else {
+                    return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'facebook');
+                }
             case 'gmail':
                 $person = $this->commonGroundService->getResource($user['person']);
 
-                return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'gmail');
+                if (isset($user['organization'])) {
+                    return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'gmail');
+                } else {
+                    return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'gmail');
+                }
             case 'id-vault':
                 $person = $this->commonGroundService->getResource($user['person']);
 
-                return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'id-vault');
+                if (isset($user['organization'])) {
+                    return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'id-vault');
+                } else {
+                    return new CommongroundUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'id-vault');
+                }
             default:
                 throw new UsernameNotFoundException(
                     sprintf('User "%s" does not exist.', $username)
