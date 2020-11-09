@@ -114,8 +114,11 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
                 $user['roles'][$key] = "ROLE_$role";
             }
         }
-
-        return new CommongroundUser($user['username'], $user['id'], $user['username'], null, $user['roles'], $user['person'], $user['organization'], 'user');
+        if (isset($user['organization'])) {
+            return new CommongroundUser($user['username'], $user['id'], $user['username'], null, $user['roles'], $user['person'], $user['organization'], 'user');
+        } else {
+            return new CommongroundUser($user['username'], $user['id'], $user['username'], null, $user['roles'], $user['person'], null, 'user');
+        }
     }
 
     public function checkCredentials($credentials, UserInterface $user)
