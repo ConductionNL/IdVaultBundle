@@ -198,9 +198,9 @@ class CommongroundGmailAuthenticator extends AbstractGuardAuthenticator
         array_push($user['roles'], 'scope.chin.checkins.read');
 
         if (isset($user['organization'])) {
-            return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'gmail');
+            return new CommongroundUser($user['username'], $credentials['id'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'gmail');
         } else {
-            return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'gmail');
+            return new CommongroundUser($user['username'], $credentials['id'], $person['name'], null, $user['roles'], $user['person'], null, 'gmail');
         }
     }
 
