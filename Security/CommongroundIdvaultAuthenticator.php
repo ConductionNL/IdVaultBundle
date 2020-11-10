@@ -117,7 +117,7 @@ class CommongroundIdvaultAuthenticator extends AbstractGuardAuthenticator
     {
         $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
         $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'id-vault', 'application' => $this->params->get('app_id')])['hydra:member'];
-        $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $providers[0]['name']])['hydra:member'];
+        $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $providers[0]['name']])['hydra:member'];
 
         if (!$tokens || count($tokens) < 1) {
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
@@ -159,12 +159,12 @@ class CommongroundIdvaultAuthenticator extends AbstractGuardAuthenticator
 
             //create token
             $token = [];
-            $token['token'] = $credentials['id'];
+            $token['token'] = $credentials['username'];
             $token['user'] = 'users/'.$user['id'];
             $token['provider'] = 'providers/'.$providers[0]['id'];
             $token = $this->commonGroundService->createResource($token, ['component' => 'uc', 'type' => 'tokens']);
 
-            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['id'], 'provider.name' => $providers[0]['name']])['hydra:member'];
+            $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $providers[0]['name']])['hydra:member'];
         } else {
             $token = $tokens[0];
             // Deze $urls zijn een hotfix voor niet werkende @id's op de cgb cgs
@@ -188,9 +188,9 @@ class CommongroundIdvaultAuthenticator extends AbstractGuardAuthenticator
         array_push($user['roles'], 'scope.chin.checkins.read');
 
         if (isset($user['organization'])) {
-            return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'idvault');
+            return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'id-vault');
         } else {
-            return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'idvault');
+            return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'id-vault');
         }
     }
 
