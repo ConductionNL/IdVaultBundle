@@ -81,14 +81,6 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
             $this->session->set('backUrl', $backUrl);
         }
 
-        $state = $this->session->get('state');
-
-        if ($state !== $request->get('state')) {
-            $this->flash->add('error', 'information received from untrusted site');
-
-            return new RedirectResponse($this->router->generate('app_default_index'));
-        }
-
         $body = [
             'client_id'         => $provider['configuration']['app_id'],
             'client_secret'     => $provider['configuration']['secret'],
