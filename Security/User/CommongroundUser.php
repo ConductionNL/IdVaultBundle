@@ -88,7 +88,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
     {
         return $this->organization;
     }
-    
+
     public function setOrganization(string $organization) : self
     {
         $this->organization = $organization;
