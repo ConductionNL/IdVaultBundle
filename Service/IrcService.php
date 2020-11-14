@@ -25,7 +25,7 @@ class IrcService
     public function scanResource(array $resource)
     {
         // Lets see if we need to create a contact for the contact
-        if (!empty($resource['contact']) && !empty($resource['contact']['@id'])) {
+        if (key_exists('contact', $resource) && is_array($resource['contact']) && !key_exists('@id', $resource['contact'])) {
             $contact = $this->commonGroundService->saveResource($resource['contact'], ['component'=>'cc', 'type'=>'people']);
             if (is_array($contact) && key_exists('@id', $contact)) {
                 $resource['contact'] = $contact['@id'];
@@ -52,7 +52,7 @@ class IrcService
             $resource['forwardUrl'] = 'https://'.$this->params->get('app_domain').'/irc/assents/'.$resource['id'];
         }
 
-        $resource = $this->commonGroundService->saveResource($resource, ['component'=>'irc','type'=>'assents']);
+        $resource = $this->commonGroundService->saveResource($resource, ['component'=>'irc', 'type'=>'assents']);
 
         return $resource;
     }

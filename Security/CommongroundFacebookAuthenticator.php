@@ -9,7 +9,6 @@
 
 namespace Conduction\CommonGroundBundle\Security;
 
-use Conduction\CommonGroundBundle\Entity\LoginLog;
 use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Doctrine\ORM\EntityManagerInterface;
@@ -146,7 +145,6 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
                 $user['username'] = $credentials['username'];
                 $user['password'] = $credentials['id'];
                 $user['person'] = $person['@id'];
-                $user['organization'] = $application;
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
             } else {
                 $user = $users[0];
@@ -169,19 +167,24 @@ class CommongroundFacebookAuthenticator extends AbstractGuardAuthenticator
 
         $person = $this->commonGroundService->getResource($user['person']);
 
-        $log = new LoginLog();
-        $log->setAddress($_SERVER['REMOTE_ADDR']);
-        $log->setMethod('Facebook');
-        $log->setStatus('200');
-        $this->em->persist($log);
-        $this->em->flush($log);
+        $log = [];
+        $log['address'] = $_SERVER['REMOTE_ADDR'];
+        $log['method'] = 'Facebook';
+        $log['status'] = '200';
+        $log['application'] = $application;
+
+        $this->commonGroundService->saveResource($log, ['component' => 'uc', 'type' => 'login_logs']);
 
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
         array_push($user['roles'], 'scope.chin.checkins.read');
 
-        return new CommongroundUser($user['username'], $credentials['id'], $credentials['name'], null, $user['roles'], $user['person'], null, 'facebook');
+        if (isset($user['organization'])) {
+            return new CommongroundUser($user['username'], $credentials['id'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'facebook');
+        } else {
+            return new CommongroundUser($user['username'], $credentials['id'], $person['name'], null, $user['roles'], $user['person'], null, 'facebook');
+        }
     }
 
     public function checkCredentials($credentials, UserInterface $user)
