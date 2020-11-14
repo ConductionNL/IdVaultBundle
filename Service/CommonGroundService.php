@@ -492,9 +492,6 @@ class CommonGroundService
 
         $url = $this->cleanUrl($endpoint, $resource, $autowire);
 
-        var_dump($url);
-        var_dump($endpoint);
-
         // To work with NLX we need a couple of default headers
         $auth = false;
         $headers = $this->headers;
