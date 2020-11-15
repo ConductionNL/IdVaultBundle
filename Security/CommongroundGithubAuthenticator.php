@@ -230,6 +230,9 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, $providerKey)
     {
         $backUrl = $this->session->get('backUrl', false);
+
+        $this->session->remove('backUrl');
+
         if ($backUrl) {
             $this->session->set('checkingProvider', 'github');
 
