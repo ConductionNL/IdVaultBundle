@@ -170,10 +170,34 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
                 $user = [];
                 $user['username'] = $credentials['username'];
                 $user['password'] = (string) $credentials['id'];
-                $user['person'] = $person['@id'];
+                $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
             } else {
                 $user = $users[0];
+
+                if (isset($user['person'])) {
+                    try {
+                        $person = $this->commonGroundService->getResource($user['person']);
+                    } catch (\Throwable $e) {
+                        $person = [];
+                        $name = explode(' ', $credentials['name']);
+                        $person['givenName'] = $name[0];
+
+                        $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
+                        $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+
+                        $user = $this->commonGroundService->updateResource($user);
+                    }
+                } else {
+                    $person = [];
+                    $name = explode(' ', $credentials['name']);
+                    $person['givenName'] = $name[0];
+
+                    $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
+                    $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+
+                    $user = $this->commonGroundService->updateResource($user);
+                }
             }
 
             //create token
@@ -189,6 +213,30 @@ class CommongroundGithubAuthenticator extends AbstractGuardAuthenticator
             // Deze $urls zijn een hotfix voor niet werkende @id's op de cgb cgs
             $userUlr = $this->commonGroundService->cleanUrl(['component'=>'uc', 'type'=>'users', 'id'=>$token['user']['id']]);
             $user = $this->commonGroundService->getResource($userUlr);
+
+            if (isset($user['person'])) {
+                try {
+                    $person = $this->commonGroundService->getResource($user['person']);
+                } catch (\Throwable $e) {
+                    $person = [];
+                    $name = explode(' ', $credentials['name']);
+                    $person['givenName'] = $name[0];
+
+                    $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
+                    $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+
+                    $user = $this->commonGroundService->updateResource($user);
+                }
+            } else {
+                $person = [];
+                $name = explode(' ', $credentials['name']);
+                $person['givenName'] = $name[0];
+
+                $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
+                $user['person'] = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+
+                $user = $this->commonGroundService->updateResource($user);
+            }
         }
 
         $person = $this->commonGroundService->getResource($user['person']);
