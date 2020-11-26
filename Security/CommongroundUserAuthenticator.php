@@ -137,6 +137,8 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
     {
         $backUrl = $this->session->get('backUrl', false);
 
+        $this->session->remove('backUrl');
+
         if ($backUrl) {
             return new RedirectResponse($backUrl);
         } else {
@@ -152,7 +154,7 @@ class CommongroundUserAuthenticator extends AbstractGuardAuthenticator
 
         $url = $this->router->generate('app_user_login', [], UrlGeneratorInterface::RELATIVE_PATH);
         if ($url == '') {
-            $url = '/';
+            $url = '/login';
         }
 
         return new RedirectResponse($url);

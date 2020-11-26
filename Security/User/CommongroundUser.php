@@ -130,7 +130,6 @@ class CommongroundUser implements UserInterface, EquatableInterface
         return serialize([
             $this->username,
             $this->password,
-            $this->isActive,
             // see section on salt below
             // $this->salt,
         ]);
@@ -140,8 +139,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
     {
         list(
             $this->username,
-            $this->password,
-            $this->isActive) = unserialize($serialized);
+            $this->password) = unserialize($serialized);
     }
 
     public function isEqualTo(UserInterface $user)
