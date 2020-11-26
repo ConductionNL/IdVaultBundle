@@ -1102,11 +1102,8 @@ class CommonGroundService
                 ($this->params->get('app_subpath_routing') && $this->params->get('app_subpath_routing') !== 'false') &&
                 (!$this->params->get('app_internal') || $this->params->get('app_internal') === 'false')
             ) {
-                $path = explode('/', $parsedUrl['path']);
-                //@TODO this should be more dynamic
-                $path = array_slice($path, 0, 4);
-                $path = implode('/', $path);
-                $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$path.$object['@id'];
+                $componentUrl = $this->cleanUrl(['component' => $this->getComponentFromUrl($parsedUrl)]);
+                $object['@id'] = $componentUrl.$object['@id'];
             } else {
                 $object['@id'] = $parsedUrl['scheme'].'://'.$parsedUrl['host'].$object['@id'];
             }
@@ -1118,6 +1115,21 @@ class CommonGroundService
         }
 
         return $object;
+    }
+
+    private function getComponentFromUrl(array $parsedUrl): string
+    {
+        $path = explode('/',$parsedUrl['path']);
+        $apiKey = array_search('api', $path);
+        $versionKey = array_search('v1', $path);
+        if($apiKey && $versionKey && count($path) > $versionKey + 1)
+        {
+            $component = $path[$versionKey + 1];
+        } else {
+            $component = explode('.', $parsedUrl['host'])[0];
+        }
+
+        return $component;
     }
 
     /**
