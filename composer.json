@@ -3,8 +3,10 @@
 	"type" : "library",
 	"description" : "Symfony Bundle for commonground balance functionality",
 	"keywords" : [
+		"conduction",
+		"common ground",
 		"commonground",
-		"balance",
+		"ID-Vault"
 	],
 	"homepage" : "https://conduction.nl",
 	"license" : "MIT",
@@ -17,8 +19,7 @@
 		}
 	],
 	"require" : {
-		"conduction/commongroundbundle": "dev-main",
-		"moneyphp/money": "^3.1.0"
+		"conduction/commongroundbundle": "dev-main"
 	},
 	"autoload" : {
 		"psr-4" : {
