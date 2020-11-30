@@ -1,7 +1,7 @@
 {
-	"name" : "conduction/balancebundle",
+	"name" : "conduction/idvaultbundle",
 	"type" : "library",
-	"description" : "Symfony Bundle for commonground balance functionality",
+	"description" : "Symfony Bundle for ID-Vault functionality",
 	"keywords" : [
 		"conduction",
 		"common ground",
@@ -19,11 +19,11 @@
 		}
 	],
 	"require" : {
-		"conduction/commongroundbundle": "dev-main"
+		"conduction/idvaultbundle": "dev-main"
 	},
 	"autoload" : {
 		"psr-4" : {
-			"Conduction\\BalanceBundle\\" : ""
+			"Conduction\\IdVaultBundle\\" : ""
 		},
 		"exclude-from-classmap" : [
 			"/Tests/"
@@ -32,12 +32,12 @@
 	"minimum-stability" : "alpha",
 	"support" : {
 		"email" : "ruben@conduction.nl",
-		"issues" : "https://github.com/ConductionNL/BalanceBundle/issues",
-		"source" : "https://github.com/ConductionNL/BalanceBundle"
+		"issues" : "https://github.com/ConductionNL/IdVaultBundle/issues",
+		"source" : "https://github.com/ConductionNL/IdVaultBundle"
 	},
 	"repositories" : [{
 			"type" : "git",
-			"url" : "https://github.com/ConductionNL/BalanceBundle",
+			"url" : "https://github.com/ConductionNL/IdVaultBundle",
 			"name" : "source"
 		}
 	]
