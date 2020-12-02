@@ -19,7 +19,7 @@
 		}
 	],
 	"require" : {
-		"conduction/idvaultbundle": "dev-main"
+		"conduction/commongroundbundle": "dev-master || dev-symfony51"
 	},
 	"autoload" : {
 		"psr-4" : {
