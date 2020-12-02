@@ -4,6 +4,8 @@
 namespace Conduction\IdVaultBundle\Service;
 
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
+use GuzzleHttp\Client;
+use Symfony\Component\Config\Definition\Exception\Exception;
 
 class IdVaultService
 {
@@ -23,19 +25,49 @@ class IdVaultService
 
     // getClaim
 
-    // getAuthorisation
+    /**
+     * This function returns an authorization id
+     *
+     * @param string $userUrl cleanUrl of the user
+     *
+     * @return string authorization id
+     */
+    public function getAuthorization(string $userUrl, string $resource, string $name, ?string $description)
+    {
+
+    }
 
     /**
-     * This function add a doosier to a current user
+     * This function add a dossier to a current user.
      *
-     * @parameter $amount Money the amount of money that you want to add
-     * @parameter $resource string resource that owns the acount that is being added to
-     * @parameter $name string the text displayed with this transaction
+     * @param array $scopes scopes the dossier is blocking.
+     * @param string $authorization authorization id.
      *
-     * @returns boolean true if the dossier created was succesfull, false otherwise
+     * @return boolean true if the dossier created was successful, false otherwise.
      */
-    public function createDossier(array $scopes, string $resource, string $name, ?string $description)
+    public function createDossier(array $scopes, string $authorization, string $name, ?string $description)
     {
+
+        try {
+            $headers = [
+                'authentication' => 'Bearer test_H8PeFq62HpNFPQmer4GuEUWupMwSqQ',
+                'Accept'        => 'application/json',
+            ];
+
+            $client = new Client([
+                // Base URI is used with relative requests
+                'base_uri' => 'https://api.mollie.com',
+                // You can set any number of default request options.
+                'timeout'  => 2.0,
+            ]);
+
+            $response = $client->request('GET', '/v2/payments/'.$id, [
+                'headers' => $headers,
+            ]);
+
+        } catch (\Throwable $e) {
+            return false;
+        }
         return true;
     }
 

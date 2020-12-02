@@ -19,6 +19,8 @@
 		}
 	],
 	"require" : {
+		"php" : "^7.1.3",
+		"guzzlehttp/guzzle": "^6.3",
 		"conduction/commongroundbundle": "dev-master || dev-symfony51"
 	},
 	"autoload" : {
