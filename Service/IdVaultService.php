@@ -85,7 +85,8 @@ class IdVaultService
     {
         try {
             $headers = [
-                'Accept'        => 'application/json',
+                'Content-Type' => 'application/json',
+                'Accept'       => 'application/json'
             ];
 
             $body = [
@@ -98,15 +99,14 @@ class IdVaultService
 
             $client = new Client([
                 // Base URI is used with relative requests
-                'base_uri' => 'id-vault.com',
+                'headers'  => $headers,
+                'base_uri' => 'https://id-vault.com',
                 // You can set any number of default request options.
                 'timeout'  => 2.0,
             ]);
 
             $response = $client->request('POST', '/api/mails', [
-                'form_params'  => $body,
-                'headers'      => $headers,
-                'content_type' => 'application/x-www-form-urlencoded',
+                'json'         => $body,
             ]);
 
             $response = json_decode($response->getBody()->getContents(), true);
