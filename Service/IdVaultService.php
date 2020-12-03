@@ -47,7 +47,6 @@ class IdVaultService
      */
     public function createDossier(array $scopes, string $authorization, string $name, ?string $description)
     {
-
         try {
             $headers = [
                 'authentication' => 'Bearer test_H8PeFq62HpNFPQmer4GuEUWupMwSqQ',
@@ -69,6 +68,53 @@ class IdVaultService
             return false;
         }
         return true;
+    }
+
+    /**
+     * This function sends mail from id-vault to provided receiver
+     *
+     * @param string $applicationId id of your id-vault application.
+     * @param string $body html body of the mail.
+     * @param string $subject subject of the mail.
+     * @param string $receiver receiver of the mail.
+     * @param string $sender sender of the mail.
+     *
+     * @return array|false returns response from id-vault or false if wrong information provided for the call
+     */
+    public function sendMail(string $applicationId, string $body, string $subject, string $receiver, string $sender)
+    {
+        try {
+            $headers = [
+                'Accept'        => 'application/json',
+            ];
+
+            $body = [
+                'applicationId' => $applicationId,
+                'body'          => $body,
+                'subject'       => $subject,
+                'receiver'      => $receiver,
+                'sender'        => $sender,
+            ];
+
+            $client = new Client([
+                // Base URI is used with relative requests
+                'base_uri' => 'id-vault.com',
+                // You can set any number of default request options.
+                'timeout'  => 2.0,
+            ]);
+
+            $response = $client->request('POST', '/api/mails', [
+                'form_params'  => $body,
+                'headers'      => $headers,
+                'content_type' => 'application/x-www-form-urlencoded',
+            ]);
+
+            $response = json_decode($response->getBody()->getContents(), true);
+
+        } catch (\Throwable $e) {
+            return false;
+        }
+        return $response;
     }
 
     // createContract
