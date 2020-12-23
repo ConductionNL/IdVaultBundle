@@ -3,7 +3,7 @@
 // Conduction/CommonGroundBundle/Service/IdVaultService.php
 namespace Conduction\IdVaultBundle\Service;
 
-use Conduction\IdVaultApi\IdVaultApiClient;
+use Conduction\IdVaultApi\src\IdVaultApiClient;
 use GuzzleHttp\Client;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Throwable;
