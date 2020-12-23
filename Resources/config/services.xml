@@ -12,5 +12,8 @@
         <!--IdVault Security: User Providers-->
         <service id="Conduction\IdVaultBundle\Security\User\IdVaultProvider" />
 
+        <!--IdVault Security: Authenticators-->
+        <service id="Conduction\IdVaultBundle\Security\IdVaultAuthenticator" />
+
     </services>
 </container>

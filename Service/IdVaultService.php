@@ -74,14 +74,14 @@ class IdVaultService
     /**
      * This function retrieve's user information from id-vault.
      *
+     * @param string $code the code received by id-vault oauth endpoint.
      * @param string $applicationId id of your id-vault application.
      * @param string $secret secret of your id-vault application.
-     * @param string $code the code received by id-vault oauth endpoint.
      * @param string $state (optional) A random string used by your application to identify a unique session
      *
      * @return array|false returns response from id-vault or false
      */
-    public function authenticateUser(string $code, string $applicationId, string $secret, string $state = null)
+    public function authenticateUser(string $code, string $applicationId, string $secret, string $state = '')
     {
         $result = $this->idVault->authenticateUser($code, $applicationId, $secret, $state);
 

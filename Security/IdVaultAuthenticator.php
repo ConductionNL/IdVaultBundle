@@ -9,11 +9,15 @@
 
 namespace Conduction\IdVaultBundle\Security;
 
+use Conduction\IdVaultBundle\Event\IdVaultEvents;
+use Conduction\IdVaultBundle\Event\LoggedInEvent;
+use Conduction\IdVaultBundle\Event\NewUserEvent;
 use Conduction\IdVaultBundle\Security\User\IdVaultUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Conduction\IdVaultBundle\Service\IdVaultService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -35,8 +39,10 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
     private $csrfTokenManager;
     private $router;
     private $urlGenerator;
+    private $idVaultService;
+    private $eventDispatcher;
 
-    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, SessionInterface $session)
+    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, IdVaultService $idVaultService, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, SessionInterface $session, EventDispatcherInterface $eventDispatcher)
     {
         $this->em = $em;
         $this->params = $params;
@@ -45,6 +51,8 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
         $this->router = $router;
         $this->urlGenerator = $urlGenerator;
         $this->session = $session;
+        $this->idVaultService = $idVaultService;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -62,7 +70,7 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
      * Called on every request. Return whatever credentials you want to
      * be passed to getUser() as $credentials.
      */
-    public function getCredentials(Request $request, IdVaultService $idVaultService)
+    public function getCredentials(Request $request)
     {
         $code = $request->query->get('code');
 
@@ -75,7 +83,7 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
             $this->session->set('backUrl', $backUrl);
         }
 
-        $accessToken = $idVaultService->authenticateUser($provider['configuration']['app_id'], $provider['configuration']['secret'], $code);
+        $accessToken = $this->idVaultService->authenticateUser($code, $provider['configuration']['app_id'], $provider['configuration']['secret']);
 
         $json = base64_decode(explode('.', $accessToken['accessToken'])[1]);
         $json = json_decode($json, true);
@@ -175,6 +183,15 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
                 $user['roles'][$key] = "ROLE_$role";
             }
         }
+
+        if ($credentials['newUser']) {
+            $event = new NewUserEvent($user);
+            $this->eventDispatcher->dispatch($event, IdVaultEvents::NEWUSER);
+        }
+
+
+        $event = new LoggedInEvent($user);
+        $this->eventDispatcher->dispatch($event, IdVaultEvents::LOGGEDIN);
 
         if (isset($user['organization'])) {
             return new IdVaultUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'id-vault', false, $credentials['authorization']);
