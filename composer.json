@@ -21,7 +21,8 @@
 	"require" : {
 		"php" : "^7.1.3",
 		"guzzlehttp/guzzle": "^6.3",
-		"conduction/commongroundbundle": "dev-master || dev-symfony51"
+		"conduction/commongroundbundle": "dev-master || dev-symfony51",
+		"conduction/id-vault-api-php": "dev-main"
 	},
 	"autoload" : {
 		"psr-4" : {
