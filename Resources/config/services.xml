@@ -6,7 +6,11 @@
     <services>
         <defaults autowire="true" autoconfigure="true" />
 
-        <!--CommonGround Services-->
+        <!--IdVault Services-->
         <service id="Conduction\IdVaultBundle\Service\IdVaultService" />
+
+        <!--IdVault Security: User Providers-->
+        <service id="Conduction\IdVaultBundle\Security\User\IdVaultProvider" />
+
     </services>
 </container>
