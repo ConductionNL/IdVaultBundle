@@ -31,7 +31,7 @@
 			"/Tests/"
 		]
 	},
-	"minimum-stability" : "alpha",
+	"minimum-stability" : "dev",
 	"support" : {
 		"email" : "ruben@conduction.nl",
 		"issues" : "https://github.com/ConductionNL/IdVaultBundle/issues",
