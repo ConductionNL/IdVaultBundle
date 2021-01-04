@@ -3,6 +3,7 @@
 // Conduction/CommonGroundBundle/Service/IdVaultService.php
 namespace Conduction\IdVaultBundle\Service;
 
+use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Conduction\IdVaultApi\src\IdVaultApiClient;
 use GuzzleHttp\Client;
 use Symfony\Component\Config\Definition\Exception\Exception;
@@ -12,9 +13,11 @@ class IdVaultService
 {
 
     private $idVault;
+    private $commonGroundService;
 
-    public function __construct() {
+    public function __construct(CommonGroundService $commonGroundService) {
         $this->idVault = new IdVaultApiClient();
+        $this->commonGroundService = $commonGroundService;
     }
 
     /**
@@ -34,6 +37,36 @@ class IdVaultService
     public function createDossier(array $scopes, string $accessToken, string $name, string $goal, string $expiryDate, string $sso, string $description = '', bool $legal = false)
     {
         $result = $this->idVault->createDossier($scopes, $accessToken, $name, $goal, $expiryDate, $sso, $description, $legal);
+
+        return $result;
+    }
+
+    /**
+     * This function sets the organization on the provided user object
+     *
+     * @param string $organization id of the wrc organization object
+     * @param string $username username of the user
+     *
+     * @return array|false the updated user object or false when failed to update
+     */
+    public function updateUserOrganization(string $organization, string $username)
+    {
+        $organization = $this->commonGroundService->cleanUrl(['component' => 'wrc', 'type' => 'organizations', 'id' => $organization]);
+
+        $users = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'users'], ['username' => $username])['hydra:member'];
+
+        if (count($users) > 0) {
+            $users[0]['organization'] = $organization;
+
+            foreach ($users[0]['userGroups'] as &$group) {
+                $group = '/groups/'.$group['id'];
+            }
+
+            $result = $this->commonGroundService->updateResource($users[0]);
+
+        } else {
+            return false;
+        }
 
         return $result;
     }
