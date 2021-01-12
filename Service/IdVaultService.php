@@ -121,4 +121,84 @@ class IdVaultService
         return $result;
     }
 
+    /**
+     * this function creates a userGroup linked to the id-vault application
+     *
+     * @param string $clientId id of the id-vault application.
+     * @param string $name name of the group.
+     * @param string $description description of the group.
+     * @param string $organization (optional) uri of an organization object.
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function createGroup(string $clientId, string $name, string $description, string $organization = '')
+    {
+        $result = $this->idVault->createGroup($clientId, $name, $description, $organization);
+
+        return $result;
+    }
+
+    /**
+     * this function get all the groups and the users in those groups that are linked to an application
+     *
+     * @param string $clientId id of the id-vault application.
+     * @param string $organization uri of the organization linked to the groups
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function getGroups(string $clientId, string $organization)
+    {
+        $result = $this->idVault->getGroups($clientId, $organization);
+
+        return $result;
+    }
+
+    /**
+     * this function invites a id-vault user to the provided group
+     *
+     * @param string $clientId id of the id-vault application.
+     * @param string $groupId id of the id-vault group.
+     * @param string $username username of the user you wish to invite.
+     * @param bool $accepted whether the user already accepted the invited (default = false).
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function inviteUser(string $clientId, string $groupId, string $username, bool $accepted = false)
+    {
+        $result = $this->idVault->inviteUser($clientId, $groupId, $username, $accepted);
+
+        return $result;
+    }
+
+    /**
+     * this function accepts the group invite for the user.
+     *
+     * @param string $clientId id of the id-vault application.
+     * @param string $groupId id of the id-vault group.
+     * @param string $username username of the user that wants to accept his invite
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function acceptGroupInvite(string $clientId, string $groupId, string $username)
+    {
+        $result = $this->idVault->acceptGroupInvite($clientId, $groupId, $username);
+
+        return $result;
+    }
+
+    /**
+     * this function tries to create an id-vault user and return an authorization code.
+     *
+     * @param string $clientId id of the id-vault application.
+     * @param string $username username of the user that wants to accept his invite
+     * @param array $scopes scopes requested from the user.
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function createUser(string $clientId, string $username, array $scopes)
+    {
+        $result = $this->idVault->createUser($clientId, $username, $scopes);
+
+        return $result;
+    }
 }
