@@ -7,14 +7,17 @@
  *
  */
 
-namespace Conduction\CommonGroundBundle\Security;
+namespace Conduction\IdVaultBundle\Security;
 
-use Conduction\CommonGroundBundle\Entity\LoginLog;
-use Conduction\CommonGroundBundle\Security\User\CommongroundUser;
+use Conduction\IdVaultBundle\Event\IdVaultEvents;
+use Conduction\IdVaultBundle\Event\LoggedInEvent;
+use Conduction\IdVaultBundle\Event\NewUserEvent;
+use Conduction\IdVaultBundle\Security\User\IdVaultUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
+use Conduction\IdVaultBundle\Service\IdVaultService;
 use Doctrine\ORM\EntityManagerInterface;
-use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
@@ -28,7 +31,7 @@ use Symfony\Component\Security\Core\User\UserProviderInterface;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Symfony\Component\Security\Guard\AbstractGuardAuthenticator;
 
-class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
+class IdVaultAuthenticator extends AbstractGuardAuthenticator
 {
     private $em;
     private $params;
@@ -36,8 +39,10 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     private $csrfTokenManager;
     private $router;
     private $urlGenerator;
+    private $idVaultService;
+    private $eventDispatcher;
 
-    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, SessionInterface $session)
+    public function __construct(EntityManagerInterface $em, ParameterBagInterface $params, IdVaultService $idVaultService, CommonGroundService $commonGroundService, CsrfTokenManagerInterface $csrfTokenManager, RouterInterface $router, UrlGeneratorInterface $urlGenerator, SessionInterface $session, EventDispatcherInterface $eventDispatcher)
     {
         $this->em = $em;
         $this->params = $params;
@@ -46,6 +51,8 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
         $this->router = $router;
         $this->urlGenerator = $urlGenerator;
         $this->session = $session;
+        $this->idVaultService = $idVaultService;
+        $this->eventDispatcher = $eventDispatcher;
     }
 
     /**
@@ -55,7 +62,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
      */
     public function supports(Request $request)
     {
-        return 'app_user_idin' === $request->attributes->get('_route')
+        return 'app_user_idvault' === $request->attributes->get('_route')
             && $request->isMethod('GET') && $request->query->get('code');
     }
 
@@ -67,59 +74,29 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     {
         $code = $request->query->get('code');
 
-        $provider = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'idin', 'application' => $this->params->get('app_id')])['hydra:member'];
-        $provider = $provider[0];
+        $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
+        $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'id-vault', 'application' => $this->params->get('app_id')])['hydra:member'];
+        $provider = $providers[0];
 
-        $endpoint = str_replace('/oidc/token', '', $provider['configuration']['endpoint']);
+        $backUrl = $request->query->get('backUrl', false);
+        if ($backUrl) {
+            $this->session->set('backUrl', $backUrl);
+        }
 
-        $redirect = str_replace('http:', 'https:', $request->getUri());
-        $redirect = substr($redirect, 0, strpos($redirect, '?'));
+        $accessToken = $this->idVaultService->authenticateUser($code, $provider['configuration']['app_id'], $provider['configuration']['secret']);
 
-        $body = [
-            'client_id'    => $provider['configuration']['app_id'],
-            'grant_type'   => 'authorization_code',
-            'code'         => $code,
-            'redirect_uri' => $redirect,
-        ];
-
-        $client = new Client([
-            // Base URI is used with relative requests
-            'base_uri' => $endpoint,
-            // You can set any number of default request options.
-            'timeout'  => 2.0,
-        ]);
-
-        $response = $client->request('POST', '/oidc/token', [
-            'auth'        => [$provider['configuration']['app_id'], $provider['configuration']['secret']],
-            'form_params' => $body,
-        ]);
-
-        $token = json_decode($response->getBody()->getContents(), true);
-
-        $headers = [
-            'Authorization' => 'Bearer '.$token['access_token'],
-            'Accept'        => 'application/json',
-        ];
-
-        $response = $client->request('GET', '/oidc/userinfo', [
-            'headers' => $headers,
-        ]);
-
-        $user = json_decode($response->getBody()->getContents(), true);
+        $json = base64_decode(explode('.', $accessToken['accessToken'])[1]);
+        $json = json_decode($json, true);
 
         $credentials = [
-            'username'    => $user['consumer.bin'],
-            'firstName'   => $user['consumer.initials'],
-            'lastName'    => $user['consumer.legallastname'],
+            'username'      => $json['email'],
+            'email'         => $json['email'],
+            'givenName'     => $json['given_name'],
+            'familyName'    => $json['family_name'],
+            'id'            => $json['jti'],
+            'authorization' => $accessToken['accessToken'],
+            'newUser'       => $accessToken['newUser']
         ];
-
-        if (isset($user['consumer.email'])) {
-            $credentials['email'] = $user['consumer.email'];
-        }
-
-        if (isset($user['consumer.telephone'])) {
-            $credentials['telephone'] = $user['consumer.telephone'];
-        }
 
         $request->getSession()->set(
             Security::LAST_USERNAME,
@@ -132,30 +109,33 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     public function getUser($credentials, UserProviderInterface $userProvider)
     {
         $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
-        $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'idin', 'application' =>$this->params->get('app_id')])['hydra:member'];
+        $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'id-vault', 'application' => $this->params->get('app_id')])['hydra:member'];
         $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $providers[0]['name']])['hydra:member'];
 
         if (!$tokens || count($tokens) < 1) {
             $users = $this->commonGroundService->getResourceList(['component'=>'uc', 'type'=>'users'], ['username'=> $credentials['username']], true, false, true, false, false);
             $users = $users['hydra:member'];
 
+            // User dosnt exist
             if (count($users) < 1) {
-                //create person
-                $person = [];
-                $person['name'] = $credentials['firstName'];
-                $person['givenName'] = $credentials['firstName'];
-                $person['familyName'] = $credentials['lastName'];
-
-                if (isset($credentials['email'])) {
-                    //create email
-                    $person['emails'][0]['name'] = $credentials['email'];
-                    $person['emails'][0]['email'] = $credentials['email'];
+                if (isset($credentials['telephone'])) {
+                    $telephone = [];
+                    $telephone['name'] = $credentials['telephone'];
+                    $telephone['telephone'] = $credentials['telephone'];
                 }
 
+                //create email
+                $emailObect = [];
+                $emailObect['name'] = $credentials['email'];
+                $emailObect['email'] = $credentials['email'];
+
+                //create person
+                $person = [];
+                $person['givenName'] = $credentials['givenName'];
+                $person['familyName'] = $credentials['familyName'];
+                $person['emails'] = [$emailObect];
                 if (isset($credentials['telephone'])) {
-                    //create phoneNumber
-                    $person['telephones'][0]['name'] = $credentials['telephone'];
-                    $person['telephones'][0]['telephone'] = $credentials['telephone'];
+                    $person['telephones'] = [$telephone];
                 }
 
                 $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
@@ -163,9 +143,8 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
                 //create user
                 $user = [];
                 $user['username'] = $credentials['username'];
-                $user['password'] = $credentials['username'];
+                $user['password'] = $credentials['id'];
                 $user['person'] = $person['@id'];
-                $user['organization'] = $application;
                 $user = $this->commonGroundService->createResource($user, ['component' => 'uc', 'type' => 'users']);
             } else {
                 $user = $users[0];
@@ -188,28 +167,46 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
         $person = $this->commonGroundService->getResource($user['person']);
 
-        $log = new LoginLog();
-        $log->setAddress($_SERVER['REMOTE_ADDR']);
-        $log->setMethod('Idin-identity');
-        $log->setStatus('200');
-        $this->em->persist($log);
-        $this->em->flush($log);
+        $log = [];
+        $log['address'] = $_SERVER['REMOTE_ADDR'];
+        $log['method'] = 'Id-Vault';
+        $log['status'] = '200';
+        $log['application'] = $application;
+
+        $this->commonGroundService->saveResource($log, ['component' => 'uc', 'type' => 'login_logs']);
 
         if (!in_array('ROLE_USER', $user['roles'])) {
             $user['roles'][] = 'ROLE_USER';
         }
-        array_push($user['roles'], 'scope.chin.checkins.read');
+        foreach ($user['roles'] as $key=>$role) {
+            if (strpos($role, 'ROLE_') !== 0) {
+                $user['roles'][$key] = "ROLE_$role";
+            }
+        }
 
-        return new CommongroundUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'idin');
+        if ($credentials['newUser']) {
+            $event = new NewUserEvent($user);
+            $this->eventDispatcher->dispatch($event, IdVaultEvents::NEWUSER);
+        }
+
+
+        $event = new LoggedInEvent($user);
+        $this->eventDispatcher->dispatch($event, IdVaultEvents::LOGGEDIN);
+
+        if (isset($user['organization'])) {
+            return new IdVaultUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'id-vault', false, $credentials['authorization']);
+        } else {
+            return new IdVaultUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'id-vault', false, $credentials['authorization']);
+        }
     }
 
     public function checkCredentials($credentials, UserInterface $user)
     {
         $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
-        $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'idin', 'application' =>$this->params->get('app_id')])['hydra:member'];
-        $token = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $providers[0]['name']])['hydra:member'];
+        $providers = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'providers'], ['type' => 'id-vault', 'application' => $this->params->get('app_id')])['hydra:member'];
+        $tokens = $this->commonGroundService->getResourceList(['component' => 'uc', 'type' => 'tokens'], ['token' => $credentials['username'], 'provider.name' => $providers[0]['name']])['hydra:member'];
 
-        if (!$token || count($token) < 1) {
+        if (!$tokens || count($tokens) < 1) {
             return;
         }
 
@@ -221,13 +218,8 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     {
         $backUrl = $this->session->get('backUrl', false);
         if ($backUrl) {
-            $this->session->set('checkingProvider', 'idin-identity');
-
             return new RedirectResponse($backUrl);
         }
-        //elseif(isset($application['defaultConfiguration']['configuration']['userPage'])){
-        //    return new RedirectResponse('/'.$application['defaultConfiguration']['configuration']['userPage']);
-        //}
         else {
             return new RedirectResponse($this->router->generate('app_default_index'));
         }
@@ -235,7 +227,7 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception)
     {
-        return new RedirectResponse($this->router->generate('app_user_idin'));
+        return new RedirectResponse($this->router->generate('app_user_idvault'));
     }
 
     /**
@@ -244,9 +236,9 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     public function start(Request $request, AuthenticationException $authException = null)
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', []));
+            return new RedirectResponse('/'.$this->params->get('app_subpath').$this->router->generate('app_user_idvault', []));
         } else {
-            return new RedirectResponse($this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH));
+            return new RedirectResponse($this->router->generate('app_user_idvault', [], UrlGeneratorInterface::RELATIVE_PATH));
         }
     }
 
@@ -258,9 +250,9 @@ class CommongroundIdinAuthenticator extends AbstractGuardAuthenticator
     protected function getLoginUrl()
     {
         if ($this->params->get('app_subpath') && $this->params->get('app_subpath') != 'false') {
-            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH);
+            return '/'.$this->params->get('app_subpath').$this->router->generate('app_user_idvault', [], UrlGeneratorInterface::RELATIVE_PATH);
         } else {
-            return $this->router->generate('app_user_digispoof', [], UrlGeneratorInterface::RELATIVE_PATH);
+            return $this->router->generate('app_user_idvault', [], UrlGeneratorInterface::RELATIVE_PATH);
         }
     }
 }

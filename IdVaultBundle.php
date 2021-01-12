@@ -1,9 +1,9 @@
 <?php
 
-// Conduction/CommonGroundBundle/CommonGroundBundle.php
+// Conduction/CommonGroundBundle/IdVaultBundle.php
 
 /*
- * This file is part of the Conduction Common Ground Bundle
+ * This file is part of the Conduction Id-Vault Bundle
  *
  * (c) Conduction <info@conduction.nl>
  *
@@ -11,10 +11,10 @@
  * file that was distributed with this source code.
  */
 
-namespace Conduction\CommonGroundBundle;
+namespace Conduction\IdVaultBundle;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class CommonGroundBundle extends Bundle
+class IdVaultBundle extends Bundle
 {
 }
