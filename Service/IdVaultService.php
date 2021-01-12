@@ -105,6 +105,51 @@ class IdVaultService
     }
 
     /**
+     * this function requests sendLists from id-vault BS, the resource filter only works when a clientSecret is also given.
+     *
+     * @param string $clientSecret An id of an id-vault wac/application. This is used to get the sendLists of a specific application.
+     * @param string $resource An url of a resource that a sendList can also be connected to. For example an organization within the application this SendList is connected to. This is why this search filter only works if a clientSecret is also given.
+     *
+     * @return array|Throwable returns response from id-vault with an array of SendLists.
+     */
+    public function getSendLists(string $clientSecret = null, string $resource = null)
+    {
+        $result = $this->idVault->getSendLists($clientSecret, $resource);
+
+        return $result;
+    }
+
+    /**
+     * this function creates a new sendList in id-vault BS.
+     *
+     * @param string $clientSecret An id of an id-vault wac/application. This should be the UC/provider->configuration->secret of the application from where this sendList is made.
+     * @param array $sendList An array with information of the new sendList. This should contain at least the key name with a string value and can also contain the following keys: description, resource, (bool) mail and (bool) phone.
+     *
+     * @return array|Throwable returns response from id-vault with the created sendList.
+     */
+    public function createSendList(string $clientSecret, array $sendList)
+    {
+        $result = $this->idVault->createSendList($clientSecret, $sendList);
+
+        return $result;
+    }
+
+    /**
+     * this function sends emails to all subscribers of an id-vault BS sendList
+     *
+     * @param string $sendListId The id of an id-vault sendList.
+     * @param array $mail An array with information for the email. This should contain at least the keys title (email title), html (email content) and sender (an email address) and can also contain the following keys: message, text.
+     *
+     * @return array|Throwable returns response from id-vault with an array of @id's of all send emails.
+     */
+    public function sendToSendList(string $sendListId, array $mail)
+    {
+        $result = $this->idVault->sendToSendList($sendListId, $mail);
+
+        return $result;
+    }
+
+    /**
      * This function retrieve's user information from id-vault.
      *
      * @param string $code the code received by id-vault oauth endpoint.
