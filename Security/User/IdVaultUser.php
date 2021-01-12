@@ -2,14 +2,14 @@
 
 // src/Security/User/WebserviceUser.php
 
-namespace Conduction\CommonGroundBundle\Security\User;
+namespace Conduction\IdVaultBundle\Security\User;
 
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-class CommongroundUser implements UserInterface, EquatableInterface
+class IdVaultUser implements UserInterface, EquatableInterface
 {
-    /* The username displayd */
+    /* The username displayed */
     private $username;
 
     /* Provide UUID instead of normal password */
@@ -21,25 +21,28 @@ class CommongroundUser implements UserInterface, EquatableInterface
     /* Leave empty! */
     private $salt;
 
-    /* Iether a BRP or CC person URI */
+    /* Roles of the user */
     private $roles;
 
     /* Always true */
     private $isActive;
 
-    /* Iether a BRP or CC person URI */
+    /* Either a BRP or CC person URI */
     private $person;
 
-    /* Iether a kvk or wrc organization OR cc organization URI */
+    /* Either a kvk, wrc organization OR cc organization URI */
     private $organization;
 
-    /* Either user, organisation, person, application */
+    /* Either user, organisation, person, application, id-vault */
     private $type;
 
     /* Either true or false if a user is a resident */
     private $resident;
 
-    public function __construct(string $username = '', string $password = '', string $name = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false, $locale = null)
+    /* jwt token */
+    private $authorization;
+
+    public function __construct(string $username = '', string $password = '', string $name = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false, string $authorization = null, $locale = null)
     {
         $this->username = $username;
         $this->password = $password;
@@ -51,6 +54,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
         $this->isActive = true;
         $this->type = $type;
         $this->resident = $resident;
+        $this->authorization = $authorization;
         $this->locale = $locale; // The language of this user
     }
 
@@ -104,6 +108,11 @@ class CommongroundUser implements UserInterface, EquatableInterface
         return $this->name;
     }
 
+    public function getAuthorization()
+    {
+        return $this->authorization;
+    }
+
     public function getLocale()
     {
         return $this->locale;
@@ -124,7 +133,6 @@ class CommongroundUser implements UserInterface, EquatableInterface
         return serialize([
             $this->username,
             $this->password,
-            $this->isActive,
             // see section on salt below
             // $this->salt,
         ]);
@@ -134,8 +142,7 @@ class CommongroundUser implements UserInterface, EquatableInterface
     {
         list(
             $this->username,
-            $this->password,
-            $this->isActive) = unserialize($serialized);
+            $this->password) = unserialize($serialized);
     }
 
     public function isEqualTo(UserInterface $user)
