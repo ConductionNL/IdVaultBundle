@@ -42,8 +42,10 @@ class IdVaultProvider implements UserProviderInterface
         $type = $user->getType();
         $person = $user->getPerson();
         $authorization = $user->getAuthorization();
+        $groups = $user->getGroups();
+        $organizations = $user->getOrganizations();
 
-        return $this->fetchUser($username, $password, $organization, $type, $person, $authorization);
+        return $this->fetchUser($username, $password, $organization, $type, $person, $authorization, $groups, $organizations);
     }
 
     public function supportsClass($class)
@@ -51,7 +53,7 @@ class IdVaultProvider implements UserProviderInterface
         return IdVaultUser::class === $class;
     }
 
-    private function fetchUser($username, $password, $organization, $type, $person, $authorization)
+    private function fetchUser($username, $password, $organization, $type, $person, $authorization, $groups, $organizations)
     {
         //only trigger if type of user is organization
         $application = $this->commonGroundService->cleanUrl(['component'=>'wrc', 'type'=>'applications', 'id'=>$this->params->get('app_id')]);
@@ -78,9 +80,9 @@ class IdVaultProvider implements UserProviderInterface
 
         $person = $this->commonGroundService->getResource($user['person']);
         if (isset($user['organization'])) {
-            return new IdVaultUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'id-vault', false, $authorization);
+            return new IdVaultUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'id-vault', false, $authorization, null, $groups, $organizations);
         } else {
-            return new IdVaultUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'id-vault', false, $authorization);
+            return new IdVaultUser($user['username'], $password, $person['name'], null, $user['roles'], $user['person'], null, 'id-vault', false, $authorization, null, $groups, $organizations);
         }
 
     }
