@@ -42,7 +42,13 @@ class IdVaultUser implements UserInterface, EquatableInterface
     /* jwt token */
     private $authorization;
 
-    public function __construct(string $username = '', string $password = '', string $name = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false, string $authorization = null, $locale = null)
+    /* ID-Vault groups linked to user */
+    private $groups;
+
+    /* Organization uri's from the groups the user is linked to */
+    private $organizations;
+
+    public function __construct(string $username = '', string $password = '', string $name = '', string $salt = null, array $roles = [], $person = null, $organization = null, $type = null, bool $resident = false, string $authorization = null, $locale = null, array $groups = [], array $organizations = [])
     {
         $this->username = $username;
         $this->password = $password;
@@ -56,6 +62,8 @@ class IdVaultUser implements UserInterface, EquatableInterface
         $this->resident = $resident;
         $this->authorization = $authorization;
         $this->locale = $locale; // The language of this user
+        $this->groups = $groups;
+        $this->organizations = $organizations;
     }
 
     public function __toString()
@@ -116,6 +124,16 @@ class IdVaultUser implements UserInterface, EquatableInterface
     public function getLocale()
     {
         return $this->locale;
+    }
+
+    public function getGroups()
+    {
+        return $this->groups;
+    }
+
+    public function getOrganizations()
+    {
+        return $this->organizations;
     }
 
     public function isEnabled()

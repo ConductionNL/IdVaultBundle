@@ -184,6 +184,21 @@ class IdVaultService
     }
 
     /**
+     * this function get all the groups that are linked to a user in the application
+     *
+     * @param string $clientId id of the id-vault application.
+     * @param string $username email of the user you want to get the groups from.
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function getUserGroups(string $clientId, string $username)
+    {
+        $result = $this->idVault->getUserGroups($clientId, $username);
+
+        return $result;
+    }
+
+    /**
      * this function get all the groups and the users in those groups that are linked to an application
      *
      * @param string $clientId id of the id-vault application.
