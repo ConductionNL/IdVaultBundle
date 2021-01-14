@@ -123,14 +123,13 @@ class IdVaultService
      * this function creates a new sendList in id-vault BS.
      *
      * @param string $clientSecret An id of an id-vault wac/application. This should be the UC/provider->configuration->secret of the application from where this sendList is made.
-     * @param array $sendList An array with information of the sendList. This should contain at least the key name with a value when creating a new Sendlist. It can also contain the following keys: description, resource, (bool) mail and (bool) phone.
-     * @param string $sendListId The id of an id-vault sendList for if you want to update a sendList.
+     * @param array $sendList An array with information of the sendList. This should contain at least the key 'name' with a value when creating a new Sendlist. Or at least the key 'id' with the id of an id-vault sendList when updating a sendList. It can also contain the following keys: 'description', 'resource', (bool) 'mail' and (bool) 'phone'.
      *
      * @return array|Throwable returns response from id-vault with the created or updated sendList.
      */
-    public function saveSendList(string $clientSecret, array $sendList, string $sendListId = null)
+    public function saveSendList(string $clientSecret, array $sendList)
     {
-        $result = $this->idVault->saveSendList($clientSecret, $sendList, $sendListId);
+        $result = $this->idVault->saveSendList($clientSecret, $sendList);
 
         return $result;
     }
