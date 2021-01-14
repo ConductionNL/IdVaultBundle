@@ -8,16 +8,19 @@ use Conduction\IdVaultApi\src\IdVaultApiClient;
 use GuzzleHttp\Client;
 use Symfony\Component\Config\Definition\Exception\Exception;
 use Throwable;
+use Twig\Environment;
 
 class IdVaultService
 {
 
     private $idVault;
     private $commonGroundService;
+    private $twig;
 
-    public function __construct(CommonGroundService $commonGroundService) {
+    public function __construct(CommonGroundService $commonGroundService, Environment $twig) {
         $this->idVault = new IdVaultApiClient();
         $this->commonGroundService = $commonGroundService;
+        $this->twig = $twig;
     }
 
     /**
@@ -75,15 +78,17 @@ class IdVaultService
      * This function sends mail from id-vault to provided receiver
      *
      * @param string $applicationId id of your id-vault application.
-     * @param string $body html body of the mail.
+     * @param string $template path to template in templates map.
      * @param string $subject subject of the mail.
      * @param string $receiver receiver of the mail.
      * @param string $sender sender of the mail.
+     * @param array $data (optional) array used to render the template with twig.
      *
      * @return array|false returns response from id-vault or false if wrong information provided for the call
      */
-    public function sendMail(string $applicationId, string $body, string $subject, string $receiver, string $sender)
+    public function sendMail(string $applicationId, string $template, string $subject, string $receiver, string $sender, array $data = [])
     {
+        $body = $this->twig->render($template, $data);
         $result = $this->idVault->sendMail($applicationId, $body, $subject, $receiver, $sender);
 
         return $result;
