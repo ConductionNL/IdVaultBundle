@@ -16,6 +16,7 @@ use Conduction\IdVaultBundle\Security\User\IdVaultUser;
 use Conduction\CommonGroundBundle\Service\CommonGroundService;
 use Conduction\IdVaultBundle\Service\IdVaultService;
 use Doctrine\ORM\EntityManagerInterface;
+use mysql_xdevapi\Exception;
 use Symfony\Component\DependencyInjection\ParameterBag\ParameterBagInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -95,7 +96,9 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
             'familyName'    => $json['family_name'],
             'id'            => $json['jti'],
             'authorization' => $accessToken['accessToken'],
-            'newUser'       => $accessToken['newUser']
+            'newUser'       => $accessToken['newUser'],
+            'groups'        => $json['groups'],
+            'organizations' => $json['organizations']
         ];
 
         $request->getSession()->set(
@@ -164,8 +167,40 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
             $userUlr = $this->commonGroundService->cleanUrl(['component'=>'uc', 'type'=>'users', 'id'=>$token['user']['id']]);
             $user = $this->commonGroundService->getResource($userUlr);
         }
+        try {
+            $person = $this->commonGroundService->getResource($user['person']);
+        } catch (\Throwable $e) {
+            if (isset($credentials['telephone'])) {
+                $telephone = [];
+                $telephone['name'] = $credentials['telephone'];
+                $telephone['telephone'] = $credentials['telephone'];
+            }
 
-        $person = $this->commonGroundService->getResource($user['person']);
+            //create email
+            $emailObect = [];
+            $emailObect['name'] = $credentials['email'];
+            $emailObect['email'] = $credentials['email'];
+
+            //create person
+            $person = [];
+            $person['givenName'] = $credentials['givenName'];
+            $person['familyName'] = $credentials['familyName'];
+            $person['emails'] = [$emailObect];
+            if (isset($credentials['telephone'])) {
+                $person['telephones'] = [$telephone];
+            }
+
+            $person = $this->commonGroundService->createResource($person, ['component' => 'cc', 'type' => 'people']);
+            $personUrl = $this->commonGroundService->cleanUrl(['component' => 'cc', 'type' => 'people', 'id' => $person['id']]);
+
+            if (isset($user['userGroups'])) {
+                foreach ($user['userGroups'] as &$group) {
+                    $group = '/groups/'.$group['id'];
+                }
+            }
+            $user['person'] = $personUrl;
+            $user = $this->commonGroundService->updateResource($user);
+        }
 
         $log = [];
         $log['address'] = $_SERVER['REMOTE_ADDR'];
@@ -194,9 +229,9 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
         $this->eventDispatcher->dispatch($event, IdVaultEvents::LOGGEDIN);
 
         if (isset($user['organization'])) {
-            return new IdVaultUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'id-vault', false, $credentials['authorization']);
+            return new IdVaultUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], $user['organization'], 'id-vault', false, $credentials['authorization'], null, $credentials['groups'], $credentials['organizations']);
         } else {
-            return new IdVaultUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'id-vault', false, $credentials['authorization']);
+            return new IdVaultUser($user['username'], $user['username'], $person['name'], null, $user['roles'], $user['person'], null, 'id-vault', false, $credentials['authorization'], null, $credentials['groups'], $credentials['organizations']);
         }
     }
 
