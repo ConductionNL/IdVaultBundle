@@ -123,13 +123,42 @@ class IdVaultService
      * this function creates a new sendList in id-vault BS.
      *
      * @param string $clientSecret An id of an id-vault wac/application. This should be the UC/provider->configuration->secret of the application from where this sendList is made.
-     * @param array $sendList An array with information of the new sendList. This should contain at least the key name with a string value and can also contain the following keys: description, resource, (bool) mail and (bool) phone.
+     * @param array $sendList An array with information of the sendList. This should contain at least the key 'name' with a value when creating a new Sendlist. Or at least the key 'id' with the id of an id-vault sendList when updating a sendList. It can also contain the following keys: 'description', 'resource', (bool) 'mail' and (bool) 'phone'.
      *
-     * @return array|Throwable returns response from id-vault with the created sendList.
+     * @return array|Throwable returns response from id-vault with the created or updated sendList.
      */
-    public function createSendList(string $clientSecret, array $sendList)
+    public function saveSendList(string $clientSecret, array $sendList)
     {
-        $result = $this->idVault->createSendList($clientSecret, $sendList);
+        $result = $this->idVault->saveSendList($clientSecret, $sendList);
+
+        return $result;
+    }
+
+    /**
+     * this function deletes a sendList in id-vault BS and also removes any connections to this sendList in all subscribers.
+     *
+     * @param string $sendListId The id of an id-vault sendList that is going to be deleted.
+     *
+     * @return array|Throwable returns response from id-vault with all the affected id-vault BS subscribers and true if this sendList was correctly deleted.
+     */
+    public function deleteSendList(string $sendListId)
+    {
+        $result = $this->idVault->deleteSendList($sendListId);
+
+        return $result;
+    }
+
+    /**
+     * this function creates subscribers in id-vault BS, connecting email addresses to the given sendList.
+     *
+     * @param string $sendListId The id of an id-vault sendList that all email addresses will subscribe to.
+     * @param array $emails An array with email addresses that will be subscribed to the given sendList (id).
+     *
+     * @return array|Throwable returns response from id-vault with all the affected id-vault BS subscribers and true if this sendList was correctly deleted.
+     */
+    public function addSubscribersToSendList(string $sendListId, array $emails)
+    {
+        $result = $this->idVault->addSubscribersToSendList($sendListId, $emails);
 
         return $result;
     }
