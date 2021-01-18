@@ -127,10 +127,10 @@ class IdVaultService
     /**
      * this function creates a new sendList in id-vault BS.
      *
-     * @param string $clientSecret An id of an id-vault wac/application. This should be the UC/provider->configuration->secret of the application from where this sendList is made.
-     * @param array $sendList An array with information of the sendList. This should contain at least the key 'name' with a value when creating a new Sendlist. Or at least the key 'id' with the id of an id-vault sendList when updating a sendList. It can also contain the following keys: 'description', 'resource', (bool) 'mail' and (bool) 'phone'.
+     * @param string $clientSecret An id of an id-vault wac/application. This should be the UC/provider->configuration->secret of the application from where this sendList is saved.
+     * @param array $sendList An array with information of the sendList. This should contain at least the key 'name' with a value when creating a new Sendlist. Or at least the key 'id' with the id of an id-vault sendList when updating a sendList. It can also contain the following keys: 'description', 'resource', (bool) 'mail', (bool) 'phone' and (array with wac/group id's) 'groups'.
      *
-     * @return array|Throwable returns response from id-vault with the created or updated sendList.
+     * @return array|Throwable returns response from id-vault with the created or updated BS/sendList (and BS/subscriber @id's).
      */
     public function saveSendList(string $clientSecret, array $sendList)
     {
@@ -154,16 +154,17 @@ class IdVaultService
     }
 
     /**
-     * this function creates subscribers in id-vault BS, connecting email addresses to the given sendList.
+     * this function creates subscribers in id-vault BS, connecting email addresses and/or id-vault wac/groups to the given sendList. Note that at least one of the arrays emails or groups needs to be set!
      *
      * @param string $sendListId The id of an id-vault sendList that all email addresses will subscribe to.
      * @param array $emails An array with email addresses that will be subscribed to the given sendList (id).
+     * @param array $groups An array with id-vault wac/group id's that will be subscribed to the given sendList (id).
      *
-     * @return array|Throwable returns response from id-vault with all the affected id-vault BS subscribers and true if this sendList was correctly deleted.
+     * @return array|Throwable returns response from id-vault with all the affected id-vault BS subscribers. Will return false if emails and groups are both empty.
      */
-    public function addSubscribersToSendList(string $sendListId, array $emails)
+    public function addSubscribersToSendList(string $sendListId, array $emails = null, array $groups = null)
     {
-        $result = $this->idVault->addSubscribersToSendList($sendListId, $emails);
+        $result = $this->idVault->addSubscribersToSendList($sendListId, $emails, $groups);
 
         return $result;
     }
