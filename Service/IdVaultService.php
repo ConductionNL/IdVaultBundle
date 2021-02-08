@@ -281,6 +281,22 @@ class IdVaultService
     }
 
     /**
+     * this function removes a membership of an id-vault user to the provided group, if it exists.
+     *
+     * @param string $username username of the user.
+     * @param string $clientId id of the id-vault application.
+     * @param string $groupId id of the id-vault group.
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function removeUser(string $username, string $clientId, string $groupId)
+    {
+        $result = $this->idVault->inviteUser($username, $clientId, $groupId);
+
+        return $result;
+    }
+
+    /**
      * this function accepts the group invite for the user.
      *
      * @param string $clientId id of the id-vault application.
