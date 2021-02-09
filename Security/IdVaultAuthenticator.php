@@ -86,7 +86,7 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
 
         $accessToken = $this->idVaultService->authenticateUser($code, $provider['configuration']['app_id'], $provider['configuration']['secret']);
 
-        $json = base64_decode(explode('.', $accessToken['accessToken'])[1]);
+        $json = base64_decode(explode('.', $accessToken['id_token'])[1]);
         $json = json_decode($json, true);
 
         $credentials = [
@@ -95,7 +95,7 @@ class IdVaultAuthenticator extends AbstractGuardAuthenticator
             'givenName'     => $json['given_name'],
             'familyName'    => $json['family_name'],
             'id'            => $json['jti'],
-            'authorization' => $accessToken['accessToken'],
+            'authorization' => $accessToken['access_token'],
             'newUser'       => $accessToken['newUser'],
             'groups'        => $json['groups'],
             'organizations' => $json['organizations']
