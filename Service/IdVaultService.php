@@ -291,7 +291,7 @@ class IdVaultService
      */
     public function removeUser(string $username, string $clientId, string $groupId)
     {
-        $result = $this->idVault->inviteUser($username, $clientId, $groupId);
+        $result = $this->idVault->removeUser($username, $clientId, $groupId);
 
         return $result;
     }
