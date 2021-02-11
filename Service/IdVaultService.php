@@ -219,6 +219,21 @@ class IdVaultService
     }
 
     /**
+     * this function deletes a userGroup linked to the id-vault application
+     *
+     * @param string $clientId id of the id-vault application.
+     * @param string $organization uri of an organization object.
+     * @param string $groupId (optional) id of the id-vault group.
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function deleteGroup(string $clientId, string $organization, string $groupId = null) {
+        $result = $this->idVault->deleteGroup($clientId, $organization, $groupId);
+
+        return $result;
+    }
+
+    /**
      * this function get all the groups that are linked to a user in the application
      *
      * @param string $clientId id of the id-vault application.
@@ -261,6 +276,22 @@ class IdVaultService
     public function inviteUser(string $clientId, string $groupId, string $username, bool $accepted = false)
     {
         $result = $this->idVault->inviteUser($clientId, $groupId, $username, $accepted);
+
+        return $result;
+    }
+
+    /**
+     * this function removes a membership of an id-vault user to the provided group, if it exists.
+     *
+     * @param string $username username of the user.
+     * @param string $clientId id of the id-vault application.
+     * @param string $groupId id of the id-vault group.
+     *
+     * @return array|Throwable returns response from id-vault
+     */
+    public function removeUser(string $username, string $clientId, string $groupId)
+    {
+        $result = $this->idVault->removeUser($username, $clientId, $groupId);
 
         return $result;
     }
