@@ -253,12 +253,13 @@ class IdVaultService
      *
      * @param string $clientId id of the id-vault application.
      * @param string $organization uri of the organization linked to the groups
+     * @param bool $filter whether to filter or not filter users that have not accepted group invite.
      *
      * @return array|Throwable returns response from id-vault
      */
-    public function getGroups(string $clientId, string $organization)
+    public function getGroups(string $clientId, string $organization, bool $filter = true)
     {
-        $result = $this->idVault->getGroups($clientId, $organization);
+        $result = $this->idVault->getGroups($clientId, $organization, $filter);
 
         return $result;
     }
