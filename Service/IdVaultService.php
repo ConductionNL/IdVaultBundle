@@ -253,12 +253,13 @@ class IdVaultService
      *
      * @param string $clientId id of the id-vault application.
      * @param string $organization uri of the organization linked to the groups
+     * @param bool $filter whether to filter or not filter users that have not accepted group invite.
      *
      * @return array|Throwable returns response from id-vault
      */
-    public function getGroups(string $clientId, string $organization)
+    public function getGroups(string $clientId, string $organization, bool $filter = true)
     {
-        $result = $this->idVault->getGroups($clientId, $organization);
+        $result = $this->idVault->getGroups($clientId, $organization, $filter);
 
         return $result;
     }
@@ -270,12 +271,13 @@ class IdVaultService
      * @param string $groupId id of the id-vault group.
      * @param string $username username of the user you wish to invite.
      * @param bool $accepted whether the user already accepted the invited (default = false).
+     * @param string|null $organizationName the organization name of the group to mention in the invite email
      *
      * @return array|Throwable returns response from id-vault
      */
-    public function inviteUser(string $clientId, string $groupId, string $username, bool $accepted = false)
+    public function inviteUser(string $clientId, string $groupId, string $username, bool $accepted = false, string $organizationName = null)
     {
-        $result = $this->idVault->inviteUser($clientId, $groupId, $username, $accepted);
+        $result = $this->idVault->inviteUser($clientId, $groupId, $username, $accepted, $organizationName);
 
         return $result;
     }
