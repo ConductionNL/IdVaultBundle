@@ -271,12 +271,13 @@ class IdVaultService
      * @param string $groupId id of the id-vault group.
      * @param string $username username of the user you wish to invite.
      * @param bool $accepted whether the user already accepted the invited (default = false).
+     * @param string|null $organizationName the organization name of the group to mention in the invite email
      *
      * @return array|Throwable returns response from id-vault
      */
-    public function inviteUser(string $clientId, string $groupId, string $username, bool $accepted = false)
+    public function inviteUser(string $clientId, string $groupId, string $username, bool $accepted = false, string $organizationName = null)
     {
-        $result = $this->idVault->inviteUser($clientId, $groupId, $username, $accepted);
+        $result = $this->idVault->inviteUser($clientId, $groupId, $username, $accepted, $organizationName);
 
         return $result;
     }
