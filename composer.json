@@ -22,7 +22,7 @@
 		"php" : "^7.4.0",
 		"conduction/id-vault-php": "dev-main",
 		"symfony/event-dispatcher" : "^5.0",
-		"conduction/commongroundbundle": "dev-master || dev-symfony51"
+		"conduction/commongroundbundle": "^2.*-dev || dev-symfony51"
 	},
 	"autoload" : {
 		"psr-4" : {
